@@ -738,7 +738,7 @@ either would reload the whole kit into *every* future session's context for no b
 persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.json`,
 `scripts/audit.sh`, `wiki/`, `README.md`, and the filled-in PRD. Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
-everything forward. The source kit lives **outside** the repo (e.g. `~/.claude/claude-kickoff-kit/`)
+everything forward. The source kit lives **outside** the repo (e.g. `~/dev/claude-kickoff-kit/`)
 and is handed to a *new* project's kickoff, never to ongoing work on an existing one. (The
 audit warns if any kit source file gets committed — see its GIT HYGIENE section.)
 
