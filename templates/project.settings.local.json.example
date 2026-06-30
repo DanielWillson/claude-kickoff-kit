@@ -1,0 +1,27 @@
+// PER-MACHINE, PER-REPO — copy to `.claude/settings.local.json` (gitignored; does NOT travel to teammates).
+// Two jobs:
+//   1. per-repo `sandbox.enabled` — ONLY if you scope the sandbox per-project instead of machine-wide in managed;
+//   2. `autoMode` — natural-language policy that TUNES the auto classifier. It is advisory (probabilistic +
+//      prompt-injectable) — a BACKSTOP, never a boundary. Real boundaries are permissions.deny/ask (managed) + the OS sandbox.
+{
+  // If your MANAGED floor already sets sandbox.enabled:true machine-wide, omit this whole block.
+  // Use it to enable the sandbox for THIS repo only:
+  // "sandbox": { "enabled": true, "failIfUnavailable": true, "allowUnsandboxedCommands": false },
+
+  "autoMode": {
+    // Use "$defaults" to EXTEND the built-in classifier policy rather than replace it.
+    "environment": [
+      "$defaults"
+      // , "Source control: github.com/your-org only."
+      // , "Trusted buckets/hosts: s3://your-bucket, your-internal-api.example.com"
+    ],
+    "soft_deny": [
+      "$defaults"
+      // , "Never force-push without explicit user intent."   (also enforced deterministically by the managed `ask` floor)
+    ],
+    "hard_deny": [
+      "$defaults"
+      // , "Never send repository contents to a third-party API."  (encode true non-negotiables as MANAGED deny rules too)
+    ]
+  }
+}

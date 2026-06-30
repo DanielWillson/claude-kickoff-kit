@@ -1,0 +1,53 @@
+// MANAGED HARD FLOOR — generic, machine-wide, shared by EVERY project on the machine.
+// Hand-place at:  /Library/Application Support/ClaudeCode/managed-settings.json  (root-owned; the agent cannot edit it).
+// This is a TEMPLATE. Keep every security line; ADD your own infra hosts (see network.allowedDomains); remove what
+// truly doesn't apply. After installing run `claude doctor` (invalid/too-old keys are SILENTLY stripped) and `/status`
+// (confirm the source resolves to "managed"). Generic only — put ZERO project-specific names here (those go per-repo).
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "deny": [
+      // --- credential READS (a read can't be un-leaked; binds native tools AND recognized Bash readers cat/head/grep) ---
+      "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(~/.config/gh/**)", "Read(~/.config/gcloud/**)",
+      "Read(~/.npmrc)", "Read(~/.netrc)", "Read(~/.pypirc)",
+      "Read(**/*.pem)", "Read(**/*.token)", "Read(**/id_rsa)", "Read(**/id_ed25519)",
+      "Read(**/.env)", "Read(**/.env.*)",
+      // --- native-tool persistence (the sandbox is Bash-ONLY, so a native Write needs its own permission deny) ---
+      "Edit(~/.zsh*)", "Write(~/.zsh*)", "Edit(~/.bash*)", "Write(~/.bash*)",
+      "Edit(~/.profile)", "Write(~/.profile)",
+      "Edit(~/Library/LaunchAgents/**)", "Write(~/Library/LaunchAgents/**)",
+      // --- catastrophic / credential-printing Bash (a BACKSTOP: deletion is bypassable, so the sandbox is the real confinement) ---
+      "Bash(sudo *)", "Bash(rm -rf /*)", "Bash(rm -rf ~*)", "Bash(chmod -R *)",
+      "Bash(* | sh)", "Bash(* | bash)",
+      "Bash(gh auth token*)", "Bash(git credential *)", "Bash(security find-generic-password *)"
+    ],
+    "ask": [
+      // irreversible REMOTE git + destructive UNSANDBOXED infra — a deterministic prompt, even in auto mode
+      "Bash(git push --force*)", "Bash(git push -f*)", "Bash(git push * --force*)", "Bash(git push * -f*)",
+      "Bash(git push --force-with-lease*)", "Bash(git push * --force-with-lease*)",
+      "Bash(git push * --delete*)", "Bash(git branch -D*)",
+      "Bash(terraform apply*)", "Bash(terraform destroy*)", "Bash(gcloud * delete*)", "Bash(gcloud * remove*)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": ["gh *", "gcloud *", "terraform *", "docker *", "brew *"],
+    "filesystem": { "allowWrite": ["~/.cache/uv", "~/.cache/pip", "~/.local/share/uv", "~/.npm"] },
+    "credentials": { "files": [
+      {"path": "~/.ssh", "mode": "deny"}, {"path": "~/.aws", "mode": "deny"},
+      {"path": "~/.config/gh", "mode": "deny"}, {"path": "~/.config/gcloud", "mode": "deny"},
+      {"path": "~/.npmrc", "mode": "deny"}, {"path": "~/.netrc", "mode": "deny"}, {"path": "~/.pypirc", "mode": "deny"}
+    ] },
+    "network": {
+      "allowManagedDomainsOnly": false,
+      "allowedDomains": [
+        "github.com", "api.github.com", "codeload.github.com", "objects.githubusercontent.com", "raw.githubusercontent.com",
+        "pypi.org", "files.pythonhosted.org", "registry.npmjs.org"
+      ]
+    }
+  },
+  "env": { "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1" }
+}

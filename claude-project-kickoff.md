@@ -27,7 +27,10 @@
 > skeleton), and **`readme-template.md`** (a fill-in **human-facing README** stub, §1.5c),
 > plus your own per-project **styleguide** and filled-in **PRD/spec**. Together the Kickoff
 > Kit covers setup, principles, durable knowledge, health, design, requirements, and the
-> human front door — hand the relevant pieces over up front.
+> human front door — hand the relevant pieces over up front. For **machine hardening** it also ships
+> **`templates/`** (the managed + per-repo + local settings templates) and **`CHEATSHEET.md`** (the verified
+> permission/sandbox mechanics) — install the machine-wide hard floor once via **Part 0**, then run the
+> per-project ritual below.
 >
 > **Read order (the kit is driven *from this file* — don't read them cover-to-cover):**
 > this guide first; for a Standard+ project read `llm-wiki-kickoff.md` before scaffolding
@@ -38,6 +41,71 @@
 
 ---
 
+## Part 0 — One-time machine hardening (the hard floor)
+
+> **Do this ONCE per machine, before the per-project ritual.** Part 1 onward is per-project; this part is
+> machine-wide and you won't repeat it. If a machine is already hardened, skip to Part 1.
+
+**The model in one line:** *the OS sandbox is the boundary; `deny`/`ask` rules are deterministic backstops; the
+auto classifier is a probabilistic backstop; `CLAUDE.md` / `autoMode` prose is **not** a control.* A control is
+only as strong as the agent's inability to reach it — so the hard floor lives where the agent can't edit it:
+**root-owned managed settings + the OS sandbox** (and, for shared repos, server-side rules).
+
+### The three layers (what goes where, and why)
+A managed file is shared by **every** project on the machine, so it must be generic; per-project rules go per-repo.
+Keep them separate:
+- **Managed = the generic hard floor.** Root-owned at `/Library/Application Support/ClaudeCode/managed-settings.json`,
+  un-overridable, the agent can't edit it. True for every project, objectionable to none: no-bypass; credential-read
+  denies; destructive-Bash denies; shell-rc + LaunchAgents write denies; env scrub; the OS sandbox (enabled,
+  fail-closed, no-escape) + its credential denies + universal dev hosts/caches; irreversible-op `ask` gates. **Zero
+  project-specific names.** → install `templates/managed-settings.template.json`.
+- **User (`~/.claude/settings.json`) = personal ergonomics only.** `defaultMode:"auto"`, model, theme, and your own
+  infra used everywhere (e.g. a Tailscale tailnet). No project rules, no security rules. `defaultMode` works **only**
+  here — it's ignored from project/local.
+- **Per-repo = that project's specifics** (Part 1, §1.3): its hosts, its secret denies, its daily-command allows, its
+  hooks. Committed `.claude/settings.json` for what travels to teammates; `.claude/settings.local.json` for
+  per-machine `sandbox.enabled` + `autoMode`.
+
+**Why this isn't enterprise lockdown.** Array settings (`deny`/`ask`/`allow`/`allowedDomains`) **merge across
+scopes**, and managed outranks the rest — so a generic managed `deny` is authoritative **and** every repo can still
+add its own `allow`s and hosts. You get un-editable denies *without* the heavy `allowManaged*Only` locks. That merge
+is the whole reason a machine-wide hard floor is compatible with per-project freedom.
+
+### Install the managed floor
+1. Copy `templates/managed-settings.template.json`, **genericize** it (add your own infra hosts to
+   `sandbox.network.allowedDomains`; remove what doesn't apply), and hand-place it at
+   `/Library/Application Support/ClaudeCode/managed-settings.json`. No MDM needed for a couple of Macs.
+2. Run **`claude doctor`** (invalid/too-old keys are **silently stripped** — a typo'd key parses fine yet does
+   nothing) and **`/status`** (confirm the floor's source resolves to `managed`). Restart — `sandbox.*` initializes
+   at session start.
+
+### Roll the sandbox out without locking yourself out
+Turning the sandbox on machine-wide breaks anything that needs out-of-project writes or un-listed hosts until you've
+inventoried each repo's real needs. Stage it:
+1. Install the floor but start the sandbox in **shakeout mode**: set `sandbox.allowUnsandboxedCommands: true` so
+   anything sandbox-incompatible **prompts and falls back** instead of hard-failing. (No lockout while you learn.)
+2. **Poll each repo's session** with this inventory prompt — report-only, no edits:
+   > *"Under a machine-wide Bash sandbox, what hosts (`sandbox.network.allowedDomains`), unsandboxed commands
+   > (`sandbox.excludedCommands`), and out-of-project write paths (`sandbox.filesystem.allowWrite`) does THIS project
+   > actually need? Investigate by evidence — the git remote, package manifests, build/test scripts — tag each need
+   > **universal** vs **project-specific**, be minimal, and **report only; do not edit any settings.**"*
+3. **Synthesize:** universal needs (github/pypi/npm + tool caches) → the managed floor; project-specific
+   hosts/commands/paths → that repo's `.claude/settings.json`.
+4. **Smoke-test** each project once (install + build + dev server + a `git push`).
+5. **Flip `sandbox.allowUnsandboxedCommands: false`** → airtight, no fallback. Restart.
+
+### Verify the floor bites (post-restart)
+`claude doctor` · `/status` (sources) · `/permissions` (what resolved) — then *prove guards fire*, because a rule
+that's present but inert reads as protection:
+- read `~/.ssh/id_rsa` → **blocked**; `cat .env` → **blocked**;
+- `git push --force` on a throwaway branch → **prompts**;
+- attempt bypass mode (`Shift+Tab`) → **rejected**, and `/status` shows the source as `managed`.
+
+A tell you're **not** sandboxed yet: the session can still write outside its project dir (e.g. to `~/Downloads`).
+Once the sandbox is live, out-of-project writes fail. See **`CHEATSHEET.md`** for the full verified mechanics.
+
+---
+
 ## Part 1 — Initial Setup Ritual
 
 ### 1.0 Choose the tier first (don't run the whole ritual on a throwaway)
@@ -45,19 +113,20 @@ The full ritual suits a project you'll return to. Right-size it — the failure 
 over-setup is that it gets skipped *wholesale*, leaving you with none of it. Pick a tier
 deliberately. **Auto mode is the assumed default at every tier** (set `defaultMode:"auto"`
 per-machine in your USER `~/.claude/settings.json` — it's ignored from project/local — or via
-`Shift+Tab`), and the **safety floor is non-negotiable, even Lean**: one committed
-`.claude/settings.json` (the §1.3 sandbox + the secret-read/destructive denies + the `ask` tier +
-the Stop hook). It's what stops the agent doing something dumb or dangerous even in a throwaway
-you'll delete tomorrow — and it's cheap enough that skipping it is never worth it:
+`Shift+Tab`), and the **per-repo floor is non-negotiable, even Lean**: one committed
+`.claude/settings.json` (§1.3) — the project layer that rides on top of the machine-wide **hard floor**
+(managed settings + the OS sandbox) you install once in **Part 0**. It's what stops the agent doing something
+dumb or dangerous even in a throwaway you'll delete tomorrow — and it's cheap enough that skipping it is never
+worth it:
 
 | Tier | When | Do |
 |---|---|---|
-| **Lean** | throwaway / spike / a few-day site | §1.1 `.gitignore` + §1.5 `CLAUDE.md` + the **full safety-floor** `.claude/settings.json` (§1.3: sandbox + the secret-read/destructive denies + the `ask` tier + the Stop hook) — committed, even here. Skip only the wiki and the audit. The floor is cheap and universal precisely so a throwaway still can't be made to do something dangerous. |
+| **Lean** | throwaway / spike / a few-day site | §1.1 `.gitignore` + §1.5 `CLAUDE.md` + the **per-repo floor** `.claude/settings.json` (§1.3: project denies/allows + the `ask` tier + the Stop hook) — committed, even here — on top of the **Part 0** machine hard floor. Skip only the wiki and the audit. The per-repo floor is cheap and universal precisely so a throwaway still can't be made to do something dangerous. |
 | **Standard** | anything you'll maintain or revisit | Lean **+** §1.6 `audit.sh` **+** §1.5b knowledge wiki. |
-| **Hardened** | real secrets / a database / a deploy pipeline | Standard **+** the *conditional* hardening **above** the floor (§1.3a): per-machine `managed-settings.json` (the only true hard lock) and server-side branch protection on `main` — gated by the intake answers (real credential → secret add-ons; shared repo → server-side/CODEOWNERS). |
+| **Hardened** | real secrets / a database / a deploy pipeline | Standard **+** the *conditional* hardening **above** the floor (§1.3a): server-side branch protection on `main` + the secret add-ons — gated by the intake answers (real credential → secret add-ons; shared repo → server-side/CODEOWNERS). *(The machine-wide managed hard floor is **Part 0** — installed once for every project, not a Hardened-only step.)* |
 
-When unsure, start Lean — the floor is already locked down, so there's no unsafe rung. The
-§1.3a maturity trigger then **adds the conditional hardening on top** (not a mode downgrade) the
+When unsure, start Lean — the Part 0 machine floor + the per-repo floor are already locked down, so there's
+no unsafe rung. The §1.3a maturity trigger then **adds the conditional hardening on top** (not a mode downgrade) the
 moment real creds, a datastore, or a second committer appear, driven by the intake answers. The rest of Part 1 is written for
 Standard/Hardened; a Lean project cherry-picks and moves on. Building a *content/editorial*
 project rather than a code one? See the **archetype appendix** for the editorial/factual
@@ -81,7 +150,7 @@ safe**. Ask, then execute uninterrupted:
 The sections below still explain *why* each answer matters at its point of use — this just
 front-loads the asking so setup doesn't stall on four separate questions. Don't defer the
 sensitive-paths answer: the window you'll regret skipping it is the first autonomous build run.
-(Even a **Lean** project carries the full safety floor, so Q3/Q4 feed real settings — Q3 the
+(Even a **Lean** project carries the full per-repo floor, so Q3/Q4 feed real settings — Q3 the
 `denyWrite`/sensitive-path denies and `.gitignore` §1.2, Q4 the allowlist — at every tier, not
 just Standard+.)
 
@@ -125,9 +194,11 @@ share") belongs in `CLAUDE.md`.
   These are exactly the artifacts that leak when an unignored file rides along.
 - Commit it as the first real commit.
 
-### 1.3 Configure the safety floor (sandbox + denies) — the committed `.claude/settings.json`
-Create project-local `.claude/settings.json` — **the universal safety floor**, committed on
-every tier (§1.0). Its load-bearing job is to *stop the agent doing something dumb or
+### 1.3 Configure the per-repo floor — the committed `.claude/settings.json`
+Create project-local `.claude/settings.json` — **the per-repo floor**, committed on
+every tier (§1.0). It rides on top of the machine-wide **hard floor** (managed settings + the OS sandbox)
+from **Part 0** and carries *this project's* specifics. Treat it as a **mutable input, not a hard control**:
+it's agent-editable and changes on `git pull`, so the un-negotiable guarantees belong in Part 0/managed, not here. Its load-bearing job is to *stop the agent doing something dumb or
 dangerous*: deny it **reading** or overwriting secrets, editing its own guards, or running
 destructive/privileged bash. It also confines filesystem writes to the project directory at
 the OS level (the sandbox) and auto-approves safe commands — so the agent can run hands-off in
@@ -207,8 +278,12 @@ routine operation, defeating the purpose.
 }
 ```
 
-> **This whole block is the universal safety floor — commit it on *every* tier, Lean
-> included.** It is cheap (one `.claude/settings.json`) precisely so it is never skipped:
+> **This whole block is the per-repo floor — commit it on *every* tier, Lean included.** It is
+> cheap (one `.claude/settings.json`) precisely so it is never skipped. **On sandbox placement:** if you
+> installed the **Part 0** managed floor, the OS sandbox is already on machine-wide — the `sandbox` block
+> here is then redundant; drop `enabled`/`allowUnsandboxedCommands`/`failIfUnavailable` and keep only the
+> project's `filesystem.denyWrite` + hosts. The standalone `sandbox.enabled` above is for a per-repo setup
+> when you *haven't* done Part 0 (or set it in `.claude/settings.local.json` to scope the sandbox to this one repo):
 > the "don't let the agent do something dumb or dangerous even in a throwaway" guards cost
 > nothing and apply regardless of how sensitive the project is. Assume **auto mode** is the
 > default posture (`defaultMode: "auto"` lives per-machine — see the precedence note below);
@@ -233,10 +308,16 @@ routine operation, defeating the purpose.
 >   never crosses the sandbox boundary. `denyWrite` stays as defense-in-depth, but the
 >   permission-layer `Write`/`Edit` denies are what actually cover the native tools. Same
 >   logic protects the enforcement layer: `Edit/Write(.claude/settings.json)` and
->   `Edit/Write(hooks/**)` stop the agent quietly weakening its own guards.
+>   `Edit/Write(hooks/**)` stop the agent quietly weakening its own guards **via the native tools**. *(Caveat:
+> the sandbox auto-protects `settings.json` at every scope, but an in-repo `hooks/` file is a normal in-project
+> path a **Bash redirect** (`echo … > hooks/x`) can overwrite — so in-repo guard hooks are backstops, not
+> boundaries; the hard guarantee is server-side, §1.3b.)*
 
 **Adapt the allowlist to the stack** (add the test runner, package manager,
-linter, formatter the project actually uses). Keep the denies. **Which layer governs in
+linter, formatter the project actually uses). Keep the denies. *(This per-repo example is intentionally
+**stricter** than the generic **Part 0** managed floor, which omits `curl`/`wget` and broad `rm`/`git reset`/`git
+clean` denies as sieves better left to the sandbox — the per-repo layer may be stricter than the machine floor and
+doubles as a fallback if you skip Part 0. Relax any of these per project.)* **Which layer governs in
 which mode (don't oversell the allowlist):** the `permissions.allow` wildcard list governs
 in **default / acceptEdits**; in **auto mode the *classifier* governs and DROPS the broad
 wildcard / package-manager-run / Agent allows** (`Bash(npm run *)`, `Bash(uv *)`,
@@ -371,9 +452,22 @@ regardless of mode. But know what it does **not** cover:
   operations (mass delete, exfiltration, malicious code); it has no idea which of
   *your* files are load-bearing. Encode project-specific protections in
   `denyWrite`.
-- **Network is not filesystem-sandboxed.** Outbound calls aren't confined the way
-  writes are. Denying `curl`/`wget` helps; for stronger control set
-  `sandbox.network.allowedDomains` / `deniedDomains`.
+- **Deny-rules are a *sieve* — only the sandbox is a general defense.** A `Read`/`Edit` deny binds the
+  native file tools AND recognized Bash readers (`cat`/`head`/`tail`/`sed`/`grep`) — but **not arbitrary code
+  reading a file** (`python3 -c open()`, `php -r`). Deny patterns are likewise bypassed by non-`rm` deletion
+  (`mv`/`>`/`truncate`/`os.remove`/`find -delete`), two-step splits (download, then exec), native `Write`, and
+  another repo's session (cross-project). *(Empirical, one machine: a 44-scenario red-team of a **sandbox-OFF**
+  config left only **5** attacks deterministically blocked — the rest were classifier-only or open.)* So the OS
+  **sandbox is the boundary**; deny/ask are deterministic backstops; the classifier is a probabilistic backstop.
+  Close credential reads with **both** `permissions.deny Read(...)` (native + `cat`) **and** `sandbox.credentials`
+  / `sandbox.filesystem.denyRead` (the code-interpreter path) — and only with the sandbox **on**.
+- **Network egress is a real-but-imperfect boundary.** Outbound calls aren't confined the way writes are. The
+  sandbox's `allowedDomains` allowlist is **OS-level Seatbelt via a proxy**, decided from the client-supplied
+  hostname with **no TLS inspection** — a real stop for accidental/naive egress, but **not a complete isolation
+  boundary** (docs note domain-fronting can reach un-listed hosts), and it binds **sandboxed Bash only** (not
+  `WebFetch`/`WebSearch`/MCP). Denying CLI `curl`/`wget` is only a *speed-bump* (library HTTP and code interpreters
+  bypass it). The real anti-leak controls are **deny the read** and **no high-value secret on the machine** — not
+  reducing destinations.
 - **The sandbox is Bash-ONLY — it covers Bash and its child processes, nothing else.**
   Native `Read`/`Write`/`Edit`, `WebFetch`/`WebSearch`, and MCP tools never cross the
   sandbox boundary — they're governed by *permission rules*, not the sandbox. Two
@@ -417,7 +511,7 @@ regardless of mode. But know what it does **not** cover:
   enforcement files (`.claude/settings.json`, `hooks/**`).
 
 **The floor is always on; the maturity trigger adds *conditional hardening above it*.** Auto
-mode + the committed safety floor (§1.3) is the default at every tier — you do **not** drop to a
+mode + the committed per-repo floor (§1.3) is the default at every tier — you do **not** drop to a
 more restrictive permission mode as the project matures; the floor already denies secret reads,
 destructive bash, and self-modification of its own guards. What escalates is the *extra* hardening
 the floor doesn't carry, gated by the intake answers, not by guessing sensitivity:
@@ -431,11 +525,11 @@ the floor doesn't carry, gated by the intake answers, not by guessing sensitivit
   CODEOWNERS on the enforcement paths (`.claude/**`, `hooks/**`, `.github/**`, `CLAUDE.md`) — note
   CODEOWNERS gates PRs only, so pair it with branch protection — plus the §1.3b secret pre-commit
   hook + audit-in-CI.
-- **Max-lockdown / a shared machine** → a per-machine `managed-settings.json` carrying
-  `disableBypassPermissionsMode` + `failIfUnavailable` + `allowUnsandboxedCommands:false` — the
-  *only* truly unbypassable lock (a committed setting is a mutable input; hand-place this file —
-  no MDM needed for a couple of Macs). Fleet-wide `allowManaged*Only` locks stay enterprise (pointer
-  only).
+- **Max-lockdown / a shared machine** → you already installed the truly-unbypassable lock in **Part 0**
+  (`disableBypassPermissionsMode` + `failIfUnavailable` + `allowUnsandboxedCommands:false` in managed) — for
+  *every* project, not just this one. Nothing extra to do here. Fleet-wide `allowManaged*Only` locks stay
+  enterprise (pointer only); you don't need them — array-merge makes the managed denies authoritative without
+  them (see Part 0).
 
 (Same hardness hierarchy as the §1.3 "where each control lives" note — server-side > managed >
 no-secret-on-the-machine > repo-committed > chat — which is why non-negotiables are `deny`/`ask`
@@ -1106,6 +1200,13 @@ these defaults are what make the output *integrate* and the night actually
 ---
 
 ## Quick Checklist
+
+**Part 0 — machine hard floor (once per machine, before the per-project ritual):**
+- [ ] generic **managed** floor installed at `/Library/Application Support/ClaudeCode/` (no-bypass + credential denies + OS sandbox + irreversible-op `ask` gates) from `templates/managed-settings.template.json`, **genericized** (no machine-specific hosts)
+- [ ] `claude doctor` (invalid keys silently stripped) + `/status` (source = `managed`) run after install; sandbox rolled out via shakeout → inventory-poll → flip `allowUnsandboxedCommands:false` (Part 0)
+- [ ] floor **proved to bite**: `~/.ssh/id_rsa` read blocked · `cat .env` blocked · `git push --force` prompts · bypass mode rejected (source `managed`)
+
+**Per project:**
 - [ ] `git init`
 - [ ] tailored `.gitignore` committed
 - [ ] sensitive paths identified (ask before writing settings)
@@ -1114,7 +1215,7 @@ these defaults are what make the output *integrate* and the night actually
 - [ ] go-live boundary identified (Intake Q7 — commit vs. deploy/rsync; drives where the freshness check lives)
 - [ ] `.claude/settings.json` (sandbox + auto-approve + allowlist + denies + Stop hook)
 - [ ] `denyWrite` covers `.env*`/`secrets/**` **plus this project's sensitive paths**
-- [ ] **safety floor applied to EVERY tier (incl. Lean):** secret-*read* denies (`.env*`, `secrets/**`, `~/.ssh`/`~/.aws`/`~/.npmrc`) + native `Write`/`Edit` denies on the same paths + enforcement-file denies (`.claude/settings.json`, `hooks/**`) + `sandbox.failIfUnavailable: true` (§1.3, §1.3a)
+- [ ] **per-repo floor applied to EVERY tier (incl. Lean):** project secret-*read* denies (`.env*`, `secrets/**`) + native `Write`/`Edit` denies on the same paths + enforcement-file denies (`.claude/settings.json`, `hooks/**`) — on top of the Part 0 machine floor (which carries the `~/.ssh`/`~/.aws`/`~/.npmrc` denies + the OS sandbox) (§1.3, §1.3a)
 - [ ] `git push` / `gh pr merge` in the **`ask`** tier (prompts even in auto mode), not hard-denied — push is a one-confirmation gate (§1.3a, Principle 4)
 - [ ] `CLAUDE.md` left **ungated** (never in `ask`/`deny`) — the write-back loop edits it nearly every session
 - [ ] `defaultMode: "auto"` set in **USER `~/.claude/settings.json`** (ignored from project/local) — assume auto mode is the posture
@@ -1139,7 +1240,7 @@ these defaults are what make the output *integrate* and the night actually
 - [ ] (if on a mounted/synced volume) venv + caches symlinked to local disk; `git check-ignore` verified; mtime not trusted (§1.1a)
 - [ ] (evolving a live system) oracle pinned before a calc refactor; data migration → backup + branch + two-part rollback (Principle 10)
 - [ ] user reminded to enter auto mode (`Shift+Tab`) **and restart so the sandbox initializes** (sandbox is from settings, not `Shift+Tab`)
-- [ ] noted the maturity trigger: it **adds conditional hardening above the always-on floor** (Q9 secret add-ons · Q6 server-side + CODEOWNERS · managed-settings) — *not* a switch to a more restrictive mode
+- [ ] noted the maturity trigger: it **adds conditional hardening above the always-on floor** (Q9 secret add-ons · Q6 server-side + CODEOWNERS) — *not* a switch to a more restrictive mode (the managed hard floor is **Part 0**, done once per machine)
 - [ ] principles internalized; ready for the spec
 
 ---

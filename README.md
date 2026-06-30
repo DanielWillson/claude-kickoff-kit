@@ -17,6 +17,14 @@ per project, and **never committed into the project's own repo**.
 - **`readme-template.md`** — a fill-in, **human-facing** project README stub (the project's
   front door), with a `reconcile-code` anchor so the audit flags it when it drifts from the code.
 - **`styleguide.html`** — an *example* per-project design styleguide (swap in your own).
+- **`templates/`** — copy-paste **settings templates**: `managed-settings.template.json` (the machine-wide
+  hard floor), `project.settings.json` (the committed per-repo floor), and `project.settings.local.json.example`
+  (per-machine sandbox-enable + `autoMode`). See `templates/README.md` for the three-layer model.
+- **`CHEATSHEET.md`** — the verified Claude Code permission/sandbox mechanics (Bash-only sandbox,
+  deny-rules-are-a-sieve, settings precedence + array-merge, launch-dir-only load, macOS egress limits).
+- **`securing-claude-sessions.md`** — a narrative **field guide** to the security model (the five
+  enforcement levels, defense-in-depth, *"a control is only as strong as the agent's inability to reach
+  it"*). The teaching companion to `CHEATSHEET.md`; written against an example deployment.
 
 ## How to use it
 At a new project's kickoff, hand Claude the relevant files (always the kickoff guide; the
@@ -43,6 +51,12 @@ lean `CLAUDE.md` + wiki, never this kit.
   the *act* of committing.
 - **Scaffolding vs. artifacts** — the kit is used once; only its outputs persist (the audit
   even warns if a kit source file gets committed into a project).
+- **The hard floor is machine-level, not repo-level** — the un-negotiable *security* floor (no-bypass,
+  credential denies, the OS sandbox) lives in **root-owned managed settings + the OS sandbox** (kickoff
+  **Part 0**), because a committed `.claude/settings.json` is agent-editable and therefore *soft*. The committed
+  per-repo floor still carries project specifics and the gates that should travel to teammates; array-merge keeps
+  both layers live at once. The model: *the sandbox is the boundary; `deny`/`ask` are deterministic backstops;
+  the classifier is probabilistic; prose is not a control* (see `CHEATSHEET.md`).
 
 > The styleguide and PRD are interchangeable per project; the guides and templates are the
 > reusable core.

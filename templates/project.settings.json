@@ -1,0 +1,54 @@
+// PER-REPO FLOOR — committed `.claude/settings.json`. Travels with the repo (a MUTABLE input, not a hard control:
+// arrays merge across scopes and a teammate's `git pull` can change it). The HARD floor — no-bypass, credential
+// denies, the OS sandbox, OS egress — lives in your MANAGED file (see managed-settings.template.json). This file
+// carries THIS project's specifics + the workflow gates that should travel to teammates.
+// NEVER put `defaultMode` here — it is IGNORED outside USER (~/.claude) settings.
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      // THIS project's daily commands (Intake Q4) — adapt to the stack. Keeps auto mode from prompting on routine ops.
+      // (In auto mode the classifier still drops the broadest wildcards as too sweeping — these mainly help default/acceptEdits.)
+      "Bash(npm run *)", "Bash(npm install*)", "Bash(npx *)",
+      "Bash(uv *)", "Bash(pip install*)", "Bash(pytest*)", "Bash(ruff *)",
+      "Bash(git add *)", "Bash(git commit *)", "Bash(git status*)", "Bash(git diff*)", "Bash(git log *)", "Bash(git branch*)"
+    ],
+    "ask": [
+      // push/merge is the outward-facing gate (Principle 4) — one confirmation even in auto mode. Workflow discipline.
+      // Irreversible force-push / branch-delete is ALSO gated in the MANAGED floor as a machine-wide security baseline.
+      "Bash(git push *)", "Bash(gh pr merge *)"
+    ],
+    "deny": [
+      // THIS project's secret READS + native writes/edits (machine creds are already denied in the managed floor)
+      "Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)",
+      "Write(./.env)", "Write(./.env.*)", "Write(./secrets/**)",
+      "Edit(./.env)", "Edit(./.env.*)", "Edit(./secrets/**)",
+      // the agent must never weaken its own guards via native tools. NOTE: this binds Edit/Write (native) only —
+      // a Bash redirect to an in-repo hook (`echo … > hooks/x`) is an in-project write the sandbox allows, so in-repo
+      // guard hooks are BACKSTOPS, not boundaries; the hard guarantee is server-side (CODEOWNERS + branch protection).
+      "Edit(.claude/settings.json)", "Write(.claude/settings.json)",
+      "Edit(hooks/**)", "Write(hooks/**)"
+      // ADD this project's load-bearing paths: config that must not be rewritten, a migrations dir, the data model.
+    ]
+  },
+  "sandbox": {
+    // sandbox.enabled lives in MANAGED (machine-wide) or .claude/settings.local.json (per-repo) — NOT in this committed file.
+    "filesystem": {
+      "denyWrite": [".env", ".env.*", "**/.env", "**/.env.*", "secrets/**", "**/secrets/**"]
+      // OPTIONAL OS-level read-deny to close the `python3 -c open()` path (which a permission Read deny can't):
+      // , "denyRead": [".env", ".env.*", "secrets/**"]   // verify the key resolves with `claude doctor` before relying on it
+    },
+    "network": { "allowedDomains": [
+      // THIS project's own hosts (its API, CDN, registry mirror). Universal dev hosts (github/pypi/npm) are in the managed floor.
+    ] }
+  },
+  "hooks": {
+    "Stop": [
+      { "matcher": "*", "hooks": [
+        { "type": "command",
+          "command": "if git rev-parse --git-dir >/dev/null 2>&1 && [ -n \"$(git status --porcelain)\" ]; then git add -u && { git commit -m \"WIP: auto-saved (review/reword)\" >/dev/null 2>&1 || { echo \"Auto-commit blocked (a hook rejected it - likely a staged secret); nothing committed, changes still staged. Resolve, then commit.\" >&2; exit 1; }; }; fi",
+          "statusMessage": "Auto-saving uncommitted changes..." }
+      ] }
+    ]
+  }
+}
