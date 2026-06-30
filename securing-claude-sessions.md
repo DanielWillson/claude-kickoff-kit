@@ -125,10 +125,12 @@ hold *even in yolo mode*.
 
 In our repo's `.claude/settings.json` we use:
 - **`allow`** for the safe, frequent things, so `auto` mode stays smooth: `Read`/`Grep`/`Glob`,
-  read-only git (`git status`, `git diff`, `git log`), the wiki skill scripts (lint,
+  local git (`git add`, `git commit`, `git status`, `git diff`, `git log`), the wiki skill scripts (lint,
   manifest_diff, scaffold…), and the read-only `recmint-wiki` MCP tools.
-- **`ask`** for the actions that reach outside or touch customers: `git add/commit/push`,
-  `gh pr create/merge`, `gh api`, **`publish_intercom.py`**, and the Intercom MCP tools.
+- **`ask`** for the actions that reach outside or touch customers: `git push`,
+  `gh pr create/merge`, `gh api`, **`publish_intercom.py`**, and the Intercom MCP tools. *(Local, reversible
+  steps like `git add`/`git commit` are **not** gated — only the ones that actually leave the machine or reach
+  customers. This matches the kit's per-repo template, which puts `git add`/`git commit` in `allow`.)*
 
 Notice what's **not** here: the hard `deny` list. We moved that **up to the managed file
 (Level D)** on purpose — a deny rule is only a guarantee if the agent can't edit the file it
