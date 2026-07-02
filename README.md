@@ -126,6 +126,10 @@ Each file is labeled with what it does, and why it earns a place.
   as the agent's inability to reach it*. The teaching companion to the cheat sheet.
 - **`SKILL.md`** — the wrapper that lets the whole kit double as an installable **skill**
   (see "How to use it" below). It adds a second delivery mechanism, not new content.
+- **`wiki/`** — the kit's **own knowledge base**, eating its own cooking: the verified
+  citations behind the kit's claims (quotes, URLs, verification dates) and the decision
+  history of its evolution. For kit maintainers and the curious — it is *not* handed to
+  projects. Start at `wiki/index.md`.
 
 ### Worth installing alongside the kit? (verified 2026-07-01 — dates matter here)
 
