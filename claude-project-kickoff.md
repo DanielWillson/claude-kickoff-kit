@@ -747,7 +747,14 @@ wrong value was believed* go in a wiki decision/incident page (the routing rule,
 
 As the project grows, keep `CLAUDE.md` **lean**: invariants, guardrails, daily commands,
 and a *pointer-level* module map (start at one line per module; it can grow as the map earns
-its keep, but a module's *design* still belongs in a wiki architecture page). **Depth graduates
+its keep, but a module's *design* still belongs in a wiki architecture page). **How lean, in
+sourced numbers (verified mid-2026):** Anthropic's own docs target **under ~200 lines** and
+prune by the test *"would removing this line cause mistakes?"*; OpenAI keeps its equivalent
+near ~100 lines as a "table of contents." (The viral "keep it under 50 lines" rule has no
+primary source — ignore it.) The budget that actually binds is *discrete instructions*, not
+lines: the one measured result (IFScale, arXiv 2507.11538) shows instruction-following
+sagging in the low hundreds even for frontier models, sooner below the frontier — that's
+the mechanism behind the next sentence, not just tidiness. **Depth graduates
 to the wiki** (§1.5b), not into `CLAUDE.md`: how-a-subsystem-works (architecture) pages and
 the why/failure history (decision/incident pages). See **Principle 2** for the one-line
 routing rule. Keep `CLAUDE.md` current — a stale contract is worse than none, because it
