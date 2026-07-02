@@ -127,6 +127,19 @@ Each file is labeled with what it does, and why it earns a place.
 - **`SKILL.md`** — the wrapper that lets the whole kit double as an installable **skill**
   (see "How to use it" below). It adds a second delivery mechanism, not new content.
 
+### Worth installing alongside the kit? (verified 2026-07-01 — dates matter here)
+
+Nothing is mandatory, and the posture matters more than any list: a skill or plugin is
+**installed instructions inside the agent's trust boundary** — vet it like a dependency
+(read it before installing, prefer a pinned copy; the kickoff guide §1.3a carries the
+rule). With that said, the shortlist that survived a primary-source check: Anthropic's own
+**`security-guidance`**, the **LSP plugin** for your language, and **`frontend-design`**
+for UI work — all in the built-in official marketplace. The community standout by adoption
+is **`superpowers`** (obra) — actively maintained, and a code audit this kit ran found it
+clean — but it is token-hungry and opinionated about workflow, with credible operator
+dissent: an optional methodology add-on, never a default. Lists like this one go stale;
+re-check adoption and read the `SKILL.md` yourself before trusting anything here.
+
 ## How to use it
 
 Two ways to hand the kit to a fresh session:
