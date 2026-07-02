@@ -211,6 +211,19 @@ in the open over the past year. Each of these is worth reading directly:
   request to finished change on a real, enormous codebase, with mechanical safety steps wired
   into the agent's loop.
   [stripe.dev](https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents)
+- **Anthropic — *Effective harnesses for long-running agents* (Nov 2025) and *Harness design
+  for long-running application development* (Mar 2026).** The engineering write-ups closest to
+  this kit's own subject, from the company that trains the model. Three findings this kit
+  leans on directly: an **initializer agent** that scaffolds the environment before any code
+  is written (their version of this kickoff ritual); a progress log, a one-feature-at-a-time
+  task list, and a session-start "bearings ritual" as the way work survives across context
+  windows (the kit's Part 3.14); and — after measuring that agents asked to grade their own
+  work "confidently praise it, even when mediocre" — a hard split between the agent that
+  builds and the agent that judges (Part 3.8). Also the sharpest one-line reason this kit
+  must keep re-auditing itself: *"Every component in a harness encodes an assumption about
+  what the model can't do on its own."*
+  [anthropic.com](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) ·
+  [anthropic.com](https://www.anthropic.com/engineering/harness-design-long-running-apps)
 - **Andrej Karpathy — the *LLM wiki* pattern (April 2026).** The direct inspiration for the
   kit's wiki. The insight: instead of having an AI re-read raw documents from scratch on every
   question, have it build and maintain a structured wiki of plain notes that *compounds* over
