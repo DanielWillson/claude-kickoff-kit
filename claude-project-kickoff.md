@@ -113,9 +113,9 @@ Once the sandbox is live, out-of-project writes fail. See **`CHEATSHEET.md`** fo
 ### 1.0 Choose the tier first (don't run the whole ritual on a throwaway)
 The full ritual suits a project you'll return to. Right-size it — the failure mode of
 over-setup is that it gets skipped *wholesale*, leaving you with none of it. Pick a tier
-deliberately. **Auto mode is the assumed default at every tier** (set `defaultMode:"auto"`
-per-machine in your USER `~/.claude/settings.json` — it's ignored from project/local — or via
-`Shift+Tab`), and the **per-repo floor is non-negotiable, even Lean**: one committed
+deliberately. **Auto mode is the assumed default at every tier** (user-level
+`defaultMode:"auto"` — placement and precedence live in Part 0 and the §1.3 note), and the
+**per-repo floor is non-negotiable, even Lean**: one committed
 `.claude/settings.json` (§1.3) — the project layer that rides on top of the machine-wide **hard floor**
 (managed settings + the OS sandbox) you install once in **Part 0**. It's what stops the agent doing something
 dumb or dangerous even in a throwaway you'll delete tomorrow — and it's cheap enough that skipping it is never
@@ -123,7 +123,7 @@ worth it:
 
 | Tier | When | Do |
 |---|---|---|
-| **Lean** | throwaway / spike / a few-day site | §1.1 `.gitignore` + §1.5 `CLAUDE.md` + the **per-repo floor** `.claude/settings.json` (§1.3: project denies/allows + the `ask` tier + the Stop hook) — committed, even here — on top of the **Part 0** machine hard floor. Skip only the wiki and the audit. The per-repo floor is cheap and universal precisely so a throwaway still can't be made to do something dangerous. |
+| **Lean** | throwaway / spike / a few-day site | §1.1 `.gitignore` + §1.5 `CLAUDE.md` + the **per-repo floor** `.claude/settings.json` (§1.3) — committed even here, on top of the **Part 0** machine hard floor. Skip only the wiki and the audit. |
 | **Standard** | anything you'll maintain or revisit | Lean **+** §1.6 `audit.sh` **+** §1.5b knowledge wiki. |
 | **Hardened** | real secrets / a database / a deploy pipeline | Standard **+** the *conditional* hardening **above** the floor (§1.3a): server-side branch protection on `main` + the secret add-ons — gated by the intake answers (real credential → secret add-ons; shared repo → server-side/CODEOWNERS). *(The machine-wide managed hard floor is **Part 0** — installed once for every project, not a Hardened-only step.)* |
 
@@ -141,20 +141,18 @@ load-bearing **safety** questions — each **defaults to the locked-down choice,
 safe**. Ask, then execute uninterrupted:
 1. **Stack** — language/runtime, framework, package manager, test runner, linter (drives §1.2 `.gitignore`, §1.3 allowlist, the audit TOOLING section).
 2. **Location** — local disk, or a mounted/network/synced volume (NAS/SMB/NFS, iCloud/Dropbox/Drive)? (drives §1.1a — venv/cache placement and change-detection).
-3. **Sensitive paths** — *"Name 2–3 files/dirs holding credentials or that must never be overwritten, even accidentally."* (one list, used in **both** `denyWrite` §1.3 **and** `CLAUDE.md` §1.5).
+3. **Sensitive paths** — *"Name 2–3 files/dirs holding credentials or that must never be overwritten, even accidentally."* (one list, used in `denyWrite` §1.3, `CLAUDE.md` §1.5, and the §1.2 `.gitignore`).
 4. **Daily commands** — *"The 5–6 shell commands you'll run daily — test runner, linter, package manager, script runner."* (the §1.3 allowlist; an incomplete one makes the agent prompt on every routine op).
 5. **Deploy target** — same as the dev machine, or different (server/NAS/container/cloud VM)? Any quirks (OS, package manager, permission model, paths)? Offline/air-gapped? (drives `CLAUDE.md` §1.5 and the §1.3a maturity call).
 6. **Who else commits** — will anything *other than this one agent* ever commit here: a different LLM/tool (Cursor, aider, Copilot), a human teammate, or CI? (drives §1.3b — the secret pre-commit hook + audit-in-CI, the *tool-agnostic* enforcers; if it's solo-one-agent, skip both and lean on `denyWrite` + the audit.)
 7. **Go-live boundary** — do you ship by `git commit` (push/merge), or by something else (tar/rsync, copying files, a deploy step, an auto-merge)? (drives *where* the doc-freshness check lives — wiki guide §4: a commit-time check can't guard a release that never goes through a commit.)
-8. **Does THIS project's own code read its `.env` at runtime?** **Default NO** — the floor already denies the agent reading `.env`/`secrets/**`/machine creds (§1.3), and that stands. Answer **YES** only if a script genuinely loads it: then carve a *scoped* Read-exception by **dropping just that one path** (`Read(./.env)`) from the §1.3 `deny` list — **not** by adding an `allow` (under deny-first an `allow` can't beat a same-path `deny`, so it would be inert). Machine creds (`~/.ssh`, `~/.aws`, `~/.npmrc`) and every other secret path **stay denied**. Skipping leaves the file denied — the safe state. (Reads, not just writes, are the leak: a secret the agent can read is already in the transcript/logs/a commit; an allowed domain is itself an exfil path — so the deny is on the *read*.)
-9. **Will this project ever hold a real credential or token** (an API key, an OAuth token, a deploy secret — anything live)? **Default NO.** If **YES**, it gates the §1.3a secret-hardening add-ons (`sandbox.credentials` file-denies + env-var scrub — *verify with `claude doctor`, needs a recent version*; least-privilege + single-host + rotate; route any scheduled credentialed job through a deterministic script, **not** Claude). For *shared-repo* hardening, **Q6 already gates it** (server-side branch protection + CODEOWNERS on enforcement paths) — don't re-answer it here.
+8. **Does THIS project's own code read its `.env` at runtime?** **Default NO** — the floor already denies secret reads (§1.3), and that stands. Answer **YES** only if a script genuinely loads it — then carve the scoped exception exactly as §1.3's "real floor" note prescribes (drop that one path from `deny`; never add an `allow`; machine creds stay denied). Skipping leaves the file denied — the safe state.
+9. **Will this project ever hold a real credential or token** (an API key, an OAuth token, a deploy secret — anything live)? **Default NO.** If **YES**, it gates the §1.3a secret-hardening add-ons (enumerated there). Shared-repo hardening is already gated by Q6 — don't re-answer it here.
 
 The sections below still explain *why* each answer matters at its point of use — this just
 front-loads the asking so setup doesn't stall on four separate questions. Don't defer the
 sensitive-paths answer: the window you'll regret skipping it is the first autonomous build run.
-(Even a **Lean** project carries the full per-repo floor, so Q3/Q4 feed real settings — Q3 the
-`denyWrite`/sensitive-path denies and `.gitignore` §1.2, Q4 the allowlist — at every tier, not
-just Standard+.)
+(Q3/Q4 feed real settings at every tier, Lean included.)
 
 Do these in order. Explain each step's *why* as you go (see Principle 3).
 
@@ -795,14 +793,12 @@ directive — *read the wiki first; project knowledge goes in the repo, never in
 memory* — **keep it**: an unread wiki is a write-only sink, and without the anti-memory line
 the next session defaults straight back to `~/.claude` and the wiki starves.
 
-**Make it self-improving, not just present** — this is the whole point. Wire *both* triggers
-(wiki guide §4 / §Part 3): the on-demand **`/wiki`** command (run at session end — the most
-reliable trigger, the agent knows exactly what it touched) **and** the **automatic reconcile
-pass** folded into any unattended run, plus its lint into the audit (`WIKI_LINT_CMD`, §1.6).
-The reconcile-against-code loop is what keeps the wiki true on its own; a wiki nobody
-maintains rots into confident lies, which is worse than none. Scale to the project — a
-throwaway doesn't need it; anything you'll return to does, and the incident/decision layer
-pays off fast.
+**Make it self-improving, not just present** — wire *both* triggers (wiki guide §4): the
+on-demand **`/wiki`** command at session end (the most reliable trigger — the agent knows
+what it touched) **and** the automatic reconcile pass in any unattended run, plus its lint
+into the audit (`WIKI_LINT_CMD`, §1.6). An unmaintained wiki rots into confident lies —
+worse than none. Scale to the project: a throwaway doesn't need one; anything you'll
+return to does.
 
 ### 1.5c Create the human-facing README (from `readme-template.md`)
 `CLAUDE.md` is the agent's contract and the wiki is the depth layer — both are written for
@@ -814,15 +810,12 @@ Keep the three from overlapping (the routing rule, Principle 2): **README** = hu
 **`CLAUDE.md`** = invariants/guardrails for the agent; the **wiki** = subsystem depth +
 history. Don't restate internals in the README, and never paste a secret into it.
 
-**Keep it self-improving** (the same reconcile-against-code discipline as the wiki). The
-template ships a one-line `<!-- reconcile-code: … -->` anchor — fill it with the files whose
-change would make the README wrong (entry points, the run script, the dependency manifest,
-the main API). Then the audit (§1.6) **warns when any of those files has a newer commit than
-the README**, and the wiki reconcile pass / `/wiki` treats the README as a first-class target
-— so the human doc can't silently drift from the code. The discipline that satisfies the
-check: update `README.md` in the *same commit* as the change that makes it stale (same rule as
-`CLAUDE.md`). A Lean project still gets the README; the anchor + audit check matter most once
-the project is one you'll return to.
+**Keep it self-improving:** fill the template's one-line `<!-- reconcile-code: … -->`
+anchor with the files whose change would make the README wrong (entry points, run script,
+dependency manifest, main API). The audit (§1.6) then warns when those files out-run the
+README, and the wiki reconcile pass / `/wiki` treats it as a first-class target. Satisfy
+the check the same way as `CLAUDE.md`: update the README in the *same commit* as the change
+that makes it stale.
 
 ### 1.6 Seed a code-health audit script
 Copy the companion **`claude-audit-base.sh`** to `<repo>/scripts/audit.sh`. It's a
@@ -851,8 +844,9 @@ persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.j
 `scripts/audit.sh`, `wiki/`, `README.md`, and the filled-in PRD. Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
 everything forward. The source kit lives **outside** the repo (e.g. `~/dev/claude-kickoff-kit/`)
-and is handed to a *new* project's kickoff, never to ongoing work on an existing one. (The
-audit warns if any kit source file gets committed — see its GIT HYGIENE section.)
+and is handed to a project's kickoff — or its one-time adoption
+(`claude-project-adoption.md`) — never to ongoing work. (The audit warns if any kit source
+file gets committed — see its GIT HYGIENE section.)
 
 ---
 
@@ -932,12 +926,10 @@ a static `docs/` tree can.
   messages are point-in-time and not browsable during active development.
 - Skipping documentation because the code "speaks for itself" — it speaks for
   what, not why, and future sessions start cold.
-- **Trapping project knowledge in a machine-local agent-memory store** (the harness's
-  `~/.claude` auto-memory) — and *worst of all* in **global / user memory**
-  (`~/.claude/CLAUDE.md`), where a project-specific fact leaks into every other project. None
-  of it is in the repo, shared, versioned, or reconciled. Keep project knowledge in the repo
-  (contract + wiki); memory holds *user-level* working style only, never how-the-project-works
-  facts. Default any project fact to the wiki.
+- **Trapping project knowledge in machine-local agent memory** — worst of all the global
+  layer, where a project fact leaks into every other project. Memory holds *user-level*
+  working style only; any project fact defaults to the wiki (the §1.5 skeleton carries the
+  full directive; the seam is named in the wiki guide §2.2).
 
 ### Principle 3 — Explain Reasoning While Building
 The harness already makes the agent say what it's doing — don't re-teach narration. This
@@ -970,14 +962,11 @@ Commit history is documentation of intent over time.
   pass. But on a genuinely solo project, "never commit to `main`, even solo" is a rule no
   mechanism here enforces and you won't follow; committing to `main` with the auto-commit
   net is fine — don't build branch-aware machinery to police a rule you've opted out of.
-- **Know the honest ceiling of automation.** No mechanism here *authors* a commit message
-  or a doc, or supplies *judgment* about when and what to commit. The audit and any git
-  hook only *enforce presence* (a doc exists; no secret staged); the reconcile pass only
-  *detects* drift; the LLM still writes the content and chooses the commit boundaries. And
-  true "commit the instant a file changes" is impossible in git (no commit-on-change
-  event), so auto-commit is tied to *this* editor/runtime — only the **rules** travel to
-  another tool, never the *act* of committing. Don't over-trust any one mechanism to
-  "handle committing"; it handles *catching what you missed*.
+- **Know the honest ceiling of automation.** Mechanisms here *enforce presence* (a doc
+  exists; no secret staged) and *detect drift*; none authors a message or supplies
+  judgment about when and what to commit. And auto-commit is runtime-coupled (git has no
+  commit-on-change event), so only the **rules** travel to another tool, never the act.
+  A mechanism handles *catching what you missed*, not committing.
 - **Push is outward-facing; treat it as a gate.** A commit is local and reversible;
   a push is not. Confirm explicitly before pushing; never let it happen as a side
   effect of an autonomous build run. **Encode the gate as a rule, not a sentence:** a
