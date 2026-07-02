@@ -195,6 +195,36 @@ plans.
   sandbox is the wall; block-and-pause rules are mechanical backstops; the agent's own judgment
   is a good guess; plain prose is not a control at all.)
 
+## What scales with the model, and what doesn't
+
+The kit claims the durable harness "outlasts a model upgrade." Be precise about *how*,
+because its parts age differently — as Anthropic's harness team puts it, *"every component
+in a harness encodes an assumption about what the model can't do on its own."* Three shelf
+lives:
+
+- **Invariant — keep forever.** Anything whose force comes from a property of the world,
+  not from the model's judgment: the security floor (prose can't bind an agent that can be
+  manipulated or simply wrong — truer as autonomy grows, not less); reconcile-against-code
+  (documents rot no matter who reads them); knowledge placement (a fact not in context
+  doesn't exist, at any level of intelligence); independent verification (a self-report is
+  a claim from any model — errors inside one context are correlated); commit granularity
+  (human review bandwidth doesn't scale with the model).
+- **Depreciating — re-audit at every model upgrade.** Prescriptive step-lists, how-to-think
+  coaching, "don't forget to X" reminders: each exists because some model once needed it,
+  and each turns into dead weight — or into actively wrong advice — once default behavior
+  catches up. The per-line test: *would a fresh session of the current model get this wrong
+  without the line?* If not, cut it. (This kit runs that audit on itself: the July 2026
+  pass cut its scout-then-fan-out coaching and *reversed* its own stale advice against
+  structured agent output.)
+- **Appreciating — worth more as the model improves.** Delegation structure (a stronger
+  orchestrator makes tiering and fan-out more valuable, not less) and the ratchet itself
+  (every mistake becomes a permanent check): a more capable model converts both into more
+  leverage per unit of setup.
+
+The habit this section encodes: **a model upgrade is a scheduled maintenance event for the
+harness**, not just a version bump. Re-run the per-line test on `CLAUDE.md` and on the
+kit's own guidance; leave the invariants alone.
+
 ## Where these ideas come from
 
 The kit didn't invent this approach. It assembles a set of ideas the field has been working out
