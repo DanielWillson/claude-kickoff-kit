@@ -924,10 +924,12 @@ a static `docs/` tree can.
   facts. Default any project fact to the wiki.
 
 ### Principle 3 — Explain Reasoning While Building
-Narrate the *how* and *why* of non-trivial choices so the user learns.
-- Before/while making a meaningful decision, say what you're doing, why, and the
-  trade-off — tie it back to these principles where relevant.
-- Teaching tone: conversational and concise. Don't narrate trivial mechanics.
+The harness already makes the agent say what it's doing — don't re-teach narration. This
+principle is about *depth*: when a choice carries a real trade-off or ties back to these
+principles, name it, so the user learns the *why*, not just the changelog. Teaching tone,
+conversational and concise; never narrate trivial mechanics. (This asks for the rationale
+behind decisions in ordinary output — it does not ask the agent to reproduce hidden
+internal reasoning, which is a different thing and not wanted.)
 
 ### Principle 4 — Commits: small logical units + detailed messages
 Commit history is documentation of intent over time.
