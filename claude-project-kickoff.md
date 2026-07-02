@@ -1116,10 +1116,8 @@ components concurrently, multi-dimension code review before milestones, adversar
 bug-hunting, broad research, and **audience/persona review** (N agents each adopting a
 distinct target-user lens — a skeptical first-timer, a power user, a crawler/LLM reading
 cold — critiquing the same output, then synthesizing ranked fixes; it catches what one
-reviewer's single perspective misses, for any user-facing output). **Do not** use them for
-inherently serial one-liners
-like committing — that's overhead with no benefit. Routine commits belong to the
-Stop hook + hand-commits, not to an agent fleet.
+reviewer's single perspective misses, for any user-facing output). Never for inherently
+serial work — Part 3 carries the full playbook.
 
 ---
 
@@ -1135,9 +1133,23 @@ small commits after the fact** — not approving each step (that fights autonomy
 not a sentence in chat (a non-control lost on compaction, Principle 4). *Execution* is hands-off
 auto mode plus **adversarial-agent** review, not a human pausing the run.
 
-1. **Scout inline, then fan out.** Discover the work-list yourself with cheap
-   reads/greps before launching parallel agents. You usually don't know the shape
-   before the task — only before the *orchestration step*.
+**Before designing any run: probe the harness — don't assume it.** Multi-agent features vary
+by version, provider, and plan, and change monthly. Reliably universal (verified mid-2026):
+subagents (own context window; per-agent **model** choice; background execution; worktree
+isolation), first-class git worktrees, hooks, plan mode, headless runs with schema-typed JSON
+output, automatic checkpointing and compaction. Typically preview/experimental — never
+load-bearing without checking: agent teams (token-hungry, and teammates share one tree — no
+worktree isolation), background-session dashboards, model-spawned forks. Enumerate what *this*
+environment actually exposes (the session's own tool list, `/status`, the docs for the
+*installed* version) the same way Principle 8 verifies an API against the installed
+dependency — a playbook written from memory or a blog post stalls at 2am on a feature you
+don't have.
+
+1. **Fan out only for genuine fan-out — and scout inline first.** Parallel agents earn
+   their overhead on independent components, multi-dimension review, adversarial
+   bug-hunting, broad research, and persona panels (Part 2) — never on inherently serial
+   work. And discover the work-list yourself with cheap reads/greps before launching:
+   you don't need the shape of the *task* up front, only of the *orchestration step*.
 2. **Build the foundation inline — never delegate the trunk.** Schema, shared
    types, the cross-cutting invariants, the repository/data layer — and, for a UI,
    the **design-token/theme layer + base primitives** (Principle 5): write these
@@ -1158,9 +1170,15 @@ auto mode plus **adversarial-agent** review, not a human pausing the run.
    known-relevant context up front. They compose. External intel a run needs — ticket text, a
    design doc, an API reference, MCP-tool output — belongs *in* the frozen snapshot, fetched
    once, not re-derived by every subagent.
-4. **Partition parallel agents by directory, not worktrees.** Disjoint file
-   ownership = no merge conflicts and no worktree overhead. Give every shared file
-   exactly one owner (e.g. the API router belongs to the API agent alone).
+4. **Give every file exactly one writer: partition by directory when you can, isolate in
+   worktrees when you can't.** Disjoint ownership is still the cheapest correct scheme —
+   no merge step at all (e.g. the API router belongs to the API agent alone). When
+   ownership can't be made disjoint, use the harness's native per-agent worktree
+   isolation (first-class now: each agent gets its own checkout under
+   `.claude/worktrees/`, auto-cleaned if untouched — and in-repo, so it satisfies the
+   sandbox write boundary item 11 explains). Worktrees buy true write isolation at a real
+   price: the main session must integrate N branches afterward. What is never fine is two
+   writers in one tree.
 5. **Sequence real dependencies; parallelize only the genuinely independent.**
    Foundation → one parallel wave of disjoint work → integration → verify. Don't
    fake parallelism across a dependency; don't serialize work that's independent.
@@ -1201,6 +1219,11 @@ auto mode plus **adversarial-agent** review, not a human pausing the run.
 8. **Don't trust a subagent's self-report.** When the run completes, re-run the
    DoD commands yourself and *read the test the agent wrote* — a trivially-passing
    test reports green too. A subagent's "it passed" is a claim, not proof.
+   Structure the distrust: **separate the doer from the judge.** Have a *fresh-context*
+   agent (or the morning-after you) evaluate against the DoD — never the agent that
+   built it. Asked to grade their own work, agents confidently praise it; Anthropic's
+   long-running-agent harness work measured exactly this and split into generator and
+   evaluator roles because of it.
    And **green build+tests ≠ it renders**: when the UI matters, actually run the
    app and look. Keep a small **dev-seed script** that loads demo data so the app
    has something to show; then either hand the user exact run steps, or (with
@@ -1224,10 +1247,15 @@ auto mode plus **adversarial-agent** review, not a human pausing the run.
 10. **Launch on a fresh quota window.** A from-scratch multi-agent build is
     token-heavy. Starting it on a near-exhausted usage window risks a mid-run
     stall that leaves a partial, inconsistent tree. If a reset is near, wait for
-    it.
-11. **The main session commits; agents don't — and isolate any *unattended* committer.**
-    Parallel agents committing race on the git index. Have agents write only; the main
-    session hand-commits per area afterward (the Stop hook is the safety net). And run any
+    it. (The baseline harness has **no per-run token-budget primitive** — the levers
+    are per-agent turn caps, effort levels, and the quota window itself. If your
+    environment exposes richer budget controls, the probe above found them.)
+11. **One committer per tree — in a shared tree that's the main session; and isolate any
+    *unattended* committer.** Parallel agents committing race on the git index. In a
+    shared tree, agents write only; the main session hand-commits per area afterward (the
+    Stop hook is the safety net). An agent in its **own worktree** may commit freely —
+    that's part of what isolation buys — but integration still lands through the main
+    session. And run any
     *unattended* committer (an overnight build, the scheduled wiki reconcile) in its **own
     worktree, never a shared tree** — running it in the same clone as an interactive session
     can sweep that session's half-done work into a commit or race the index. The unattended
@@ -1237,17 +1265,37 @@ auto mode plus **adversarial-agent** review, not a human pausing the run.
     sibling path.** Under the floor's `sandbox.allowUnsandboxedCommands: false`, a worktree
     added *outside* the repo (`git worktree add ../topic`) writes outside the sandbox's
     filesystem boundary and **hard-fails** — the sandbox refuses the out-of-tree write. Put
-    the worktree under the repo (e.g. `./.worktrees/<topic>`) and gitignore that path, so the
+    the worktree under the repo (e.g. `./.worktrees/<topic>` — the native mechanism's
+    `.claude/worktrees/` already does exactly this) and gitignore that path, so the
     isolated tree still lives inside the write boundary.
-12. **Prefer free-text agent reports over forced output schemas for build agents,
-    and verify on disk regardless.** A schema-validation miss on an agent's final
-    call can drop its *entire reported result* even when its file writes
-    succeeded — so a "failed" agent may have actually done the work, and a
-    "succeeded" one may have written nothing. Don't infer what landed from the
-    pass/fail of the report step; `ls`/grep the disk and re-run the DoD. (Hard-won:
-    in one run, 3 build agents "failed" their structured-output call but 2 had
-    written all their files fine; the 3rd genuinely hadn't — only disk inspection
-    told them apart.)
+12. **Schema-type the *verdicts*; verify the *work* on disk.** Structured agent output
+    is now validated at the tool-call layer with retry-on-mismatch (and headless runs
+    take a JSON schema), so use schemas freely for reports, verdicts, and work-lists —
+    the old failure mode, where one malformed final message silently dropped an agent's
+    entire result, is fixed in current harnesses. What hasn't changed: the report is a
+    *claim*. A reported success can coexist with nothing on disk, and a reported failure
+    with finished work (hard-won: 3 build agents "failed" their report step; 2 had
+    written every file fine, the 3rd had written nothing — only disk inspection told
+    them apart). Never infer what landed from the report; `ls`/grep the disk and re-run
+    the DoD.
+13. **Tier the models: spend top-tier context on judgment, not grunt work.** Per-subagent
+    model choice is a stable feature — route mechanical fan-out (inventory, broad search,
+    rote edits, log summarizing) to a fast/cheap tier; keep architecture, integration,
+    and final verification at the strongest tier. Two corollaries. The orchestrator's
+    own context is the run's scarcest resource — delegate anything that would flood it
+    (long reads, log spelunking) to a subagent that returns a conclusion, not a
+    transcript. And capability claims are per-task, not per-reputation: when a cheap
+    tier verifiably handles a lane (its DoD passes), the expensive tier is waste there.
+14. **For work that outlives one context window, leave a trail a cold session can pick
+    up.** Anthropic's long-running-agent harness converged on the same shape as this
+    kit's wiki discipline, plus three specifics worth copying for any multi-session
+    run: an append-only **progress log** (what happened, what's next), a
+    **machine-readable task list** whose only editable field is pass/fail status (scope
+    discipline by structure — one feature at a time), and a fixed **bearings ritual** at
+    session start — read the git log, the progress log, the task list, *then* pick up
+    the highest-priority item. Compaction is automatic but lossy: conversation-only
+    instructions can vanish while files reload from disk — one more reason every
+    non-negotiable lives in a file or a rule, never in chat (Principle 4).
 
 ---
 
