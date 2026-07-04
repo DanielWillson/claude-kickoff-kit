@@ -17,6 +17,7 @@
 #
 # Run:   bash scripts/audit.sh        (some sandboxes deny `chmod +x`; bash works)
 # Skip a slow step:  AUDIT_SKIP_BUILD=1 bash scripts/audit.sh
+#   (also AUDIT_SKIP_SCA=1 — the network-bound dependency-vulnerability scan, §DEPENDENCY VULNERABILITIES)
 # Exit:  0 = clean, 1 = one or more WARN/FAIL.
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
@@ -207,6 +208,38 @@ secrets=$(grep -rniE '(secret|password|api[_-]?key|access_token)\s*[:=]\s*["'\''
           | grep -vE '= *""|= *None|= *null|getenv|environ|process\.env|^\s*[^:]+:[0-9]+:\s*(#|//)' || true)
 [ -n "$secrets" ] && { warn "possible hardcoded secret(s) — verify these are not real"; echo "$secrets" | sed 's/^/       /'; } \
                   || pass "no obvious hardcoded secrets"
+
+# Entropy pass — the grep above is PREFIX-BOUND: it only fires on a secret wearing a
+# `key = "..."` label. A BARE credential — a token pasted with no assignment — sails past
+# it. This second pass flags long, high-entropy strings (the SHAPE of a real credential:
+# base64/hex, above an entropy threshold) even when unlabeled. Thresholds follow
+# truffleHog's defaults — hex ≥ 3.0, base64 ≥ 4.5 bits/char — computed in awk (a standard
+# tool; no new runtime dep for the audit). It is a HEURISTIC, so WARN not FAIL, and it only
+# earns its keep behind an allowlist: git SHAs, UUIDs, and example/placeholder tokens are all
+# high-entropy but NOT secrets, and lockfiles are excluded outright (they are full of
+# legitimate integrity hashes). Same candor as the grep-limits note in INVARIANTS: entropy is
+# a shape, not a meaning — a low-entropy secret (a dictionary-word passphrase) is invisible to
+# it, and a flagged string may be an innocent hash. Verify, then allowlist the false positive
+# (extend the exclusion grep below, or annotate the line). A min length is enforced twice: the
+# {20,} in the token grep, and n<20 skip in awk — and the base64 4.5 threshold is itself
+# unreachable below ~23 chars, so short tokens self-filter.
+entropy_hits=$(grep -rnoaE --exclude-dir='.git' --exclude-dir='node_modules' \
+                   --exclude-dir='dist' --exclude-dir='build' \
+                   --exclude='*.min.*' --exclude='*.map' \
+                   --exclude='*.lock' --exclude='*-lock.json' --exclude='*.sum' \
+                   '[A-Za-z0-9+/=_-]{20,}' "$SRC" "$ROOT/README.md" 2>/dev/null \
+               | grep -viE ':[0-9a-f]{40}$|:[0-9a-f]{64}$|:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|example|changeme|placeholder|redacted|dummy|sample|xxxx+|your[_-]?(key|token|secret|pass)' \
+               | awk -F: '
+                   { tok=$NF; loc=substr($0,1,length($0)-length(tok)-1); n=length(tok)
+                     if (n<20) next
+                     for (k in f) delete f[k]
+                     for (i=1;i<=n;i++){ c=substr(tok,i,1); f[c]++ }
+                     H=0; for (c in f){ p=f[c]/n; H-=p*(log(p)/log(2)) }
+                     thresh=(tok ~ /^[0-9a-f]+$/ ? 3.0 : 4.5)
+                     if (H>=thresh) printf "%s  (entropy %.1f)  %s\n", loc, H, tok }' \
+               | head -20 || true)
+[ -n "$entropy_hits" ] && { warn "high-entropy string(s) — possible UNLABELED secret (heuristic; verify, then allowlist any git-SHA/UUID/placeholder false positive)"; echo "$entropy_hits" | sed 's/^/       /'; } \
+                       || pass "no high-entropy strings resembling an unlabeled secret"
 
 # Path traversal — untrusted input (a request/upload filename) used in a filesystem
 # path without basename-sanitizing. Heuristic + framework-specific; annotate a
@@ -421,6 +454,111 @@ else
     # TODO: enable an ecosystem-specific unpinned-version check, e.g.
     #   npm:  grep -E '"[^"]+": *"[\^~]'   package.json     → caret/tilde ranges, not pins
     #   pip:  grep -vE '==|^\s*(#|$)'      requirements.txt → lines without == are unpinned
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════
+section "DEPENDENCY VULNERABILITIES (known CVEs — kickoff §1.6)"
+# The DEPENDENCIES section above nudges toward FEWER + PINNED deps. This is the other
+# half of the same coin: a dependency you already use, correctly pinned, that has SINCE
+# had a security hole PUBLISHED against it — the one a secret scan and a pin check both
+# miss. We don't ship a CVE database or parse a tool's JSON into a bespoke report; we
+# DETECT the ecosystem from its LOCKFILE (the resolved dependency tree a scanner needs —
+# NOT the manifest the section above keys on), shell out to that ecosystem's OWN scanner,
+# and let the tool's own severity gate decide. Gated at high/critical only, and a WARN not
+# a FAIL — an upstream CVE the project hasn't patched yet shouldn't red the whole audit
+# (tier-aware, like the evals/README presence checks; a Hardened-tier project may promote
+# it to FAIL by swapping `warn` for `fail` in sca_scan).
+#
+# SKIPPED ≠ PASS (the load-bearing rule). A scan that COULD NOT run — no lockfile, scanner
+# not installed, or no network to the advisory DB — prints a visible SKIPPED (the neutral
+# `·` bullet: no PASS, no FAIL, no exit-code change) and moves on. Never a silent green,
+# never a spurious FAIL. Same candor as the grep-limits note in INVARIANTS: this safeguard
+# needs the ecosystem's own tool AND registry access — its absence is a STATED GAP, not a
+# green light. It's also network-bound and slow, so it runs after `AUDIT_SKIP_SCA` is
+# checked; set AUDIT_SKIP_SCA=1 to skip it for a fast local pass.
+#
+# Per-ecosystem caveats (honest limits): a few scanners have no clean high-only flag — or
+# their invocation is version-specific (yarn CLASSIC `yarn audit` vs BERRY `yarn npm
+# audit`; yarn classic's exit code is a severity BITMASK that ignores `--level`). Where
+# that's so we WARN on ANY advisory (a conservative superset of high/critical) and say so.
+# Tune each command to your toolchain; the SKIPPED-loud paths keep a mis-tuned command from
+# ever reading as a false green.
+# ═══════════════════════════════════════════════════════════════════════════
+# SKIPPED ≠ PASS lives in this classifier. `command -v` gates 'scanner not installed'; exit 0
+# is the ONLY pass; a NON-ZERO exit is split two ways — a network / advisory-DB failure is a
+# loud SKIP (the scan could not run), anything else is the tool's own severity gate firing →
+# WARN. The split is deliberately ASYMMETRIC: unknown-nonzero defaults to WARN, never SKIP,
+# so a real finding can never hide behind a false "offline". The network regex stays TIGHT to
+# infra-failure signatures — DNS, connection, and registry/advisory-DB HTTP errors (ENOTFOUND,
+# getaddrinfo, "bad gateway", "audit endpoint returned an error", "couldn't fetch advisory
+# database", …) — none of which appear in a scanner's FINDINGS report, so a real vuln can't be
+# mistaken for "offline". Validated against real npm findings-vs-offline output; err toward a
+# loud WARN over a quiet SKIP that swallows a vuln.
+sca_scan() {  # sca_scan "<label>" "<scanner-binary>" "<command>"
+    local label="$1" bin="$2" cmd="$3"
+    local net_re='ENOTFOUND|EAI_AGAIN|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|getaddrinfo|no such host|name or service not known|temporary failure in name resolution|could not resolve host|network request .*fail|max retries exceeded|failed to establish a new connection|connection (refused|timed out|reset)|dial tcp|unable to (connect|reach)|audit endpoint returned an error|endpoint returned an error|bad gateway|gateway time-?out|service unavailable|internal server error|too many requests|(error|unable|failed|could ?n.?t).{0,24}(fetch|updat|download|clon|refresh|reach).{0,24}(advisor|database|registr|index|git repo)'
+    if ! command -v "$bin" >/dev/null 2>&1; then
+        echo "  ·  $label — SKIPPED (scanner '$bin' not installed): a stated gap, not a pass; install it + re-run"
+        return
+    fi
+    if eval "$cmd" >"$TMP/audit_sca.txt" 2>&1; then
+        pass "$label — no high/critical advisories"
+    elif grep -qiE "$net_re" "$TMP/audit_sca.txt"; then
+        echo "  ·  $label — SKIPPED (offline / advisory DB unreachable): a stated gap, not a pass"
+    else
+        warn "$label — high/critical advisory reported; patch or upgrade the dep (a Hardened-tier project may promote this to FAIL)"
+        sed 's/^/       /' "$TMP/audit_sca.txt" | tail -15
+    fi
+}
+
+if [ -n "${AUDIT_SKIP_SCA:-}" ]; then
+    echo "  ·  SKIPPED (AUDIT_SKIP_SCA set) — dependency-vulnerability scan disabled for this run"
+else
+    sca_ran=0
+    # Detect EACH lockfile present (a polyglot repo may carry several — no `break`) and run
+    # that ecosystem's scanner. Keyed on the LOCKFILE, not the manifest: a scanner needs the
+    # resolved dependency tree. Paths are $ROOT-level by the template convention; adapt if a
+    # lockfile lives in a subdir.
+    if [ -f "$ROOT/package-lock.json" ]; then sca_ran=1
+        sca_scan "npm audit (package-lock.json)" npm '(cd "$ROOT" && npm audit --audit-level=high)'
+    fi
+    if [ -f "$ROOT/yarn.lock" ]; then sca_ran=1
+        # classic: `yarn audit --level high` (exit code ignores --level → may WARN on sub-high);
+        # berry: swap to `yarn npm audit --severity high`.
+        sca_scan "yarn audit (yarn.lock)" yarn '(cd "$ROOT" && yarn audit --level high)'
+    fi
+    if [ -f "$ROOT/pnpm-lock.yaml" ]; then sca_ran=1
+        sca_scan "pnpm audit (pnpm-lock.yaml)" pnpm '(cd "$ROOT" && pnpm audit --audit-level high)'
+    fi
+    if [ -f "$ROOT/poetry.lock" ] || [ -f "$ROOT/Pipfile.lock" ] || [ -f "$ROOT/requirements.txt" ]; then sca_ran=1
+        # pip-audit has no severity flag → WARNs on ANY advisory (conservative superset of high/critical).
+        if [ -f "$ROOT/requirements.txt" ]; then
+            sca_scan "pip-audit (requirements.txt)" pip-audit '(cd "$ROOT" && pip-audit -r requirements.txt)'
+        else
+            # HONEST LIMIT: with only poetry.lock / Pipfile.lock, bare pip-audit scans the ACTIVE
+            # ENV, not the lockfile — a clean env then PASSes without ever reading the lock. That's a
+            # weaker PASS than a lockfile scan. For a true lockfile scan, export it first, e.g.
+            #   poetry export -f requirements.txt | pip-audit -r /dev/stdin   (or `pipenv requirements`).
+            sca_scan "pip-audit (project env — NOT the lockfile; see note)" pip-audit '(cd "$ROOT" && pip-audit)'
+        fi
+    fi
+    if [ -f "$ROOT/Cargo.lock" ]; then sca_ran=1
+        # cargo-audit installs the `cargo-audit` binary (run as `cargo audit`); RustSec advisories are the gate.
+        sca_scan "cargo audit (Cargo.lock)" cargo-audit '(cd "$ROOT" && cargo audit)'
+    fi
+    if [ -f "$ROOT/go.sum" ]; then sca_ran=1
+        # govulncheck reports only REACHABLE vulns (call-graph aware) → low false-positive.
+        sca_scan "govulncheck (go.sum)" govulncheck '(cd "$ROOT" && govulncheck ./...)'
+    fi
+    if [ -f "$ROOT/Gemfile.lock" ]; then sca_ran=1
+        # needs a one-time `bundler-audit update` to fetch the ruby-advisory-db; a never-fetched db → SKIP.
+        sca_scan "bundler-audit (Gemfile.lock)" bundler-audit '(cd "$ROOT" && bundler-audit check)'
+    fi
+    if [ -f "$ROOT/composer.lock" ]; then sca_ran=1
+        # composer audit (2.4+) WARNs on any advisory; no clean high-only filter.
+        sca_scan "composer audit (composer.lock)" composer '(cd "$ROOT" && composer audit)'
+    fi
+    [ "$sca_ran" -eq 0 ] && echo "  ·  SKIPPED (no lockfile found) — nothing to scan; not a pass (add a lockfile to enable)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
