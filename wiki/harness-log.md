@@ -57,6 +57,61 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-04 — Name the reviewer (the human review/steer dimension)
+
+- **Change.** Made the kit's implicit "a human reviews the agent's work" assumption **explicit**
+  (ROADMAP item **V**). Three touches, all in `claude-project-kickoff.md`: a greppable **`## Review`
+  block** seeded inside the §1.5 `CLAUDE.md` skeleton (solo one-liner default `reviewer = me; I
+  verify against scripts/audit.sh + the spec, in small batches`, with `<who reviews>` /
+  `<source(s) of truth — audit / spec / wiki, never "looks right">` placeholders, and a note that a
+  team's role-specific enablement lives in the project's docs, **not** the kit); a **teaching
+  paragraph** after the §1.5 lean-budget rule naming *why* to name the reviewer and the four
+  capacities the harness assumes (write a clear spec, define "done," verify against a named source
+  of truth, work in small batches); and one **Quick-Checklist** line. Intake (§1.0a) deliberately
+  **not** touched.
+- **Rationale (the bet).** The kit leans everywhere on *"verification, not generation, is the
+  scarce resource"* but never named *who* verifies or *against what* — leaving the review-capacity
+  bottleneck implicit. Seeding a **stable `## Review` anchor** into every generated `CLAUDE.md`
+  makes it concrete and gives item **O**'s future conformance check something to grep. The bet: one
+  always-loaded line naming reviewer + source of truth + small-batch discipline turns "a human
+  steers" from a slogan into a checkable contract, at negligible budget cost.
+- **What it replaced.** Net-new; nothing removed. It is the *actionable counterpart* to claims the
+  kit already makes — **Principle 4** ("small commits are the review surface"), **§1.6a**'s Rule of
+  Five (review rounds per feature), and the README's METR "verification is the bottleneck" citation
+  + "steer = review in small batches" line — which the addition **references rather than restates**.
+- **Shelf-life/risk class.** **Invariant** — its force comes from a property of the world (human
+  review bandwidth doesn't scale with the model; a self-report is a claim from any model), the same
+  basis under which the README files commit-granularity and independent-verification as *keep
+  forever*. Zero blast-radius: documentation only, a template with placeholders — never a filled-in
+  instance.
+- **Related ROADMAP item.** **V** (name the reviewer). Feeds **O** (the conformance script greps the
+  *project's* `CLAUDE.md` for a named reviewer — this seed is the anchor that check looks for); the
+  higher-value of the two cross-check newcomers alongside **R** (action-risk tiers).
+- **Commit.** `7032a86` (the three-touch change) + this log entry.
+- **Design choices worth pointing at.**
+  - The `## Review` heading is **greppable and lives *inside* the §1.5 fence** — that is the whole
+    seed mechanism: it must be copied into the project's real `CLAUDE.md` for item O to find it.
+    `grep -n "^## Review" claude-project-kickoff.md` returns exactly one line (the seed); item O
+    separately greps the *generated* project `CLAUDE.md` — two files, two greps, two purposes.
+  - **Intake omitted on the merits, not to dodge the "nine questions" ripple.** §1.0a questions earn
+    their slot by driving settings / multiple setup steps (Stack → gitignore/allowlist/audit; Q6 →
+    §1.3b hook + CI); reviewer identity drives none — its durable home is the always-loaded `##
+    Review` block, which already defaults to solo. A fourth intake touch is unearned weight against
+    "complexity is earned"; extending Q6 (a *commit-access / security* question) would also risk
+    conflating commit access with review capacity (orthogonal). So neither "nine"-reference
+    (`SKILL.md:30`, kickoff §1.0a) changed.
+  - **Placeholder discipline:** the one-liner is the shown *default*; the angle-bracket tokens keep
+    the block a template, not a filled-in instance (the kit's forbidden-list rule about starter
+    templates).
+- **Signal to watch.** When item **O** ships: does the `^## Review` seed reliably survive into
+  generated `CLAUDE.md` files, giving O's grep a stable anchor? Do real projects fill the line with
+  a *named source of truth* (audit / spec / wiki), or does it decay into "looks right" HR-speak —
+  the exact failure mode this addition was built to prevent? If the latter, the durable fix is a
+  sharper conformance check on the *content* of the line, not more prose.
+- **Retrospect.** *(open — revisit when item O's conformance check lands.)*
+
+---
+
 ## 2026-07-04 — ROI instrumentation on the ratchet (+ this journal's relocation)
 
 - **Change.** Built the harness ROI gauge (ROADMAP item **B**) and its change-log companion
