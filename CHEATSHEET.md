@@ -8,8 +8,8 @@ Verified against Claude Code 2.1.x docs (plus noted live checks). The one-line m
 *New here? Read the narrative field guide [`securing-claude-sessions.md`](securing-claude-sessions.md) first to
 build the mental model — this sheet is the terse reference behind it.*
 
-## The layers (weakest → strongest)
-A control is only as strong as the agent's inability to reach it.
+## The levels (weakest → strongest)
+The same five-level ladder, split finer. A control is only as strong as the agent's inability to reach it.
 1. **`CLAUDE.md` / `autoMode` prose** — advisory; the classifier reads it, but it's probabilistic and prompt-injectable. **Never a boundary.**
 2. **Committed project `.claude/settings.json`** — travels with the repo, but **agent-editable** (and changes on `git pull`) → soft.
 3. **`.claude/settings.local.json`** — per-machine, gitignored → soft.

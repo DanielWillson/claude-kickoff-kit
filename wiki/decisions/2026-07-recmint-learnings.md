@@ -6,7 +6,7 @@ updated: 2026-07-03
 verified: 2026-07-03
 code: [../../llm-wiki-kickoff.md, ../../claude-project-kickoff.md, ../../claude-project-adoption.md]
 related: ["[[2026-07-audit-pass]]", "[[SCHEMA]]"]
-summary: "What the kit learned from the recmint-wiki production instance: five verified edits (freshness clock, conflicts register, class-level ratchet, schema-anchoring, fail-loud validator) — APPLIED to the shipped guides 2026-07-03; this page is the reasoning record"
+summary: "What the kit learned from the recmint-wiki production instance: five verified edits (freshness clock, conflicts register, class-level safety net, schema-anchoring, fail-loud validator) — APPLIED to the shipped guides 2026-07-03; this page is the reasoning record"
 ---
 
 # Learnings from recmint-wiki → the Kickoff Kit
@@ -250,19 +250,19 @@ for this only once the corpus has outgrown "navigable by eye" — never at kicko
 
 ---
 
-## Edit 3 — run the ratchet at the *class* level, not just per-incident · **MEDIUM-HIGH**
+## Edit 3 — run the safety net at the *class* level, not just per-incident · **MEDIUM-HIGH**
 
-*Verdict: downgrade — keep the cheap meta-ratchet half; demote the measurement/graduation half
+*Verdict: downgrade — keep the cheap meta-safety-net half; demote the measurement/graduation half
 to a scale-gated note.*
 
-**Gap (both sides).** Kit: the ratchet fires strictly per-incident — "Every time you fix a bug,
+**Gap (both sides).** Kit: the safety net fires strictly per-incident — "Every time you fix a bug,
 add a regression guard … the single highest-leverage habit" (`claude-project-kickoff.md:828-829`)
 — and never steps back to notice that several corrections share a root class. Autonomy is chosen
 from intake *posture* (tiers at lines 124-132; §1.3a/b add hardening when real creds / a second
 committer appear), **never from a measured track record.** recmint supplies both halves: a
 scheduled `wiki-retro` that mines the aggregate error record for recurring *classes* and
-proposes one durable guard each, and a review-outcome ledger that lets autonomy be *earned* from
-correction rates. The verifier's call: the meta-ratchet half is a lean, generalizable completion
+proposes one durable safeguard each, and a review-outcome ledger that lets autonomy be *earned* from
+correction rates. The verifier's call: the meta-safety-net half is a lean, generalizable completion
 of the kit's own highest-leverage habit (**keep**); the ledger-and-graduation half is a real
 subsystem that only pays off at team/CI PR volume, high-ceremony for the kit's solo/Lean-tier
 median user (**demote to a gated note**).
@@ -270,14 +270,14 @@ median user (**demote to a gated note**).
 ### 3a. The keeper — append to `claude-project-kickoff.md` §1.6, right after line 829
 
 ~~~~~~text
-- **Run the ratchet at the *class* level too, on a cadence.** The per-bug guard above fixes one
+- **Run the safety net at the *class* level too, on a cadence.** The per-bug safeguard above fixes one
   instance. Periodically — say every ~5 fixes, or at a regular review pass — **step back over
   the bugs you've fixed and the corrections a reviewer made** and ask whether several share a
   *root class*. If three separate patches all trace to "an agent trusted a doc that had gone
-  stale," the durable fix isn't a fourth patch — it's **one** guard that kills the class (a
+  stale," the durable fix isn't a fourth patch — it's **one** safeguard that kills the class (a
   broader audit grep, a `CLAUDE.md` clarification, a reconcile rule). Propose it; never
-  auto-apply. Same ratchet, aimed at the *pattern* instead of the *instance* — it's where a pile
-  of one-off guards becomes a structural defense.
+  auto-apply. Same safety net, aimed at the *pattern* instead of the *instance* — it's where a pile
+  of one-off safeguards becomes a structural defense.
 ~~~~~~
 
 ### 3b. The demoted half — a scale-gated aside near the tier table / §1.3a (priority LOW)
@@ -396,7 +396,7 @@ Each was independent; all applied in one pass. Locations are by section (line nu
       scale-gated corpus scan (2c) appended to §2.9. Cross-refs added in
       `claude-project-kickoff.md` (Principle 2 routing rule) and `claude-project-adoption.md`
       (the "contradiction you can't adjudicate" interview line).
-- [x] **Edit 3** — class-level ratchet. `claude-project-kickoff.md` §1.6 (3a); the scale-gated
+- [x] **Edit 3** — class-level safety net. `claude-project-kickoff.md` §1.6 (3a); the scale-gated
       earned-autonomy aside added after the tier table (3b).
 - [x] **Edit 4** — schema-anchoring note. `llm-wiki-kickoff.md` §2.1 (the extracted-schema note,
       just above §2.1a).

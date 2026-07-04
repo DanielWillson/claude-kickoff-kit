@@ -90,33 +90,33 @@ daily agent user.
 Borrowing Böckeler's vocabulary again, the durable harness is built from two kinds of help, both
 aimed at the same goal: making the agent's output trustworthy.
 
-- **Guides** point the agent in the right direction *before* it starts working. These are
+- **Directives** point the agent in the right direction *before* it starts working. These are
   things like the always-on instruction file, the product spec, the design style guide, and the
-  short list of rules the project must never break. Good guides mean a better first draft.
-- **Sensors** check the agent's work *after* it acts, so mistakes get caught and corrected.
+  short list of rules the project must never break. Good directives mean a better first draft.
+- **Verifiers** check the agent's work *after* it acts, so mistakes get caught and corrected.
   These are things like the automated health-check script, the test suite, a second agent
   reviewing the first one's plan, and the wiki's habit of checking itself against the real code.
-  Good sensors catch what the guides missed.
+  Good verifiers catch what the directives missed.
 
-(Böckeler calls these "feedforward" and "feedback" controls; "guides" and "sensors" are the same
-idea in plainer words.)
+(Böckeler calls these "feedforward" and "feedback" controls, and elsewhere "guides" and "sensors";
+we call them directives and verifiers — the same idea in plainer words.)
 
-The two halves form a loop, and a person closes it by hand. When a sensor keeps catching the
-same kind of mistake, the fix isn't to nag the agent — it's to *strengthen a guide* so the
+The two halves form a loop, and a person closes it by hand. When a verifier keeps catching the
+same kind of mistake, the fix isn't to nag the agent — it's to *strengthen a directive* so the
 mistake can't happen again. A bug becomes a permanent check in the health script. A nasty
 surprise becomes a one-line warning in the instruction file. A dead end becomes a written-up
 "we tried this, here's why it failed" page in the wiki. Every mistake leaves behind something
-that stops it from coming back. That habit only ever tightens, like a ratchet, and it is the
-single most valuable thing the kit installs.
+that stops it from coming back. That safety net only ever grows — you add a strand per fix and
+never cut one — and it is the single most valuable thing the kit installs.
 
 It is also why the kit insists that its documents **check themselves against the actual code**,
-rather than being trusted on faith. A guide or a knowledge page that has quietly gone out of
+rather than being trusted on faith. A directive or a knowledge page that has quietly gone out of
 date is *worse* than having none at all, because the agent will follow it with total
 confidence — straight into the wrong thing.
 
 ### One thing this picture leaves out: safety is a separate question
 
-Guides and sensors are about *quality*. Safety — keeping the agent from doing something
+Directives and verifiers are about *quality*. Safety — keeping the agent from doing something
 destructive, or from leaking a secret — works differently, and the kit is careful not to blur
 the two.
 
@@ -155,9 +155,9 @@ Each file is labeled with what it does, and why it earns a place.
   exists**. It re-sequences the kickoff guide around one inversion — the first job is to
   not break what works: a thorough read-only **evaluation**, an **interview** for what the
   code can't answer, and a written **proposal the owner approves before any edit** — then
-  the safety floor plus secret triage, a pinned oracle *before* any improvement, a
+  the safety floor plus secret triage, a pinned baseline *before* any improvement, a
   contract written from evidence, a wiki seeded from real git/issue history, and the
-  ratchet. Hand a session this file instead of the kickoff guide when retrofitting.
+  safety net. Hand a session this file instead of the kickoff guide when retrofitting.
 - **`llm-wiki-kickoff.md`** — how to set up the project's **wiki**: a small, self-maintaining
   knowledge base for the deeper "how does this part work, and what have we already learned the
   hard way" material. Its core rule is that the wiki checks itself against the code, so it can't
@@ -166,12 +166,12 @@ Each file is labeled with what it does, and why it earns a place.
   at the end.)
 - **`claude-audit-base.sh`** — a starter **health-check script**. It gets copied into the
   project and grown over time, gaining a new check every time a bug is fixed. It is the
-  project's fastest, most reliable sensor: an ordinary script, no AI involved, that runs
+  project's fastest, most reliable verifier: an ordinary script, no AI involved, that runs
   anywhere.
 - **`claude-eval-base.sh`** — a starter **behavioral-eval runner**, copied into the project as
   `scripts/eval.sh`. It shells out to a headless model, feeds each saved task, and grades the
   answer — golden-output equality (preferred, deterministic) or a blunt LLM-judge rubric. It's
-  the sensor for the agent's *judgment* rather than the code, run at the moments the kit calls
+  the verifier for the agent's *judgment* rather than the code, run at the moments the kit calls
   scheduled maintenance: a model upgrade, a big `CLAUDE.md` change, or a new skill. *Eval-driven
   development is to agents what test-driven development was to code.*
 - **`evals-template/`** — the starter **eval suite**, copied into the project as `evals/`: a
@@ -181,14 +181,14 @@ Each file is labeled with what it does, and why it earns a place.
 - **`scripts/harness-metrics.sh`** — a starter **harness ROI scorecard**, copied into the project
   as `scripts/harness-metrics.sh`. It prints a handful of cheap numbers — the `CLAUDE.md` line
   count, the audit's check count — and appends them to a trend log, so a project can *prove* its
-  ratchet is paying off rather than assume it: the gauge on the project's own engine, glanced at on
+  safety net is paying off rather than assume it: the gauge on the project's own engine, glanced at on
   a slow cadence. It computes only what's free and stubs the rest as explicit human notes.
 - **`HARNESS_LOG.md`** — a fill-in **harness change log**, seeded at the project root (the name is
   fixed so tooling can find it). The qualitative companion to the scorecard: where a human records
   *what changed in the harness and why*, one append-only entry per change. The numbers say *that*
   something moved; this says *why*. (The script never writes it.)
 - **`prd-template.md`** — a fill-in-the-blanks **product spec**: what's being built, why, and
-  which rules must always hold. It is a guide — the place those must-never-break rules get named
+  which rules must always hold. It is a directive — the place those must-never-break rules get named
   before any code exists.
 - **`readme-template.md`** — a fill-in-the-blanks **README for people** — the project's front
   door. It explains what the project is and how to run it, in plain language, for a reader who
@@ -264,8 +264,9 @@ plans.
   the code, so the documentation can't silently rot. A knowledge base trusted on faith slowly
   fills with confident-sounding lies; one that is checked against the real code goes out of date
   *visibly*, which is the only kind of out-of-date anyone can actually fix. (Böckeler calls the
-  general habit "keeping quality left" — catching problems early and cheaply, instead of
-  discovering them once the agent has already built on bad information.)
+  general habit "keeping quality left"; we call it front-load verification — catching problems
+  early and cheaply, instead of discovering them once the agent has already built on bad
+  information.)
 - **Keep knowledge in the project, not in the agent's private memory.** What the project knows
   lives in the project's own files: the wiki, the instruction file, and the notes attached to
   each saved change. The agent's personal memory is only for personal working-style preferences,
@@ -307,7 +308,7 @@ because its parts age differently — as Anthropic's harness team puts it, *"eve
 in a harness encodes an assumption about what the model can't do on its own."* Three shelf
 lives:
 
-- **Invariant — keep forever.** Anything whose force comes from a property of the world,
+- **Permanent — keep forever.** Anything whose force comes from a property of the world,
   not from the model's judgment: the security floor (prose can't bind an agent that can be
   manipulated or simply wrong — truer as autonomy grows, not less); reconcile-against-code
   (documents rot no matter who reads them); knowledge placement (a fact not in context
@@ -322,7 +323,7 @@ lives:
   pass cut its scout-then-fan-out coaching and *reversed* its own stale advice against
   structured agent output.)
 - **Appreciating — worth more as the model improves.** Delegation structure (a stronger
-  orchestrator makes tiering and fan-out more valuable, not less), the ratchet itself
+  orchestrator makes tiering and fan-out more valuable, not less), the safety net itself
   (every mistake becomes a permanent check), and a suite of **behavioral evals** — saved tests
   for the agent's *judgment*, run at every model upgrade to prove the change helped rather than
   quietly regressed. *Eval-driven development is to agents what test-driven development was to
@@ -330,7 +331,7 @@ lives:
 
 The habit this section encodes: **a model upgrade is a scheduled maintenance event for the
 harness**, not just a version bump. Re-run the per-line test on `CLAUDE.md` and on the
-kit's own guidance; leave the invariants alone.
+kit's own guidance; leave the permanent ones alone.
 
 ## Where these ideas come from
 
@@ -358,7 +359,7 @@ in the open over the past year. Each of these is worth reading directly:
   this kit's own subject, from the company that trains the model. Three findings this kit
   leans on directly: an **initializer agent** that scaffolds the environment before any code
   is written (their version of this kickoff ritual); a progress log, a one-feature-at-a-time
-  task list, and a session-start "bearings ritual" as the way work survives across context
+  task list, and a session-start preflight as the way work survives across context
   windows (the kit's Part 3.14); and — after measuring that agents asked to grade their own
   work "confidently praise it, even when mediocre" — a hard split between the agent that
   builds and the agent that judges (Part 3.8). Also the sharpest one-line reason this kit
@@ -401,7 +402,7 @@ live on the date above:
 - **Why self-report is worthless.** "Confident and Wrong" found a model submitting a patch on
   100% of runs but resolving only 44%, with silent failures invisible to completion- and
   consistency-based monitoring ([arXiv 2603.25764](https://arxiv.org/abs/2603.25764)) — the
-  empirical case for the doer/judge split.
+  empirical case for the builder/judge split.
 - **Security doesn't improve on its own.** Veracode found ~45% of AI-generated code carries a
   vulnerability, flat across model generations (2025 report, with a
   [Spring 2026 update](https://www.veracode.com/blog/spring-2026-genai-code-security/)).

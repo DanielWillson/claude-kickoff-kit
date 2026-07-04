@@ -13,7 +13,7 @@ apply these lessons; this one explains them.*
 
 Four groups who never compared notes shipped the same design. Martin Fowler calls it
 guides-and-sensors. Anthropic's harness team built an initializer → generator → evaluator
-pipeline. Every calls it "compound engineering." This kit calls it the ratchet. Strip the
+pipeline. Every calls it "compound engineering." This kit calls it the safety net. Strip the
 vocabulary and it's one idea:
 
 > **A harness is a system that converts mistakes into permanent checks.**
@@ -106,7 +106,7 @@ written and *backwards* one tooling generation later.
 
 Sort every harness component into three piles:
 
-- **Invariant** — its force comes from a property of the *world*, not the model's
+- **Permanent** — its force comes from a property of the *world*, not the model's
   judgment: documents rot regardless of who reads them; a fact not in context doesn't
   exist at any IQ; a self-report is a claim from any model; human review bandwidth doesn't
   scale with model capability; prose can't bind an agent that can be manipulated or wrong.
@@ -117,7 +117,7 @@ Sort every harness component into three piles:
   with the per-line test; yesterday's essential guardrail is today's noise (see Lesson 3
   on what noise costs).
 - **Appreciating** — worth *more* as models improve: delegation structure (a stronger
-  orchestrator extracts more from the same fan-out) and the ratchet itself (a stronger
+  orchestrator extracts more from the same fan-out) and the safety net itself (a stronger
   model converts every permanent check into more autonomy safely granted).
 
 The habit: **treat a model upgrade as a scheduled maintenance event for your harness**,
@@ -184,7 +184,7 @@ an unverified claim is worse than no claim, because you'll build on it with conf
 ## If you read three things end-to-end
 
 1. **Anthropic — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)** (Nov 2025) — the measured failure modes and the initializer/progress-file/one-feature-at-a-time pattern.
-2. **Anthropic — [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps)** (Mar 2026) — doer/judge separation, and the "every component encodes an assumption" principle.
+2. **Anthropic — [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps)** (Mar 2026) — builder/judge separation, and the "every component encodes an assumption" principle.
 3. **HumanLayer — [Advanced Context Engineering for Coding Agents](https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/ace-fca.md)** (2025) — context as the only lever; review the plan, not the diff.
 
 Then the operator accounts in [`wiki/sources/operator-field-reports.md`](wiki/sources/operator-field-reports.md)

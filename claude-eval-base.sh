@@ -16,7 +16,7 @@
 # WHEN to run this: at a MAINTENANCE MOMENT — a model upgrade, a big CLAUDE.md edit, a new
 # skill — to prove the change HELPED rather than quietly regressed judgment. NOT on every
 # edit: it costs tokens and shells out to a live model. The audit (scripts/audit.sh) is the
-# after-every-edit sensor; this is the at-a-model-change sensor.
+# after-every-edit verifier; this is the at-a-model-change verifier.
 #
 # WHAT THIS RUNNER MECHANICALLY CHECKS vs. what a human reads — be honest about the line:
 #   • input + expected (golden) and input + rubric (rubric) are ENFORCED — graded every run.
@@ -35,7 +35,7 @@
 #                   call: VERIFY the invocation against YOUR installed Claude Code version
 #                   before trusting it — nothing here tests it end-to-end with a live model
 #                   (Principle 8: check the tool against the installed version, not memory).
-#   EVAL_JUDGE_CMD  the judge for rubric evals — a FRESH invocation (doer/judge split,
+#   EVAL_JUDGE_CMD  the judge for rubric evals — a FRESH invocation (builder/judge split,
 #                   kickoff Part 3.8). Default: `claude -p`.
 #   EVAL_DIR        where the *.eval.md fixtures live. Default: <repo>/evals.
 #
@@ -74,7 +74,7 @@ strip_ws() {  # collapse trailing whitespace (golden values + answers are single
 echo
 echo "── BEHAVIORAL EVALS ─────────────────────────────────────"
 echo "   fixtures:  $EVAL_DIR"
-echo "   doer:      EVAL_CMD=$EVAL_CMD"
+echo "   builder:   EVAL_CMD=$EVAL_CMD"
 echo "   judge:     EVAL_JUDGE_CMD=$EVAL_JUDGE_CMD"
 echo
 
@@ -104,8 +104,8 @@ for f in "$EVAL_DIR"/*.eval.md; do
         ;;
       rubric)
         rubric=$(body "$f" rubric)
-        # the doer (candidate) and the judge each get their OWN stderr log — so a broken
-        # doer's diagnostic (e.g. an empty candidate, the commonest rubric failure) is not
+        # the builder (candidate) and the judge each get their OWN stderr log — so a broken
+        # builder's diagnostic (e.g. an empty candidate, the commonest rubric failure) is not
         # clobbered when the judge invocation opens its log for writing.
         candidate=$(printf '%s' "$input" | $EVAL_CMD 2>"$errlog")
         judgelog="$TMP/eval_${name}.judge.err"
@@ -115,8 +115,8 @@ for f in "$EVAL_DIR"/*.eval.md; do
             epass "$name  [rubric]"
         else
             efail "$name  [rubric]  judge verdict: ${verdict:-<none>}"
-            [ -s "$errlog" ]   && sed 's/^/           doer-stderr:  /' "$errlog"   | tail -5
-            [ -s "$judgelog" ] && sed 's/^/           judge-stderr: /' "$judgelog" | tail -5
+            [ -s "$errlog" ]   && sed 's/^/           builder-stderr: /' "$errlog"   | tail -5
+            [ -s "$judgelog" ] && sed 's/^/           judge-stderr:   /' "$judgelog" | tail -5
         fi
         ;;
       *)

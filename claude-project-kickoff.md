@@ -673,7 +673,7 @@ sensitive paths — as plain repo facts ("commit in small logical units", "never
 *rule* belongs to the repo, so any tool that reads the contract inherits it. This — plus
 the audit (§1.6) — is the kit's real tool-agnostic layer: both are read/run by anything,
 with no per-clone activation and nothing to silently switch off (unlike a git hook).
-`CONTRACT.md` is **not** a separate file you maintain: it's the frozen snapshot you hand
+`BRIEF.md` (the brief) is **not** a separate file you maintain: it's the frozen snapshot you hand
 subagents at fan-out (Part 3.3) — an export of CLAUDE.md's invariants + data shapes for that
 one run. Wherever this kit says "the contract," it means CLAUDE.md.
 
@@ -790,7 +790,7 @@ made actionable. Solo it's the one-liner (`reviewer = me`); a team's role-specif
 reviews which class of change — scales up from it in the project's own docs, not the kit.
 
 ### 1.5a Seed the design system early (if the project has a UI)
-Before building the *second* screen, lay the styling foundation — it's trunk work (like the
+Before building the *second* screen, lay the styling foundation — it's foundation work (like the
 schema), and retrofitting it later is expensive. Establish, in the stack's idiom, a **single
 tokens/theme source** (colour, spacing scale, typography, radii, breakpoints as named
 tokens) and **one or two starter primitives** the rest composes (a Button, a Card, a layout
@@ -856,24 +856,24 @@ checks. The valuable part grows over time:
   grep that FAILs when violated (the linter can't see these).
 - **Every time you fix a bug, add a regression guard** so the same mistake can't
   silently return. This is the single highest-leverage habit the script enables.
-- **Run the ratchet at the *class* level too, on a cadence.** The per-bug guard fixes one
+- **Extend the safety net at the *class* level too, on a cadence.** The per-bug guard fixes one
   instance. Periodically — every ~5 fixes, or at a regular review pass — step back over the
   bugs you've fixed and the corrections a reviewer made and ask whether several share a
   *root class*. If three separate patches all trace to "an agent trusted a doc that had gone
   stale," the durable fix isn't a fourth patch — it's **one** guard that kills the class (a
   broader grep, a `CLAUDE.md` clarification, a reconcile rule). Propose it; never auto-apply.
-  Same ratchet, aimed at the *pattern* instead of the *instance*.
+  Same safety net, aimed at the *pattern* instead of the *instance*.
 Run `bash scripts/audit.sh` after any significant edit (note: `chmod` is often
 deny-listed under the sandbox — run via `bash`, and write temp logs to `$TMPDIR`,
 not `/tmp`). It complements, doesn't replace, a judgment review of what greps miss.
 
 ### 1.6a Seed the harness scorecard (the ROI gauge — see `scripts/harness-metrics.sh` + `HARNESS_LOG.md`)
-The audit (§1.6) and evals (§1.6b) are sensors on the *work*; this is a sensor on the
+The audit (§1.6) and evals (§1.6b) are verifiers on the *work*; this is a verifier on the
 **harness itself**. The kit rests on measured evidence about the field at large (the README's
-citations), but nothing here measures whether *your* harness — the audit, the wiki, the ratchet —
-is actually paying off. A rich harness costs real effort to run, so "the ratchet is worth it"
+citations), but nothing here measures whether *your* harness — the audit, the wiki, the safety net —
+is actually paying off. A rich harness costs real effort to run, so "the safety net is worth it"
 should be **shown, not assumed**. This is the gauge on your own engine: a cheap scorecard you
-glance at on a slow cadence (monthly is plenty) to watch the ratchet accrete value — the natural
+glance at on a slow cadence (monthly is plenty) to watch the safety net accrete value — the natural
 companion to §1.6's habit of stepping back across your fixes.
 
 Seed two files, the same way you seeded the audit:
@@ -892,15 +892,15 @@ the log tells you *why* you moved it.
 **Don't over-instrument — a few numbers looked at monthly beat forty ignored.** Start with only the
 two the script computes for free: `CLAUDE.md` line count and audit-check count. The higher-value
 measures are **human counts, not repo-derivable** — review rounds per feature (the **Rule of Five**,
-`LESSONS.md`; a per-artifact review measure — *not* §1.6's every-~5-*fixes* class ratchet, despite
+`LESSONS.md`; a per-artifact review measure — *not* §1.6's every-~5-*fixes* class safety net, despite
 the shared five), defects caught by humans vs. by tests, escaped defects, rollbacks, effort per
 merged change. The script stubs each of these as an explicit *"human note required"* field; record
 the real ones in `HARNESS_LOG.md`, and promote one into the numeric trend only once it earns its
 keep and the project can compute it honestly. Never fabricate a zero to fill a column. Scale to the
 project: a solo effort's whole scorecard may be two numbers and a one-line log entry — that's fine.
 
-### 1.6b Seed the behavioral evals (the judgment sensor — see `claude-eval-base.sh` + `evals-template/`)
-The audit (§1.6) is a sensor for the *code*; a **behavioral eval** is a sensor for the
+### 1.6b Seed the behavioral evals (the judgment verifier — see `claude-eval-base.sh` + `evals-template/`)
+The audit (§1.6) is a verifier for the *code*; a **behavioral eval** is a verifier for the
 agent's *judgment* — the agent-behavior analogue of a test suite. A normal test checks the
 code ("does this return 4?"); an eval checks the agent ("asked to do X, does it do the right
 thing?"). *Eval-driven development is to agents what TDD was to code.* Each eval is a **task
@@ -923,14 +923,14 @@ judgment. This is the mechanism the README's **"What scales with the model, and 
 section promises where it files behavioral evals under *appreciating* and calls a model upgrade
 a *scheduled maintenance event*; it is also the fuller treatment of the standing "behaviour
 evals" the autonomous playbook gestures at (Part 3.7). **Not** on every edit — evals cost
-tokens and shell out to a live model; the audit is the after-every-edit sensor, evals the
+tokens and shell out to a live model; the audit is the after-every-edit verifier, evals the
 at-a-model-change one.
 
 **The honest caveat — don't oversell it.** LLM-as-judge is **noisy**: documented bias, roughly
 **6-percentage-point swings from the evaluation infrastructure alone**, and models can detect
 they are being evaluated. So **prefer golden-outputs, keep rubrics blunt, and treat the suite
 as a smoke alarm, not a lab scale.** A red result means "look here," not "regression proven."
-(ROADMAP item I is the cousin: a golden-oracle for non-deterministic output.)
+(ROADMAP item I is the cousin: a baseline for non-deterministic output.)
 
 **Scale by tier (§1.0):** a throwaway needs **none**; a project you'll maintain **seeds a few**
 now and grows the suite to roughly **8–15 representative cases** over time — one more whenever a
@@ -989,7 +989,8 @@ Build *simple*, not merely *easy*.
 - **Favor agent-legible structure — within the stack you were handed.** Clear module
   boundaries, explicit types, one decision in one place, a small dependency surface: these
   make a codebase *navigable to an agent* — what Fowler calls **harnessability** (crediting
-  Ned Letcher's **"ambient affordances"**). Optimize for it *inside* the chosen stack; do
+  Ned Letcher's **"ambient affordances"**); we call it **harness-friendly** (and those
+  affordances **harness-friendly features**). Optimize for it *inside* the chosen stack; do
   **not** read this as license to pick the stack for the agent's benefit — the stack is the
   user's input (see the header), every tool here an example.
 
@@ -1141,7 +1142,8 @@ gate** (that fights autonomy):
 This is also the cheapest instance of a general **placement** rule: run *fast, deterministic,
 cheap* checks early (a throwaway plan, the audit greps, type-checks) and reserve *slow,
 expensive, probabilistic* ones (adversarial agents, persona panels, actually running the app)
-for later, higher-stakes gates — Fowler's **"keep quality left."** Placement is a real lever
+for later, higher-stakes gates — Fowler's **"keep quality left,"** which we call **front-load
+verification**. Placement is a real lever
 but a *secondary* one here: the kit's primary axes for where a check lives are
 **enforceability** (deterministic backstop vs. probabilistic classifier) and the **go-live
 boundary** (`llm-wiki-kickoff.md` §4), not cost alone.
@@ -1182,7 +1184,7 @@ Part 1 and most of these principles assume greenfield. But the subtle damage hap
 when changing code that *already works* — a refactor that silently shifts a number, a
 migration you can't undo, a "hardening" pass that introduces the bug it set out to
 prevent. Defaults for evolving a live system (each gated to when it applies):
-- **Pin an oracle before refactoring a calculation layer.** *(Only if the project has
+- **Pin a baseline before refactoring a calculation layer.** *(Only if the project has
   a calculation/aggregation layer whose outputs must reconcile — money, metrics,
   inventory, scheduling; skip for CRUD/presentational work.)* Capture known-correct
   output values from the *current* code, then assert the refactor reproduces them
@@ -1254,13 +1256,13 @@ don't have.
    bug-hunting, broad research, and persona panels (Part 2) — never on inherently serial
    work. And discover the work-list yourself with cheap reads/greps before launching:
    you don't need the shape of the *task* up front, only of the *orchestration step*.
-2. **Build the foundation inline — never delegate the trunk.** Schema, shared
+2. **Build the foundation inline — never delegate it.** Schema, shared
    types, the cross-cutting invariants, the repository/data layer — and, for a UI,
    the **design-token/theme layer + base primitives** (Principle 5): write these
    yourself. Everything inherits them, and scattered agents re-derive (and
    re-break) them inconsistently — every agent inventing its own colours and spacing
    is exactly the sprawl tokens exist to prevent. This is the highest-leverage work.
-3. **Freeze a `CONTRACT.md` before fan-out.** This is a *fan-out-time snapshot* — not a
+3. **Freeze a `BRIEF.md` (the brief) before fan-out.** This is a *fan-out-time snapshot* — not a
    file you maintain long-term, but CLAUDE.md's invariants + the run's data shapes frozen
    for this wave (see §1.5 "On names"). Subagents share no memory, so it's their shared
    brain: data shapes, API contract, file-ownership map, a machine-checkable Definition of
@@ -1313,11 +1315,11 @@ don't have.
    an approval no one is awake to give. (Hard-won: an overnight run timed for 1am
    sat unapproved until morning because only the build commands were pre-checked.)
 7. **Definition of Done must be machine-checkable, with fixtures written first.**
-   "tests green + build succeeds + one integration test that exercises the spine."
+   "tests green + build succeeds + one integration test that exercises the critical path."
    Write the fixtures up front so the morning result is verifiable without you. If
    the project has an audit script (§1.6), fold `bash scripts/audit.sh` passing
-   into the DoD — it checks invariants the tests don't. *(A golden oracle + fixtures-first DoD +
-   a spine test is what the field calls **behaviour evals** — verifying functional correctness,
+   into the DoD — it checks invariants the tests don't. *(A baseline + fixtures-first DoD +
+   a critical-path test is what the field calls **behaviour evals** — verifying functional correctness,
    the hardest control to automate (Fowler). The practice belongs here; the heavyweight
    eval-framework machinery — datasets, graders — deliberately does not. The standing
    judgment-eval **suite** (run at a model upgrade, not per build) is a distinct artifact —
@@ -1325,7 +1327,7 @@ don't have.
 8. **Don't trust a subagent's self-report.** When the run completes, re-run the
    DoD commands yourself and *read the test the agent wrote* — a trivially-passing
    test reports green too. A subagent's "it passed" is a claim, not proof.
-   Structure the distrust: **separate the doer from the judge.** Have a *fresh-context*
+   Structure the distrust: **separate the builder from the judge.** Have a *fresh-context*
    agent (or the morning-after you) evaluate against the DoD — never the agent that
    built it. Asked to grade their own work, agents confidently praise it; Anthropic's
    long-running-agent harness work measured exactly this and split into generator and
@@ -1392,12 +1394,12 @@ don't have.
     (long reads, log spelunking) to a subagent that returns a conclusion, not a
     transcript. And capability claims are per-task, not per-reputation: when a cheap
     tier verifiably handles a lane (its DoD passes), the expensive tier is waste there.
-14. **For work that outlives one context window, leave a trail a cold session can pick
-    up.** Anthropic's long-running-agent harness converged on the same shape as this
+14. **For work that outlives one context window, leave the progress log and task list a
+    fresh session can pick up.** Anthropic's long-running-agent harness converged on the same shape as this
     kit's wiki discipline, plus three specifics worth copying for any multi-session
     run: an append-only **progress log** (what happened, what's next), a
     **machine-readable task list** whose only editable field is pass/fail status (scope
-    discipline by structure — one feature at a time), and a fixed **bearings ritual** at
+    discipline by structure — one feature at a time), and a fixed **preflight** at
     session start — read the git log, the progress log, the task list, *then* pick up
     the highest-priority item. Compaction is automatic but lossy: conversation-only
     instructions can vanish while files reload from disk — one more reason every
@@ -1447,7 +1449,7 @@ don't have.
 - [ ] (if UI) design tokens + a starter primitive seeded before the second screen (Principle 5)
 - [ ] backups/dumps/temp kept OUT of the repo tree (`$TMPDIR`); data store + its sidecars + `*.bak` gitignored (§1.2)
 - [ ] (if on a mounted/synced volume) venv + caches symlinked to local disk; `git check-ignore` verified; mtime not trusted (§1.1a)
-- [ ] (evolving a live system) oracle pinned before a calc refactor; data migration → backup + branch + two-part rollback (Principle 10)
+- [ ] (evolving a live system) baseline pinned before a calc refactor; data migration → backup + branch + two-part rollback (Principle 10)
 - [ ] user reminded to enter auto mode (`Shift+Tab`) **and restart so the sandbox initializes** (sandbox is from settings, not `Shift+Tab`)
 - [ ] noted the maturity trigger: it **adds conditional hardening above the always-on floor** (Q9 secret add-ons · Q6 server-side + CODEOWNERS) — *not* a switch to a more restrictive mode (the managed hard floor is **Part 0**, done once per machine)
 - [ ] principles internalized; ready for the spec

@@ -6,7 +6,7 @@ updated: 2026-07-01
 verified: 2026-07-01
 code: [../../claude-project-kickoff.md, ../../README.md, ../../llm-wiki-kickoff.md, ../../securing-claude-sessions.md]
 related: ["[[anthropic-engineering]]", "[[claude-code-feature-matrix]]", "[[claude-md-size]]", "[[reasoning-extraction]]", "[[skills-shortlist]]", "[[operator-field-reports]]"]
-summary: "Classification and outcomes of the 2026-07-01 Fable-driven audit: what was kept as invariant, cut as re-taught default, or reversed as stale"
+summary: "Classification and outcomes of the 2026-07-01 Fable-driven audit: what was kept as permanent, cut as re-taught default, or reversed as stale"
 ---
 
 # The July 2026 audit pass
@@ -18,7 +18,7 @@ primary sources first (see the source pages). The security floor was excluded fr
 simplification exercise **by design** — prose can't bind an agent that can be injected or
 wrong, at any capability level.
 
-**Kept as invariant** (force comes from properties of the world, not the model):
+**Kept as permanent** (force comes from properties of the world, not the model):
 the security stack; reconcile-against-ground-truth; knowledge placement/routing (a fact
 not in context doesn't exist); independent verification (self-reports are claims; errors
 within one context are correlated); commit granularity as the human review surface; the
@@ -38,9 +38,9 @@ long autonomous runs — passes the per-line test).
   retry at the tool-call layer; schema the verdicts, still verify work on disk.
 
 **Added.** Part 3 probe lead-in (verify the harness like an installed dependency);
-3.13 model tiering; 3.14 the cold-session trail (progress log + pass/fail task list +
-bearings ritual — convergent with [[anthropic-engineering]]'s initializer pattern);
-doer/judge split in 3.8; skills-as-dependencies in §1.3a; model refusals as a Level-A
+3.13 model tiering; 3.14 the progress log, pass/fail task list, and preflight
+(convergent with [[anthropic-engineering]]'s initializer pattern);
+builder/judge split in 3.8; skills-as-dependencies in §1.3a; model refusals as a Level-A
 control in the field guide; the memory-vs-wiki seam in the wiki guide §2.2; README's
 "What scales with the model" (the three shelf lives + the per-line test at every model
 upgrade); root SKILL.md (kit-as-skill delivery); sourced size guidance in §1.5
@@ -59,4 +59,4 @@ upgrade); root SKILL.md (kit-as-skill delivery); sourced size guidance in §1.5
 **The durable lesson** (now README "What scales with the model"): *"Every component in a
 harness encodes an assumption about what the model can't do on its own"* (Anthropic).
 A model upgrade is a scheduled maintenance event for the harness — re-run this audit's
-per-line test; leave the invariants alone.
+per-line test; leave the permanent ones alone.

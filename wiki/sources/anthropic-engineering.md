@@ -30,8 +30,9 @@ then re-checked by independent adversarial verifiers. This page backs the kit's 
   initial git commit."* (Their kickoff ritual — independent convergence with this kit.)
 - **One feature at a time**, from a JSON feature list whose only editable field is a
   `passes` status: *"This incremental approach turned out to be critical."*
-- A fixed **bearings ritual** opens every session: run `pwd`, read git logs + progress
-  files, read the feature list, pick the highest-priority feature. → kit Part 3.14.
+- A fixed session-start ritual opens every session: run `pwd`, read git logs + progress
+  files, read the feature list, pick the highest-priority feature — the kit calls this
+  **preflight**. → kit Part 3.14.
 - Dominant failure mode: *"Claude's tendency to mark a feature as complete without proper
   testing"* — fixed by giving it end-to-end verification tools (browser automation) and
   explicitly prompting their use. → kit Part 3.7/3.8, §1.6.
@@ -41,7 +42,7 @@ then re-checked by independent adversarial verifiers. This page backs the kit's 
 - Scales to a **planner / generator / evaluator** triad because: *"When asked to evaluate
   work they've produced, agents tend to respond by confidently praising the work—even when
   mediocre. … Separating the agent doing the work from the agent judging it proves to be a
-  strong lever."* → kit Part 3.8 (doer/judge split), Principle 6.
+  strong lever."* → kit Part 3.8 (builder/judge split), Principle 6.
 - Prefers **full context resets with structured handoff artifacts** over compaction: *"A
   reset provides a clean slate, at the cost of the handoff artifact having enough state for
   the next agent."* → kit Principle 9.
@@ -60,7 +61,8 @@ then re-checked by independent adversarial verifiers. This page backs the kit's 
   *"only when it demonstrably improves outcomes."* → the kit's stdlib-only / no-framework
   posture (Principle 8).
 - Agents need *"'ground truth' from the environment at each step"*; sandboxed testing +
-  guardrails because autonomy compounds errors. → guides-and-sensors, the sandbox floor.
+  guardrails because autonomy compounds errors. → directives and verifiers (Fowler's
+  guides-and-sensors), the sandbox floor.
 
 **Effective context engineering for AI agents** (2025-09-29)
 <https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents>
@@ -77,7 +79,7 @@ then re-checked by independent adversarial verifiers. This page backs the kit's 
 - *"token usage by itself explains 80% of the variance"* in research performance.
 - Delegation quality decides success: *"Each subagent needs an objective, an output format,
   guidance on the tools and sources to use, and clear task boundaries."* → Part 3.3
-  (CONTRACT.md as the subagents' shared brain).
+  (BRIEF.md as the subagents' shared brain).
 - Evaluate **end state**, not process; store essential state in external memory before
   phase transitions. → Part 3.7/3.14.
 

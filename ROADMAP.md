@@ -28,26 +28,26 @@ ours) vs *Hygiene/Catch-up* (the field already knows this; do it because it's lo
 
 | # | Recommendation | Impact | Type |
 |---|---|---|---|
-| **O** | Self-verifying **kit-conformance script + fan-out adoption verifier** | **Highest** | Frontier/Unique |
+| **O** | Self-verifying **adoption check + fan-out verifier** | **Highest** | Frontier/Unique |
 | **A** | **Behavioral evals** as a first-class `evals/` artifact (incl. non-code workflows) | **Highest** | Frontier/Unique |
-| **B** | **ROI instrumentation on the ratchet** (generalize the wiki `metrics` shape) | **High** | Frontier/Unique |
-| **R** | **Action risk / blast-radius tiers** — gate agent actions by reversibility × reach | **High** | Frontier/Unique · *new* |
+| **B** | **Harness scorecard** (generalize the wiki `metrics` shape) | **High** | Frontier/Unique |
+| **R** | **Action-risk tiers** — gate agent actions by reversibility × reach | **High** | Frontier/Unique · *new* |
 | **V** | **Name the reviewer** — make the human review/steer dimension explicit | **High** | Frontier/Unique · *new* |
-| **G** | **SCA/CVE scanning** + stronger secret scan in `audit.sh` | **High** | Hygiene |
-| **C** | **Agent-run observability** → feed the ratchet from bad transcripts | Med–High | Frontier-ish |
+| **G** | **Dependency-vulnerability scan** + stronger secret scan in `audit.sh` | **High** | Hygiene |
+| **C** | **Flight recorder** → feed the safety net from bad transcripts | Med–High | Frontier-ish |
 | **S** | **Rollback/recovery for non-git state** (DB, hosted config, deploy, external backend) | Med–High | Hygiene · *new* |
-| **E** | **Spec-as-durable-source** (living spec) | Medium | Frontier |
-| **D** | **Fleet-memory graduation note** (→ queryable knowledge service) | Medium | Frontier/Unique |
-| **T** | **Tool/connector/integration inventory** | Medium | Hygiene · *new* |
-| **U** | **Incident-response runbook** for agent mistakes (forward, not retrospective) | Medium | Hygiene/Frontier · *new* |
-| **W** | **Harness component registry** (owner/version/last-verified/risk/sunset) | Medium | Hygiene · *new* |
+| **E** | **Spec-as-source** (living spec) | Medium | Frontier |
+| **D** | **Cross-project memory** (→ queryable knowledge service) | Medium | Frontier/Unique |
+| **T** | **Tool inventory** | Medium | Hygiene · *new* |
+| **U** | **Incident runbook** for agent mistakes (forward, not retrospective) | Medium | Hygiene/Frontier · *new* |
+| **W** | **Harness manifest** (owner/version/last-verified/risk/sunset) | Medium | Hygiene · *new* |
 | **X** | **Harness change log** (`HARNESS_LOG.md`) + vetted **cross-repo learning** | Med–High | Frontier/Unique · *new* |
-| **Y** | **Living adoption** — skill re-reviews repo & proposes upgrades as the kit evolves | Medium | Frontier · *new* |
-| **H** | **"Who audits the audit"** — guards assert their own anchor | Medium | Hygiene |
+| **Y** | **Kit-update proposals** — skill re-reviews repo & proposes upgrades as the kit evolves | Medium | Frontier · *new* |
+| **H** | **Safeguard-rot check** — safeguards assert their own anchor | Medium | Hygiene |
 | **J** | **Re-verify the harness after a Claude Code upgrade** | Medium | Hygiene |
-| **I** | **Golden-oracle for non-deterministic output** (tolerance/rubric) | Lower | Frontier (cousin of A) |
+| **I** | **Baseline for fuzzy output** (tolerance/rubric) | Lower | Frontier (cousin of A) |
 | **K–N** | **4 internal-consistency fixes** | Lower | Hygiene |
-| **F** | **Prompt-injection one-liner** (name the untrusted-content surface) | Lower | Hygiene |
+| **F** | **Untrusted-content rule** (name the untrusted-content surface) | Lower | Hygiene |
 | **P** | **README additions** — eval-driven line, Axis 1/2 quotes, citation block | ✅ **Done (2026-07-03)** | Documentation |
 | **Q** | **Fowler → Böckeler citation fix** | ✅ **Done in README; propagate to rest of kit** | Hygiene |
 
@@ -62,7 +62,7 @@ both fill genuine holes. **O** remains the item that makes all the others actual
 The kit is scaffolding used once and never copied into a project. Each new practice lands in
 **two places**: (1) *in the kit* — the teaching + a starter template/script + a checklist line;
 (2) *in the repo it sets up* — the living instance (the real `evals/` folder, the real numbers,
-the real registry). The kit seeds it; the project owns it.
+the real manifest). The kit seeds it; the project owns it.
 
 ---
 
@@ -85,11 +85,11 @@ is to agents what TDD was to code.*
 - **Caveat:** LLM-as-judge is noisy (bias; ~6pp infra swings; models can detect they're tested).
   Smoke alarm, not precision scale. Prefer golden-outputs.
 
-### B. ROI instrumentation on the ratchet
-A scorecard that proves the ratchet is paying off instead of assuming it. The kit measures the
+### B. Harness scorecard
+A scorecard that proves the safety net is paying off instead of assuming it. The kit measures the
 *field* but never *your own* machine.
 - **Build:** `scripts/harness-metrics.sh`, monthly, logged for trend: audit-check count over
-  time; how often each guard fired; review rounds per feature (Rule of Five); % agent changes
+  time; how often each safeguard fired; review rounds per feature (Rule of Five); % agent changes
   merged without rework; **defects caught by tests vs. by humans; escaped defects; rollbacks
   needed;** tokens/$ per merged change; CLAUDE.md line-count trend.
 - **Why it matters:** rich harnesses can be much more expensive — Anthropic's long-running-app
@@ -100,14 +100,14 @@ A scorecard that proves the ratchet is paying off instead of assuming it. The ki
   the numbers — *what* changed and *why*. B is the gauge; the log is the flight recorder. Seed the
   basic version with B; the schema + cross-repo layer is item X.
 
-### C. Agent-run observability → feed the ratchet
+### C. Flight recorder → feed the safety net
 A flight recorder for agent runs, so you can see *why* one went wrong or expensive.
 - **Build:** app logs to a file the agent can read; keep transcripts. When a run goes bad,
-  post-mortem the transcript → "what guide/check would've stopped this?" → a ratchet artifact.
-  Adds a second feed to the ratchet (today it's fed only by code bugs). Graduation (if outgrown):
+  post-mortem the transcript → "what directive/check would've stopped this?" → a safety-net artifact.
+  Adds a second feed to the safety net (today it's fed only by code bugs). Graduation (if outgrown):
   Langfuse/LangSmith/OTel GenAI traces.
 
-### D. Fleet-scale memory graduation note
+### D. Cross-project memory
 Markdown works for one project; across many, or for cross-project knowledge, plain files stop
 scaling (can't query them — Yegge's "605 rotting plan files").
 - **In the kit:** a maturity trigger ("when project-local markdown stops scaling → graduate to a
@@ -116,19 +116,19 @@ scaling (can't query them — Yegge's "605 rotting plan files").
   last-verified). Least-solved gap in the field — stay humble: name the trigger, point at the
   pattern, don't over-promise. (Keep the example project-neutral; don't name a specific product.)
 
-### E. Spec-as-durable-source
+### E. Spec-as-source
 Make the spec a *living* file like the wiki, not a fill-in-once doc.
 - **Build (few lines):** add a "reconcile against code" freshness anchor to the spec template;
-  add a ratchet line ("when behavior changes on purpose, update the spec in the same commit");
+  add a safety-net line ("when behavior changes on purpose, update the spec in the same commit");
   point CLAUDE.md's knowledge-routing at the spec as the home of *intent*.
 
-### F. Prompt-injection one-liner
+### F. Untrusted-content rule
 Architecture already handles it (contain, not detect). Add one line to §1.3a naming the untrusted-
 content surface generically: **fetched web pages, PDFs, CSVs, emails, screenshots, transcripts,
 and any tool/MCP output are data, not instruction** — the sandbox limits *damage*, not the
 *hijack*. No build.
 
-### G. SCA/CVE dependency scanning (new in prior pass)
+### G. Dependency-vulnerability scan (new in prior pass)
 Kit checks secrets + unpinned versions, but nothing checks whether a dep you *already use* has a
 *published* security hole.
 - **Build:** add a step to `audit.sh` running the ecosystem scanner (`npm audit`, `pip-audit`,
@@ -136,23 +136,23 @@ Kit checks secrets + unpinned versions, but nothing checks whether a dep you *al
   strings, not just `key=`-shaped ones. Matters because AI writes insecure code at a flat ~45%
   rate (Veracode) — the harness must catch it.
 
-### H. "Who audits the audit"
-Regression guards are `grep`s. After a rename, a grep can *silently stop matching* — it stops
+### H. Safeguard-rot check
+Safeguards are `grep`s. After a rename, a grep can *silently stop matching* — it stops
 protecting but doesn't complain (false security).
-- **Build:** each guard also asserts its target still exists (fail loudly if the anchor is gone);
-  or a periodic coverage check flags guards whose target vanished — mirror the wiki's
+- **Build:** each safeguard also asserts its target still exists (fail loudly if the anchor is gone);
+  or a periodic coverage check flags safeguards whose target vanished — mirror the wiki's
   `stale`/`coverage` check, pointed at the audit script.
 
-### I. Golden-oracle for non-deterministic output (cousin of A)
+### I. Baseline for fuzzy output (cousin of A)
 Principle 10's "pin exact output, reproduce exactly" fits a calculator, not fuzzy agent/text
 output. **Build:** tolerance bands, sample multiple runs, or rubric-judge — same golden-vs-rubric
 split (and same fixture schema) as A.
 
 ### J. Re-verify the harness after a Claude Code upgrade
-You prove guards "bite" at setup, but nothing re-checks after the *tool* updates (which can
+You prove safeguards "bite" at setup, but nothing re-checks after the *tool* updates (which can
 silently drop a setting). **Build:** add "re-run §1.4 checks after any Claude Code major upgrade"
 to the checklist + doctrine. Treat a tool upgrade like a model upgrade. (See **W** — this becomes
-a row in the harness registry.)
+a row in the harness manifest.)
 
 ### K–N. Internal-consistency fixes (tensions)
 - **K:** "keep CLAUDE.md short" vs. the starter skeleton that's already fairly long — trim or
@@ -165,14 +165,14 @@ a row in the harness registry.)
 - **N:** Principle 4 "solo-on-main is fine" vs. Part 3.11 "unattended runs always get a worktree"
   — add a cross-reference.
 
-### O. Kit-conformance script + fan-out adoption verifier (the big one)
+### O. Adoption check + fan-out verifier (the big one)
 The kit is now big enough that one session reading all of it will blow its context and mark things
 "done" it never did. Fix: a verifier for the kit's own adoption, built so no single agent holds the
 whole kit.
 - **Part 1 — conformance script** (`scripts/kit-conformance.sh`): checks for the *artifacts* the
   kit should produce — deny rules present? `audit.sh` runs? CLAUDE.md has routing block + under
   budget? `evals/` exists with ≥N cases? action-risk tiers defined (**R**)? reviewer named
-  (**V**)? wiki has ≥3 incident pages? managed floor present? Verify adoption with a sensor, not a
+  (**V**)? wiki has ≥3 incident pages? managed floor present? Verify adoption with a verifier, not a
   self-report (§1.4 applied to the whole kit).
 - **Part 2 — fan-out driver:** a coordinator spins up focused sub-agents, one per area, each
   loading only its slice, each returning pass/fail against the conformance checklist; a final
@@ -191,7 +191,7 @@ verification (it cited "Anthropic notes…" with no URLs, and — fittingly — 
 Fowler-not-Böckeler misattribution this kit just fixed), but stronger on the human/operational side
 the ROADMAP had under-weighted.
 
-### R. Action risk / blast-radius tiers *(new; generalizes "customer-facing action matrix")*
+### R. Action-risk tiers *(new; generalizes "customer-facing action matrix")*
 Classify the actions an agent can take along two axes — **reversibility** (can it be undone?) and
 **reach / blast-radius** (does it stay inside the project, or reach the outside world, other
 people, money, or production state?). Gate accordingly: local + reversible → auto-run; external /
@@ -213,19 +213,19 @@ data migration is not git-reversible"; this generalizes to *all* out-of-git stat
 snapshot ritual explicit. Absorbs the kickoff-reader's "rollback weak for non-git things" gap.
 Scale honestly: a pure library with no external state needs none of this.
 
-### T. Tool / connector / integration inventory *(new; generalizes "connector/MCP inventory")*
+### T. Tool inventory *(new; generalizes "connector/MCP inventory")*
 Any project where the agent has tools — MCP servers, connectors, plugins, browser extensions, API
-integrations — should keep a small registry: per integration, its owner, scopes/permissions, what
+integrations — should keep a small inventory: per integration, its owner, scopes/permissions, what
 data it can read, whether it can write, where its credential lives, last review date, and how to
 disable it. The security docs cover credential *layering* and rotation but no artifact inventories
 the *fleet of tools* a given project runs. As the tool surface grows, this is where you look when
 something has too much access or needs killing. Scale honestly: one MCP server → one line.
 
-### U. Incident-response runbook for agent mistakes *(new)*
+### U. Incident runbook for agent mistakes *(new)*
 Distinct from the wiki's *retrospective* incident pages (symptom → cause → fix, written after).
 This is the *forward* procedure you run the moment an agent does something wrong in a live system:
 contain it → revoke/rotate any credential involved → identify what was touched (files, records,
-messages, external state) → undo or notify → then ratchet (add a regression guard + a wiki incident
+messages, external state) → undo or notify → then safeguard (add a regression check + a wiki incident
 page). The kit is strong on *prevention*; this is the "when prevention fails" playbook. Agnostic:
 the live system could be a personal server, an open-source project's CI, or a business's backend.
 - **Build:** a short RUNBOOK section (or wiki page) with the ordered steps, kept where a stressed
@@ -243,12 +243,12 @@ cost, is the constraint).
   bake job titles, customers, or a business org into the kit — the reviewer might be a hobbyist, a
   student, a maintainer, or a team.
 
-### W. Harness component registry *(new; upgrades J + M into an artifact)*
+### W. Harness manifest *(new; upgrades J + M into an artifact)*
 Turns "harness rot" from a thing you're supposed to remember into a thing you can read: a list of
 harness components, each with what it is, owner (solo: you), the tool/model version it assumes,
 last-verified date, risk tier, known failure modes, and sunset criteria. Ties directly to the
-shelf-life doctrine (invariant / depreciating / appreciating). Scale honestly: a small project's
-registry is a short table; skip it if the harness is tiny.
+shelf-life doctrine (permanent / depreciating / appreciating). Scale honestly: a small project's
+manifest is a short table; skip it if the harness is tiny.
 
 ### X. Harness change log (`HARNESS_LOG.md`) + cross-repo learning *(new)*
 A journal of harness changes and *why* — and, its bigger purpose, a **portable, machine-legible**
@@ -266,7 +266,7 @@ record so a Claude in one kit-derived repo can learn from another's.
   worth considering here?" → the human decides. Precedent: the kit already keeps this journal for
   *itself* (`wiki/decisions/`); this generalizes that practice to the projects it creates.
 
-### Y. Living adoption — re-review & propose upgrades as the kit evolves *(new)*
+### Y. Kit-update proposals — re-review & propose upgrades as the kit evolves *(new)*
 The adoption skill re-reads the repo (on prompt, optionally periodically) and proposes harness
 updates when the kit itself has improved since the repo adopted it.
 - **The mechanism already exists:** it's the adoption guide's **evaluate → propose** step, re-run
@@ -295,7 +295,7 @@ model routing); context → memory engineering; spec/intent-driven development; 
   SWE-EVO, LongCodeBench. The two are linked: you can't improve coherence you can't measure —
   which is why evaluation is the deeper problem.
 - **Agentic work spreads beyond code (keep the kit agnostic here).** The same harness ideas —
-  guides/sensors, verification, provenance, action-risk gating — apply to any AI-assisted
+  directives/verifiers, verification, provenance, action-risk gating — apply to any AI-assisted
   *knowledge or process work* (research, writing, analysis, ops), not only coding. The kit stays
   code-first, but the principles generalize; frame them so they don't assume a codebase *or* a
   business.
@@ -367,10 +367,10 @@ Lesson-7 failure in the wild.
    fixture schema + provenance rule, and B seeds the basic `HARNESS_LOG.md` companion.
 3. **Action-risk tiers + name-the-reviewer** (R, V) — the highest-value cross-check newcomers;
    cheap, high-leverage, and both feed the conformance script.
-4. **SCA + audit-guard checks** (G, H) — security + false-security hygiene.
-5. **Conformance script + fan-out adoption driver** (O) — the biggest; makes the rest stick; have
+4. **Dependency-vulnerability scan + safeguard-rot check** (G, H) — security + false-security hygiene.
+5. **Adoption check + fan-out driver** (O) — the biggest; makes the rest stick; have
    it check for R and V.
-6. Fold in the rest as the ratchet pulls them in — non-git rollback (S), tool inventory (T),
-   incident runbook (U), harness registry (W), plus C, D, E, I, J, K–N, F. Then the cross-repo
-   layer: **X** (harness-log schema + vetted cross-repo learning), then **Y** (living adoption;
+6. Fold in the rest as the safety net pulls them in — non-git rollback (S), tool inventory (T),
+   incident runbook (U), harness manifest (W), plus C, D, E, I, J, K–N, F. Then the cross-repo
+   layer: **X** (harness-log schema + vetted cross-repo learning), then **Y** (kit-update proposals;
    needs X's version stamp).
