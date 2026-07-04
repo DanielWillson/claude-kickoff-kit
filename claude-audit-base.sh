@@ -193,11 +193,30 @@ if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     [ -n "$tracked_data" ] && { warn "data-store / backup artifact tracked in git — confirm no secrets + keep bulk data out of the repo"; echo "$tracked_data" | sed 's/^/       /'; } \
                            || pass "no data-store / backup artifacts tracked"
     # Kickoff Kit scaffolding is ONE-TIME: its OUTPUTS persist (CLAUDE.md, this script, wiki/,
-    # README.md, the PRD), its SOURCE guides/templates should not — committed, they reload into
-    # every future session's context for nothing. WARN if any source file is tracked. (The
-    # outputs have different names, so this won't flag them; the styleguide is excluded since
-    # it may legitimately live in the repo as a design reference.)
-    tracked_kit=$(git -C "$ROOT" ls-files | grep -iE '(^|/)(claude-project-kickoff|claude-project-adoption|llm-wiki-kickoff|claude-audit-base|securing-claude-sessions|prd-template|readme-template)\.(md|sh)$' || true)
+    # README.md, the PRD, scripts/eval.sh, evals/, scripts/harness-metrics.sh, HARNESS_LOG.md),
+    # its SOURCE guides/templates should not —
+    # committed, they reload into every future session's context for nothing. WARN if any
+    # source file is tracked. This guard uses TWO structurally different mechanisms, because
+    # the sources come in two shapes:
+    #   (1) DISTINCTIVELY-NAMED sources (claude-project-kickoff.md, claude-audit-base.sh,
+    #       claude-eval-base.sh, prd-template.md, …) → caught by BASENAME in the alternation
+    #       below. Safe because each project OUTPUT is RENAMED on copy (audit.sh, eval.sh, the
+    #       PRD), so the distinct source name never collides with a legitimate output.
+    #   (2) The evals-template/ directory's CONTENTS are NOT distinctively named — a plain
+    #       README.md plus *.eval.md files, identical in name to the project's OWN evals/
+    #       outputs. A basename/stem match can't catch them without false-flagging every
+    #       project's own README.md, so they need a PATH-SEGMENT clause instead:
+    #       (^|/)evals-template/ — matches the committed SOURCE dir but not the renamed output
+    #       dir evals/ (and not near-misses like evals-templates/ or my-evals-template/).
+    #   (3) scripts/harness-metrics.sh and root HARNESS_LOG.md are in NEITHER clause BY DESIGN.
+    #       Unlike claude-audit-base.sh (a root source RENAMED to scripts/audit.sh on copy), the kit
+    #       ships these two AT their output name/path — so a project's copy is byte-identical to a
+    #       legitimate output: there is no distinct source form to catch, and nothing is harmful if
+    #       one is "copied" (it equals what the project keeps anyway). harness-metrics.sh ships
+    #       pre-placed in scripts/ so ROOT resolves and it runs in place; that naming asymmetry is
+    #       intentional — don't "fix" it into the alternation.
+    #   (The styleguide is excluded — it may legitimately live in the repo as a design ref.)
+    tracked_kit=$(git -C "$ROOT" ls-files | grep -iE '(^|/)(claude-project-kickoff|claude-project-adoption|llm-wiki-kickoff|claude-audit-base|claude-eval-base|securing-claude-sessions|prd-template|readme-template)\.(md|sh)$|(^|/)evals-template/' || true)
     [ -n "$tracked_kit" ] && { warn "Kickoff Kit scaffolding committed — it's one-time; keep sources out of the repo (outputs persist, sources don't)"; echo "$tracked_kit" | sed 's/^/       /'; } \
                           || pass "no Kickoff Kit scaffolding committed"
     # Secret pre-commit hook actually enabled? (kickoff §1.3b) A tracked hooks/ dir only
@@ -353,6 +372,26 @@ if [ -f "$ROOT/README.md" ] && git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&
         [ -n "$stale" ] && warn "README may be stale — newer commits to:$stale — refresh README.md (+ its reconcile-code anchor)" \
                         || pass "README not behind its reconcile-code paths"
     fi
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════
+section "BEHAVIORAL EVALS (the judgment sensor — see kickoff §1.6b)"
+# Behavioral evals are saved tests for the agent's JUDGMENT (not the code): a task prompt +
+# a grade (golden-output equality — preferred, deterministic; or a blunt LLM-judge rubric).
+# They run at MAINTENANCE MOMENTS — a model upgrade, a big CLAUDE.md edit, a new skill — and
+# cost tokens + shell out to a live model, so this is a PRESENCE/WIRING check ONLY, never an
+# execution (the audit runs after every edit; evals must not). Unconditional WARN when absent
+# — a throwaway is free to ignore it (that IS the tier-awareness; there is no tier flag here),
+# exactly like the CLAUDE.md/README presence checks above. Seeded from the kit's
+# claude-eval-base.sh → scripts/eval.sh and evals-template/ → evals/.
+# ═══════════════════════════════════════════════════════════════════════════
+n_evals=$(find "$ROOT/evals" -name '*.eval.md' 2>/dev/null | wc -l | tr -d ' ')
+if [ "${n_evals:-0}" -gt 0 ]; then
+    pass "evals/ present ($n_evals .eval.md fixture(s)) — re-run at a model upgrade / big CLAUDE.md edit / new skill (kickoff §1.6b)"
+    [ -f "$ROOT/scripts/eval.sh" ] && pass "eval runner wired (scripts/eval.sh)" \
+                                   || warn "evals/ present but no scripts/eval.sh runner — copy claude-eval-base.sh → scripts/eval.sh (kickoff §1.6b)"
+else
+    warn "no behavioral evals — the judgment sensor that catches agent regressions at a model / CLAUDE.md / new-skill change; seed evals/ + scripts/eval.sh from the kit (kickoff §1.6b)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════

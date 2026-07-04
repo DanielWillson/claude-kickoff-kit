@@ -28,3 +28,9 @@ release before trusting feature claims.
   categories; where the real line is.
 - [[skills-shortlist]] — no mandatory companion skill; the vetting posture + dated
   shortlist evidence.
+
+## Journal
+
+- [[harness-log]] — the kit's own append-only harness change log (its instance of the
+  root-level `HARNESS_LOG.md` template the kit ships): each harness change recorded as a
+  bet + a retrospect.

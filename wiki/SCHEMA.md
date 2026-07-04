@@ -30,6 +30,16 @@ own evolution. Read this file first every time you touch the wiki.
 - `decisions/` — why the kit says what it says (ADR-lite): context → evidence → verdict →
   what was rejected. The dead ends are first-class content.
 
+## Harness journal (`harness-log.md`)
+
+`harness-log.md` is the kit's **own** harness change journal — its instance of the append-only
+`HARNESS_LOG.md` practice the kit ships into projects (kickoff §1.6a; ROADMAP item X). It is a
+**journal, not a page**: append-only, newest-first, **frontmatter-exempt**, not reconciled
+against source. It is **not** the wiki op-`log.md` that "No maintenance engine" above omits —
+that one would track *wiki-maintenance passes*; this tracks *kit-harness changes* and their
+bets/retrospects. Being kit-internal it may cite maintainer docs (`ROADMAP.md`,
+`wiki/decisions/`); the blank root-level template the kit ships must not.
+
 ## Frontmatter
 
 ```yaml

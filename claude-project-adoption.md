@@ -96,6 +96,10 @@ do. The project's current behavior is the asset. Capture it while it's still tru
   the **TOOLING section pointed at the commands the team already runs** — the audit's
   first job here is to make the existing sensors one-command runnable, not to add new
   opinions.
+- **(if non-throwaway) seed the behavioral-eval scaffold** (`claude-eval-base.sh` →
+  `scripts/eval.sh`, `evals-template/` → `evals/`, kickoff §1.6b) — the judgment sensor beside
+  the audit's code sensor; a golden-output case that pins a judgment the project already relies
+  on, re-run at the next model upgrade to prove the retrofit didn't shift behavior.
 - If there's a calculation/aggregation layer, capture **golden outputs** from the current
   code as a committed test now — before any harness-motivated refactor tempts anyone.
 - If there's no test the team trusts, one **spine test** (end-to-end through the core
