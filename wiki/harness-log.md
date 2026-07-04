@@ -57,6 +57,85 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-04 — Dependency-vulnerability scan + entropy secret pass (known-CVE + unlabeled-secret coverage)
+
+- **Change.** Built the dependency-vulnerability scan and a stronger secret scanner (ROADMAP item
+  **G**) — both in `claude-audit-base.sh`, plus a teaching note in `claude-project-kickoff.md`
+  **§1.6** and one Quick-Checklist line. **Part 1:** a new **`DEPENDENCY VULNERABILITIES`** section
+  with an `sca_scan` helper that detects the ecosystem from its **lockfile** (`package-lock.json` /
+  `yarn.lock` / `pnpm-lock.yaml` · `poetry.lock` / `Pipfile.lock` / `requirements.txt` · `Cargo.lock`
+  · `go.sum` · `Gemfile.lock` · `composer.lock`), shells out to that ecosystem's **own** scanner
+  (`npm/yarn/pnpm audit`, `pip-audit`, `cargo audit`, `govulncheck`, `bundler-audit`,
+  `composer audit`), and gates on the tool's own **high/critical** severity — WARN, not FAIL.
+  **Part 2:** an **entropy pass** inside `SECURITY` — awk-computed Shannon entropy (hex ≥ 3.0,
+  base64 ≥ 4.5 bits/char) flagging long unlabeled high-entropy strings the prefix-bound `key=` grep
+  misses, behind a git-SHA / UUID / placeholder allowlist. `AUDIT_SKIP_SCA=1` skips the
+  network-bound Part 1.
+- **Rationale (the bet).** The audit already caught *committed* secrets and *unpinned* versions but
+  not the thing that bites in practice: **a dependency you already use, correctly pinned, that has
+  *since* had a security hole published against it.** The bet: **detect the ecosystem, shell out to
+  its native scanner, gate on the tool's own severity** — no bespoke CVE database, no JSON parsing —
+  catches that whole class cheaply and stays current for free (the scanner owns the advisory DB).
+  Field-evidence backing: AI writes vulnerable code at a flat ~45% rate across model generations
+  (Veracode, README citation block), so this is *appreciating* pressure, not a passing-model quirk.
+  The load-bearing rule is **`SKIPPED ≠ PASS`**: a scan that couldn't run must degrade **loud**,
+  never green — "prose is not a boundary" turned on the audit itself (a check that reads as
+  protection but never ran is worse than no check).
+- **What it replaced.** Net-new; nothing removed. It is the **other half of the `DEPENDENCIES`
+  (restraint — Principle 8) section** — that one keys on the *manifest* and nudges toward fewer +
+  pinned deps; this keys on the *lockfile* (the resolved tree a scanner needs) and asks whether a
+  pinned dep has a *published* hole. Part 2 **strengthens** the prefix-bound `SECURITY` secret grep
+  rather than replacing it — the two run side by side (labeled vs. unlabeled).
+- **Shelf-life/risk class.** **Permanent** — its force comes from properties of the world, not a
+  model limitation: CVEs get published against pinned deps regardless of how capable the model is
+  (and against advisories dated *after* any model's cutoff), and credentials are high-entropy
+  strings by construction. Blast-radius is low but **higher than the doc-only R/V/B changes**: this
+  is the kit's first audit safeguard that **executes external tools and reaches the network** — so
+  it's held to read-only scanners, WARN-only (never FAIL, never a write), a loud-SKIP on every
+  couldn't-run path, and an `AUDIT_SKIP_SCA` off-switch.
+- **Related ROADMAP item.** **G** (dependency-vulnerability scan) — Hygiene/catch-up type
+  (the field knows SCA; do it because it's load-bearing), build-order **step 4** alongside **H**
+  (safeguard-rot). Feeds **O**: a conformance check can grep that the scan is wired into a project's
+  `scripts/audit.sh`.
+- **Commit.** `7771982` (the two-file feature) + this log entry.
+- **Design choices worth pointing at.**
+  - **Keyed on the lockfile, not the manifest.** A scanner needs the *resolved* dependency tree, so
+    Part 1 branches on lockfiles — a clean split from `DEPENDENCIES`, which keys on manifests for the
+    pinning nudge. **Polyglot-safe:** the driver loops *every* present lockfile with **no `break`**,
+    so a repo carrying two ecosystems gets both scanned.
+  - **`SKIPPED ≠ PASS`, via the house neutral `·` bullet.** All four couldn't-run paths —
+    scanner-absent, offline / advisory-DB unreachable, no-lockfile, `AUDIT_SKIP_SCA` — print a visible
+    `SKIPPED` on the `·` bullet that touches **no** PASS/WARN/FAIL counter and never changes the exit
+    code. Never a silent green, never a spurious FAIL.
+  - **The classifier's split is deliberately asymmetric.** `command -v` gates "not installed"; exit 0
+    is the *only* PASS; a non-zero exit is split — a network/advisory-DB failure → loud SKIP, anything
+    else → WARN. **Unknown-nonzero defaults to WARN, never SKIP**, so a real finding can never hide
+    behind a false "offline." The network regex is kept **tight to infra-failure signatures** (DNS,
+    connection, registry/DB HTTP errors) and was **validated against real npm findings-vs-offline
+    output** — a findings report never matches it (proven, not asserted; the sandbox's `502 / audit
+    endpoint returned an error` does match, so a blocked registry SKIPs rather than false-greens).
+  - **Deliberate don't-over-build line.** No CVE database, no JSON→bespoke-report parsing, no new
+    runtime dependency of the audit's own (entropy is `awk`, a standard tool). **Honest per-ecosystem
+    caveats** in comments, mirroring the `~line 122` grep-limits candor: yarn classic's exit code is a
+    severity *bitmask* that ignores `--level`; `pip-audit` has no severity flag (WARNs on any
+    advisory); **bare `pip-audit` on a poetry/pipenv repo scans the active *env*, not the lockfile —
+    a weaker PASS**, flagged inline with the export-to-requirements fix.
+  - **Entropy allowlist proven non-vacuous.** A 40-hex git SHA has entropy ≈ 4.0 and *would* fire at
+    the hex 3.0 threshold — verified by running the pipeline **without** the allowlist (SHA fires)
+    vs. **with** it (only the planted bare secret survives). So the allowlist does real work; it isn't
+    theatre.
+- **Signal to watch.** Do adopting projects actually **install** the ecosystem scanners, or does the
+  scan mostly land on `SKIPPED (scanner not installed)` — i.e., does the loud SKIP prompt an install
+  (or CI wiring), or get tuned out as noise? Does the entropy pass hold a **low false-positive rate**
+  on real source trees, or does it need a tighter allowlist / per-repo annotation escape-hatch? At a
+  Hardened-tier project that promotes the vuln scan to **FAIL**, does an unpatched upstream CVE cause
+  churn the WARN default was chosen to avoid? If the SKIPs get ignored, the durable fix is **wiring
+  the scanner install into setup / CI**, not more prose.
+- **Retrospect.** *(open — revisit at the next maintenance moment, or when item O's conformance check
+  greps for the scan being wired.)*
+
+---
+
 ## 2026-07-04 — Action-risk gates (gate agent actions by reversibility × reach)
 
 - **Change.** Built the action-risk taxonomy (ROADMAP item **R**) — a project-neutral
