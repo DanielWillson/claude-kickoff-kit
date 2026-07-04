@@ -24,6 +24,7 @@
 > **The Kickoff Kit.** This guide is one file in the **Kickoff Kit** — the set you
 > bring to every new project: this **project-kickoff guide** (setup ritual +
 > principles), **`claude-audit-base.sh`** (the code-health audit you seed in §1.6),
+> **`claude-eval-base.sh`** + **`evals-template/`** (the behavioral-eval suite you seed in §1.6b),
 > **`llm-wiki-kickoff.md`** (how to stand up the project's self-maintaining,
 > reconciled-against-code knowledge wiki, §1.5b), **`prd-template.md`** (a fill-in PRD/spec
 > skeleton), and **`readme-template.md`** (a fill-in **human-facing README** stub, §1.5c),
@@ -36,7 +37,8 @@
 >
 > **Read order (the kit is driven *from this file* — don't read them cover-to-cover):**
 > this guide first; for a Standard+ project read `llm-wiki-kickoff.md` before scaffolding
-> the wiki (§1.5b); seed `claude-audit-base.sh` at §1.6; pull tokens from the **styleguide**
+> the wiki (§1.5b); seed `claude-audit-base.sh` at §1.6 and `claude-eval-base.sh` + `evals-template/`
+> at §1.6b; pull tokens from the **styleguide**
 > at §1.5a; create the human-facing README from `readme-template.md` at §1.5c; read the
 > filled-in **PRD** when you ask for the spec (§1.7). Each step below points to the companion
 > it needs, when it needs it.
@@ -848,6 +850,47 @@ Run `bash scripts/audit.sh` after any significant edit (note: `chmod` is often
 deny-listed under the sandbox — run via `bash`, and write temp logs to `$TMPDIR`,
 not `/tmp`). It complements, doesn't replace, a judgment review of what greps miss.
 
+### 1.6b Seed the behavioral evals (the judgment sensor — see `claude-eval-base.sh` + `evals-template/`)
+The audit (§1.6) is a sensor for the *code*; a **behavioral eval** is a sensor for the
+agent's *judgment* — the agent-behavior analogue of a test suite. A normal test checks the
+code ("does this return 4?"); an eval checks the agent ("asked to do X, does it do the right
+thing?"). *Eval-driven development is to agents what TDD was to code.* Each eval is a **task
+prompt + a way to grade the answer**, in two flavors:
+- **golden-output (preferred, deterministic).** The answer must **equal** a saved value.
+  Exact and cheap, and the grade needs **no live model** — the model only *generates* the
+  candidate; the comparison is plain string equality. Use it wherever the right answer is a
+  fixed string (a path, an id, an exact number).
+- **rubric / LLM-judge.** A fresh agent grades the answer against a short checklist — for
+  *fuzzy* output only (prose, a plan, a judgment call).
+
+**The provenance rule.** Every eval carries the ROADMAP item-A schema — *input · expected
+output · required sources/citations · forbidden actions · approval class* — and enforces one
+standard on any output that asserts a fact: **"a naked factual claim is a defect — it must
+cite its source."** That is the knowledge-work analogue of "tests passed."
+
+**When evals run:** at a **maintenance moment** — a **model upgrade**, a **big `CLAUDE.md`
+edit**, or a **new skill** — to prove the change *helped* rather than quietly regressed
+judgment. This is the mechanism the README's **"What scales with the model, and what doesn't"**
+section promises where it files behavioral evals under *appreciating* and calls a model upgrade
+a *scheduled maintenance event*; it is also the fuller treatment of the standing "behaviour
+evals" the autonomous playbook gestures at (Part 3.7). **Not** on every edit — evals cost
+tokens and shell out to a live model; the audit is the after-every-edit sensor, evals the
+at-a-model-change one.
+
+**The honest caveat — don't oversell it.** LLM-as-judge is **noisy**: documented bias, roughly
+**6-percentage-point swings from the evaluation infrastructure alone**, and models can detect
+they are being evaluated. So **prefer golden-outputs, keep rubrics blunt, and treat the suite
+as a smoke alarm, not a lab scale.** A red result means "look here," not "regression proven."
+(ROADMAP item I is the cousin: a golden-oracle for non-deterministic output.)
+
+**Scale by tier (§1.0):** a throwaway needs **none**; a project you'll maintain **seeds a few**
+now and grows the suite to roughly **8–15 representative cases** over time — one more whenever a
+judgment matters. Seed it like the audit: copy **`claude-eval-base.sh`** to `scripts/eval.sh`
+and the **`evals-template/`** directory to `evals/` (its README defines the fixture format and
+the two grade types; it ships with one golden and one rubric example). Run `bash scripts/eval.sh`
+at the maintenance moments above (exit 0 = every eval held). Like the audit, it ships mostly
+empty on purpose — its worth grows as you add the cases that encode *this* project's judgment.
+
 ### 1.7 Confirm and hand off
 Tell the user setup is done, remind them to **enter auto mode (`Shift+Tab` cycles the
 permission mode) and restart so the sandbox initializes** (the sandbox comes from settings, not
@@ -858,7 +901,8 @@ guide, the templates, the audit *base*) is used **once**, at kickoff. **Do not c
 the project repo, and do not `@`-import it from `CLAUDE.md` or paste its content there** —
 either would reload the whole kit into *every* future session's context for no benefit. What
 persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.json`,
-`scripts/audit.sh`, `wiki/`, `README.md`, and the filled-in PRD. Those — plus the principles
+`scripts/audit.sh`, `scripts/eval.sh`, `evals/`, `wiki/`, `README.md`, and the filled-in PRD.
+Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
 everything forward. The source kit lives **outside** the repo (e.g. `~/dev/claude-kickoff-kit/`)
 and is handed to a project's kickoff — or its one-time adoption
@@ -1225,7 +1269,9 @@ don't have.
    into the DoD — it checks invariants the tests don't. *(A golden oracle + fixtures-first DoD +
    a spine test is what the field calls **behaviour evals** — verifying functional correctness,
    the hardest control to automate (Fowler). The practice belongs here; the heavyweight
-   eval-framework machinery — datasets, graders — deliberately does not.)*
+   eval-framework machinery — datasets, graders — deliberately does not. The standing
+   judgment-eval **suite** (run at a model upgrade, not per build) is a distinct artifact —
+   that's §1.6b.)*
 8. **Don't trust a subagent's self-report.** When the run completes, re-run the
    DoD commands yourself and *read the test the agent wrote* — a trivially-passing
    test reports green too. A subagent's "it passed" is a claim, not proof.
@@ -1345,6 +1391,7 @@ don't have.
 - [ ] `CLAUDE.md` carries the **Knowledge & memory** directive: read-the-wiki-first + project-knowledge-in-the-repo-NOT-`~/.claude` (§1.5)
 - [ ] human-facing `README.md` created from `readme-template.md`; `reconcile-code` anchor filled with its real source paths so the audit can flag drift (§1.5c)
 - [ ] (if non-throwaway) knowledge wiki scaffolded + seeded with 2–3 real incident/decision pages; **both** maintenance triggers wired (`/wiki` + the unattended reconcile pass); `WIKI_LINT_CMD` wired into the audit (see `llm-wiki-kickoff.md`)
+- [ ] (if non-throwaway) behavioral evals seeded — `evals-template/` → `evals/` + `claude-eval-base.sh` → `scripts/eval.sh`, one golden + one rubric case; re-run at a model upgrade / big `CLAUDE.md` edit / new skill (§1.6b)
 - [ ] (if UI) design tokens + a starter primitive seeded before the second screen (Principle 5)
 - [ ] backups/dumps/temp kept OUT of the repo tree (`$TMPDIR`); data store + its sidecars + `*.bak` gitignored (§1.2)
 - [ ] (if on a mounted/synced volume) venv + caches symlinked to local disk; `git check-ignore` verified; mtime not trusted (§1.1a)

@@ -168,6 +168,16 @@ Each file is labeled with what it does, and why it earns a place.
   project and grown over time, gaining a new check every time a bug is fixed. It is the
   project's fastest, most reliable sensor: an ordinary script, no AI involved, that runs
   anywhere.
+- **`claude-eval-base.sh`** — a starter **behavioral-eval runner**, copied into the project as
+  `scripts/eval.sh`. It shells out to a headless model, feeds each saved task, and grades the
+  answer — golden-output equality (preferred, deterministic) or a blunt LLM-judge rubric. It's
+  the sensor for the agent's *judgment* rather than the code, run at the moments the kit calls
+  scheduled maintenance: a model upgrade, a big `CLAUDE.md` change, or a new skill. *Eval-driven
+  development is to agents what test-driven development was to code.*
+- **`evals-template/`** — the starter **eval suite**, copied into the project as `evals/`: a
+  short README defining the fixture format and the two grade types, plus two example `.eval.md`
+  cases (one golden, one rubric). Like the audit base, it ships mostly empty on purpose — grow
+  it to roughly 8–15 representative cases over time.
 - **`prd-template.md`** — a fill-in-the-blanks **product spec**: what's being built, why, and
   which rules must always hold. It is a guide — the place those must-never-break rules get named
   before any code exists.
@@ -226,7 +236,8 @@ Two ways to hand the kit to a fresh session:
 
 Either way: at the start of a new project, Claude runs the setup, takes the
 principles on board, and produces the project's lasting files: the instruction file, the
-settings, the health-check script, the wiki, the README, and the filled-in spec. *Those* live
+settings, the health-check script, the behavioral-eval suite, the wiki, the README, and the
+filled-in spec. *Those* live
 in the project's code. The kit itself does not. After setup, the kit drops away — day-to-day
 work reads the project's own slim instruction file and wiki, never the kit again.
 
