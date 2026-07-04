@@ -630,6 +630,67 @@ can touch it**, is host-side branch protection. For a shared repo (Intake Q6), t
   exfil path. Keep all of this gated to the second-committer condition — a genuinely
   solo-one-agent repo doesn't need server-side machinery.
 
+### 1.3c Action-risk gates — the deny/ask boundary, generalized beyond code edits
+§1.3a's boundary bullet — **"Hard boundaries are deny/ask rules — not a conversational 'don't
+push'"** — draws that line for one action, `git push`. This subsection is the **generalization of
+that bullet beyond code edits**: the moment an agent can do more than edit its own repo — send a
+message, publish, delete state that isn't in git, spend, or change a record another system reads —
+each of those is its own boundary, and each is a deny/ask rule or it is nothing.
+
+**Classify every action the agent can take on two axes:**
+- **Reversibility** — can it be undone? Editing a file under git or cutting a branch: *yes*.
+  Deleting non-git state, sending a message, spending money, publishing: *no*.
+- **Reach / blast radius** — does it stay **inside the project**, or reach the **outside world** —
+  other people, money, production state, or a record other systems depend on?
+
+The two axes roll up to the same `low` / `medium` / `high` tier `HARNESS_LOG.md` already uses
+(reuse that vocabulary — don't mint a fourth), and the tier picks the gate:
+
+| Reversibility × reach | Tier | Gate |
+|---|---|---|
+| reversible **and** local | `low` | **auto** — runs unattended, no rule |
+| exactly one axis crosses (irreversible **or** outward) | `medium` | **ask** (often plus a dry-run / batch-cap in the tool) |
+| irreversible **and** outward | `high` | **ask**, or **deny** for the non-negotiable |
+
+For the *gate decision* the two axes collapse to one question: **does it reach outside the project,
+or can it not be undone? Then it does not run unattended.** Local-and-reversible is the only
+combination that earns `auto`. The gate types:
+- **auto** — the *absence* of a gate: no settings key; the auto classifier handles it. Local +
+  reversible only.
+- **ask** — a `permissions.ask` rule on the action's tool invocation; it prompts **even in auto
+  mode**. `git push` is the seed (Principle 4).
+- **deny** — a `permissions.deny` rule. A *non-negotiable* also goes to the **managed floor**
+  (Part 0), so the agent can't edit the file its own boundary lives in.
+- **dry-run** and **batch-cap** are **not settings keys** — they are patterns in the *action's own
+  tooling* (a `--dry-run` flag; a "max N per run" cap the script enforces). They shrink blast
+  radius, but the thing wired into `.claude/settings.json` is still the **`ask`/`deny`** on the
+  invocation. Never write `"batch-cap": 50` as a settings key; it does nothing.
+
+**The spine — stated once, enforced everywhere: the `ask`/`deny` classes are wired into
+`.claude/settings.json` per [`templates/project.settings.json`](templates/project.settings.json);
+the non-negotiable goes to the managed floor; the truly dangerous action is a `deny` rule — *never a
+sentence in `CLAUDE.md`.*** A risk table in the contract is a **map, not a control**: it is Level-A
+prose (§1.3a), which the agent can reason past and which a context compaction can silently drop. It
+gates nothing until each of its `ask`/`deny` rows exists as a real rule at **Level B**
+(`.claude/settings.json`) or the **managed floor (Level D)** — the levels from
+[`securing-claude-sessions.md`](securing-claude-sessions.md). Routing a high-blast-radius action to
+Level-A prose leaves it **ungated**; route it to Level B ask/deny (or the managed floor) or it is not
+gated at all. (This is why the §1.5 table and its settings rules share one greppable marker — the
+`action-risk` tag — so the audit (§1.6) can *prove* the wiring exists instead of trusting it.)
+
+**Agnostic examples.** An agent that can **publish to a personal blog** — irreversible + outward →
+`high` → `ask` (or `deny`, if it must never publish unattended). A script that can **delete files
+not under git** — irreversible + local → `medium` → `ask`, behind a `--dry-run` first — or **spend
+on a paid API** — irreversible + outward → `high` → `ask` plus a per-run cap in the script. A tool
+that **writes to a shared datastore** other systems read — irreversible + outward → `high` →
+`ask`/`deny`.
+
+**Scale by tier (§1.0).** A throwaway that only edits its own code has no outward actions — every
+action is `low`/auto and the per-repo floor already covers it, so skip the table entirely. The moment
+the project can **reach outside itself**, it needs both halves: the table in `CLAUDE.md` (§1.5) *and*
+the gates wired in `.claude/settings.json`. The audit (§1.6) checks the second half is actually
+present — a described `ask`/`deny` row with no tagged rule is exactly the failure it catches.
+
 ### 1.4 Verify before relying on it
 - Validate the settings JSON: it must parse and the hook command must be present.
 - Pipe-test the auto-commit hook in a throwaway repo (`/tmp`) before trusting it —
@@ -731,6 +792,27 @@ Guard it in the audit. Omit if the target has normal internet.>
 - <test>: `...`
 - <lint>: `...`
 - <run>: `...`
+
+## Action-risk gates (if applicable) <!-- action-risk -->
+<!-- action-risk MARKER — keep this tag. This table is a MAP, not a control: it is Level-A prose
+     (kickoff §1.3c) and prose is not a boundary. Every `ask`/`deny` row below MUST also exist as a
+     permissions.ask / permissions.deny rule in .claude/settings.json (see templates/project.settings.json),
+     each rule carrying this same `action-risk` tag INLINE on the rule line, so scripts/audit.sh (§1.6)
+     can join this table to those rules and prove the gate exists. A dangerous action gated only by this
+     table is NOT gated.
+     `dry-run` and `batch-cap` are NOT settings keys — they are patterns in the action's OWN tooling
+     (a `--dry-run` flag; a "max N per run" cap the script enforces); what gets wired into settings is
+     still the `ask`/`deny` on the invocation.
+     OMIT this whole section if the project takes no action beyond editing its own code (every action is
+     local + reversible → auto; the per-repo floor already covers it). Add it the moment the agent can
+     reach OUTSIDE the project. Rows below are AGNOSTIC PLACEHOLDERS — replace with this project's real actions. -->
+
+| Action class | Gate (auto / ask / deny / dry-run / batch-cap) | Risk tier | Where enforced |
+|---|---|---|---|
+| `<edit files under git>` | auto | low | classifier — no rule needed |
+| `<delete non-git state / large local rewrite>` | ask (+ `--dry-run` in the tool) | medium | `.claude/settings.json` `ask`, tagged `action-risk` |
+| `<publish · send a message · spend via a paid API>` | ask (+ batch cap in the script) | high | `.claude/settings.json` `ask`, tagged `action-risk` |
+| `<the action that must never run unattended>` | deny | high | `.claude/settings.json` `deny`, tagged + managed floor |
 
 ## Review
 - **Reviewer + source of truth.** Default (solo): `reviewer = me; I verify against scripts/audit.sh + the spec, in small batches`. Swap in <who reviews the agent's work> and the <source(s) of truth they verify against — audit / spec / wiki, never "looks right">.
@@ -1426,6 +1508,7 @@ don't have.
 - [ ] **per-repo floor applied to EVERY tier (incl. Lean):** project secret-*read* denies (`.env*`, `secrets/**`) + native `Write`/`Edit` denies on the same paths + enforcement-file denies (`.claude/settings.json`, `hooks/**`) — on top of the Part 0 machine floor (which carries the `~/.ssh`/`~/.aws`/`~/.npmrc` denies + the OS sandbox) (§1.3, §1.3a)
 - [ ] `git push` / `gh pr merge` in the **`ask`** tier (prompts even in auto mode), not hard-denied — push is a one-confirmation gate (§1.3a, Principle 4)
 - [ ] `CLAUDE.md` left **ungated** (never in `ask`/`deny`) — the write-back loop edits it nearly every session
+- [ ] (if the project acts beyond its own code) **action-risk table** in `CLAUDE.md` + each `ask`/`deny` class **wired into `.claude/settings.json`** and tagged with the shared `action-risk` marker — deterministic gates, not prose; the audit checks the wiring (§1.3c, §1.6)
 - [ ] `defaultMode: "auto"` set in **USER `~/.claude/settings.json`** (ignored from project/local) — assume auto mode is the posture
 - [ ] forced up-front intake answered, safe-default: real secret/token present (Q9)? · shared repo / 2nd committer (Q6)? · max-lockdown / shared machine? (skip = the locked-down choice)
 - [ ] (if shared repo — Q6) **server-side** branch protection on `main` (block force-push + deletion, require the CI check) + CODEOWNERS on `.claude/**`/`hooks/**`/`.github/**`/`CLAUDE.md` (note: CODEOWNERS doesn't guard direct pushes) + least-privilege/SHA-pinned CI (§1.3b)

@@ -17,6 +17,12 @@
       // push/merge is the outward-facing gate (Principle 4) — one confirmation even in auto mode. Workflow discipline.
       // Irreversible force-push / branch-delete is ALSO gated in the MANAGED floor as a machine-wide security baseline.
       "Bash(git push *)", "Bash(gh pr merge *)"
+      // ACTION-RISK gates (kickoff §1.3c) — if THIS project acts BEYOND editing its own code (publish, send a
+      // message, delete non-git state, spend), add the ask rule for each such action HERE and tag it INLINE with
+      // the shared `action-risk` marker, so scripts/audit.sh can prove the CLAUDE.md action-risk table is actually
+      // wired, not just prose. Uncomment + adapt — keep the tag on the rule line so the audit counts it:
+      //   "Bash(<your-publish-or-send-cmd> *)",   // action-risk — ask: irreversible + outward (high)
+      //   "Bash(<your-paid-api-cmd> *)",          // action-risk — ask: spends money (high); the script also caps N/run
     ],
     "deny": [
       // THIS project's secret READS + native writes/edits (machine creds are already denied in the managed floor)
@@ -29,6 +35,9 @@
       "Edit(.claude/settings.json)", "Write(.claude/settings.json)",
       "Edit(hooks/**)", "Write(hooks/**)"
       // ADD this project's load-bearing paths: config that must not be rewritten, a migrations dir, the data model.
+      // ACTION-RISK deny (kickoff §1.3c) — an action that must NEVER run unattended goes here (and, if truly
+      // non-negotiable, also in the managed floor). Tag it INLINE with the shared `action-risk` marker:
+      //   "Bash(<irreversible-destructive-cmd> *)",   // action-risk — deny: irreversible + outward, never unattended
     ]
   },
   "sandbox": {

@@ -81,6 +81,14 @@ choice is the security decision.** We put our *convenient* rules (allow/ask) in 
 ship to everyone via git — and our *non-negotiable* rules (deny, sandbox locks) in the managed
 file so nobody, agent included, can weaken them. Same syntax, very different strength.
 
+**The five levels answer "where can a control live"; the companion question is "which *actions*
+need which level."** That mapping — classify each action the agent can take by *reversibility ×
+reach*, then route the dangerous ones to a strong-enough control — is the **action-risk taxonomy**
+in the kickoff guide (§1.3c). Its rule is the one this whole guide turns on: a high-blast-radius
+action (publish, send a message, delete non-git state, spend) belongs at **Level B** (`ask`/`deny`
+in `.claude/settings.json`) or the **managed floor (Level D)**, **never** in Level-A prose — a
+sentence in `CLAUDE.md` is not a gate.
+
 > **How these five levels map to the rest of the kit.** The [`CHEATSHEET.md`](CHEATSHEET.md) lists the same
 > idea as seven layers — it splits **B** into committed-project / local / user settings, and gives the **OS
 > sandbox** its own row. In the kit's vocabulary: **A** = the mode + classifier; **B** = the **per-repo floor**

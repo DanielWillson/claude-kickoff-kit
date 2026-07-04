@@ -157,6 +157,41 @@ if [ -n "$OFFLINE_ASSETS" ]; then
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
+section "ACTION-RISK GATES (deterministic enforcement — kickoff §1.3c)"
+# An action-risk table in CLAUDE.md (§1.5) classifies what the agent can do by reversibility × reach
+# and maps the dangerous classes to ask/deny gates. But that table is PROSE, and prose is not a
+# boundary (§1.3a): a row marked ask/deny gates nothing until a real rule exists in
+# .claude/settings.json. This proves the WIRING — if CLAUDE.md carries the shared action-risk marker
+# AND a table row names an ask/deny gate, then .claude/settings.json must carry an ACTIVE rule bearing
+# the paired action-risk tag. WARN, not FAIL — tier-aware like the evals/README presence checks: a
+# project with no outward actions simply omits the table and this stays silent.
+#
+# NOTE (mirrors the INVARIANTS grep-limits note above): this keys on the MARKER, not on semantic
+# action->rule correctness — it catches the gross "tagged table, zero tagged gates" case; verifying that
+# each row is wired to the RIGHT rule is a read / judgment pass, not a parser. Two design points let the
+# marker do a join a bare ask/deny grep cannot:
+#   * it keys on the action-risk tag, NOT on ask/deny presence — so the FLOOR's own untagged
+#     ask(git push) / deny(secret reads) never satisfy it (those rules carry no tag); and
+#   * it counts the tag only on an ACTIVE (non-'//'-comment) settings line — so the template's OWN
+#     commented action-risk examples, and any commented-out rule, can't create a false green.
+# ═══════════════════════════════════════════════════════════════════════════
+ar_claude="$ROOT/CLAUDE.md"
+ar_settings="$ROOT/.claude/settings.json"
+if [ -f "$ar_claude" ] && grep -qiE 'action-risk' "$ar_claude" 2>/dev/null \
+   && grep -qiE '\|[^|]*\b(ask|deny)\b' "$ar_claude" 2>/dev/null; then
+    # CLAUDE.md declares an action-risk table naming ask/deny gates → settings must carry a tagged rule.
+    ar_tagged=""
+    [ -f "$ar_settings" ] && ar_tagged=$(grep -iE 'action-risk' "$ar_settings" 2>/dev/null | grep -vE '^[[:space:]]*//' || true)
+    if [ -n "$ar_tagged" ]; then
+        pass "action-risk gates wired — CLAUDE.md table names ask/deny and .claude/settings.json carries a tagged rule (§1.3c)"
+    else
+        warn "action-risk table in CLAUDE.md names ask/deny gates but NO .claude/settings.json rule bears the paired 'action-risk' marker — high-risk action classes described but not gated; prose is not a boundary (kickoff §1.3c)"
+    fi
+else
+    echo "  ·  no action-risk table in CLAUDE.md (fine if the project acts only on its own code — §1.3c)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════
 section "GIT HYGIENE"
 # The kickoff's auto-commit Stop hook uses `git add -u` (tracked files only), so it
 # won't stage untracked secrets — but it can't catch a secret that was previously

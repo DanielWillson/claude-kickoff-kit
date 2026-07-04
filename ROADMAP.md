@@ -203,6 +203,11 @@ spend via an API, change a record other systems depend on.
   files or spend on a paid API; a tool that writes to a shared datastore.
 - **Build:** a short table in CLAUDE.md or the spec mapping action class → gate type; wire the
   highest-risk classes to deny/ask (deterministic), never prose.
+- **Built 2026-07-04:** teaching in kickoff **§1.3c**; template table in the §1.5 `CLAUDE.md` skeleton +
+  commented example in `templates/project.settings.json`; a Quick-Checklist line; and an `audit.sh` section —
+  all joined by one greppable marker, the **`action-risk`** tag, so **O**'s "action-risk tiers defined (R)?"
+  check greps that tag in `CLAUDE.md` **and** on a paired (active, non-comment) `.claude/settings.json` rule
+  (tagged table but no tagged gate → WARN — prose is not a boundary).
 
 ### S. Rollback / recovery for non-git state *(new; generalizes "no-code rollback")*
 Git covers code; it does not cover state your project depends on that lives elsewhere — a database,

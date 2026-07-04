@@ -57,6 +57,73 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-04 — Action-risk gates (gate agent actions by reversibility × reach)
+
+- **Change.** Built the action-risk taxonomy (ROADMAP item **R**) — a project-neutral
+  classification of what an agent can do *beyond editing its own code* (send a message, publish,
+  delete non-git state, spend, change a record other systems read), gated by **reversibility ×
+  reach**. Five files: new **§1.3c** teaching in `claude-project-kickoff.md`; a marker-tagged
+  **action-risk table** in the §1.5 `CLAUDE.md` skeleton + a Quick-Checklist line (same file); a
+  two-way cross-reference in `securing-claude-sessions.md` (the five levels / Level B ↔ §1.3c);
+  commented, marker-tagged `ask`/`deny` examples in `templates/project.settings.json`; and a new
+  **`ACTION-RISK GATES`** section in `claude-audit-base.sh`. A one-line status note under ROADMAP
+  item R points item **O** at the marker.
+- **Rationale (the bet).** A risk *table* is Level-A prose, and **prose is not a boundary** — a row
+  labelled `ask`/`deny` gates nothing until a real rule exists at Level B (`.claude/settings.json`)
+  or the managed floor. The bet: the taxonomy earns its keep only if its dangerous rows become
+  **deterministic** ask/deny rules *and* the wiring is machine-checkable. The load-bearing invention
+  is a single greppable **marker** (`action-risk`) planted on both the `CLAUDE.md` table and each
+  paired settings rule — the join that lets the audit prove "the dangerous classes are enforced, not
+  just described," which a bare `ask`/`deny` grep **cannot** do (the floor already ships
+  `ask(git push)` + `deny(secret reads)`, so ask/deny always exist).
+- **What it replaced.** Net-new taxonomy; nothing removed. It is the **generalization of the §1.3a
+  boundary bullet** ("Hard boundaries are deny/ask rules — not a conversational 'don't push'")
+  beyond code edits — built *from* that seed and referencing it, not duplicating it. Reuses the root
+  `HARNESS_LOG.md`'s `low`/`medium`/`high` risk vocabulary (no fourth scale) and bridges into
+  `securing-claude-sessions.md`'s five levels (no parallel framework) — the two anti-goals the
+  ROADMAP set for R.
+- **Shelf-life/risk class.** **Permanent** — its force is a property of the world, not the model: *a
+  control is only as strong as the agent's inability to reach it*, and a sentence in a prompt can be
+  reasoned past or dropped on context compaction no matter how capable the model gets. Zero
+  blast-radius: documentation + templates with placeholders (never a filled-in instance) + a
+  WARN-only presence check that executes nothing.
+- **Related ROADMAP item.** **R** (action-risk tiers) — one of the two highest-value cross-check
+  newcomers alongside **V** (name the reviewer), build-order step 3. Feeds **O**: the `action-risk`
+  marker is precisely what O's "action-risk tiers defined (R)?" conformance check greps — the table
+  marker in the *project's* `CLAUDE.md` plus a paired tag on a `.claude/settings.json` rule.
+- **Commit.** `77e171e` (the five-file feature) + this log entry.
+- **Design choices worth pointing at.**
+  - **The marker is the whole mechanism.** `<!-- action-risk -->` on the skeleton table; an
+    **inline** `// action-risk` comment on each settings rule. The audit joins the two files by this
+    token and **skips the floor's own rules** (they carry no tag) — resolving the "ask/deny always
+    exist, so a grep can't tell a floor rule from an action-risk rule" problem a naive check trips on.
+  - **Two properties make the check honest, both proven empirically (not asserted).** (1) It keys on
+    the **marker**, not on `ask`/`deny` presence — so the floor's own untagged `ask(git push)` does
+    **not** silence it (shown: the fixture WARNed *with* `ask(git push)` present). (2) It counts the
+    marker only on an **active (non-`//`) settings line** — so the template's own commented
+    `action-risk` examples, which ship into *every* project's `settings.json`, can't create a false
+    green (shown: the `^\s*//` filter yields empty on the template). That second point was the subtle
+    trap: shipping the token in template comments would have **disabled the check for every project**;
+    the filter neutralizes it and, as a bonus, correctly ignores commented-out (inactive) rules.
+  - **Deliberate under-/over-build line.** A presence/wiring check mirroring the secret-READ and
+    behavioral-evals precedents — **not** a table parser. Row-by-row semantic correctness (is *this*
+    row wired to the *right* rule?) is left to a read/judgment pass, flagged in an honest code comment
+    that mirrors the `~line 122` grep-limits note.
+  - **Tier-aware WARN, not FAIL.** A throwaway that only edits its own code omits the table and the
+    check stays **silent** — unlike the evals check (which WARNs on absence), because action-risk
+    gating is *conditional* on the project having outward actions.
+  - **Numbering vs. concept.** §1.3c sits after §1.3b but generalizes §1.3a; it opens with an
+    explicit back-reference to that bullet, which is what reconciles the numbering slot with the idea.
+- **Signal to watch.** When item **O** ships: does the `action-risk` marker reliably survive into
+  generated project `CLAUDE.md` **and** `settings.json`, giving O's grep a stable table↔rule join? Do
+  real projects actually **wire** the `ask`/`deny` rows, or leave the placeholder table sitting as
+  prose — the exact failure this check exists to catch? And does the **inline-tag** convention hold,
+  or do projects tag on the line *above* the rule (which the `^\s*//` filter would miss → a false
+  WARN)? If the last, the durable fix is a smarter filter or a more distinctive marker — not more prose.
+- **Retrospect.** *(open — revisit when item O's conformance check lands, same trigger as the V entry.)*
+
+---
+
 ## 2026-07-04 — Name the reviewer (the human review/steer dimension)
 
 - **Change.** Made the kit's implicit "a human reviews the agent's work" assumption **explicit**
