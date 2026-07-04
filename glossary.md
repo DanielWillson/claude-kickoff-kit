@@ -119,6 +119,7 @@ Shipped into the kit; each points to where it lives.
 | B | **Harness scorecard** | A monthly trend of cheap numbers showing whether the harness is paying off. | [`scripts/harness-metrics.sh`](scripts/harness-metrics.sh), kickoff §1.6a |
 | V | **Name the reviewer** | Every project names *who* reviews the agent's work and *what source of truth* they check against. | kickoff §1.5 (`## Review` block) + Quick Checklist |
 | X | **Harness change log** | An append-only record of what changed in the harness and why — portable enough for cross-repo learning. | [`HARNESS_LOG.md`](HARNESS_LOG.md), [`wiki/harness-log.md`](wiki/harness-log.md) |
+| R | **Action-risk tiers** | Classify the agent's actions by reversibility × reach; wire the dangerous ones to deny/ask, not prose. | kickoff §1.3c + the `<!-- action-risk -->` table in §1.5 + the audit marker check (§1.6) + [`templates/project.settings.json`](templates/project.settings.json) |
 
 ## Roadmap items — planned
 
@@ -128,7 +129,6 @@ Names locked; definitions use the vocabulary above. Build state and detail live 
 | Item | Name | One-line definition |
 |---|---|---|
 | O | **Adoption check + fan-out verifier** | A script that checks a repo actually adopted the kit's artifacts, run by focused sub-agents so no one context reads the whole kit. |
-| R | **Action-risk tiers** | Classify the agent's possible actions by reversibility × reach, and wire the dangerous ones to deny/ask (not prose). |
 | C | **Flight recorder** | A durable record of what an agent did during a run, so you can inspect *why* it went wrong or got expensive. |
 | G | **Dependency-vulnerability scan** | An audit step that flags libraries with known published security holes, plus stronger secret detection. |
 | H | **Safeguard-rot check** | Makes each safeguard verify its own target still exists, so it fails loud instead of silently dying. |
