@@ -732,6 +732,10 @@ Guard it in the audit. Omit if the target has normal internet.>
 - <lint>: `...`
 - <run>: `...`
 
+## Review
+- **Reviewer + source of truth.** Default (solo): `reviewer = me; I verify against scripts/audit.sh + the spec, in small batches`. Swap in <who reviews the agent's work> and the <source(s) of truth they verify against — audit / spec / wiki, never "looks right">.
+- A team's role-specific enablement (who reviews which class of change) lives in **this project's own docs, not the kit**, and scales up from that line.
+
 ## Environment quirks (hard-won)
 <gotchas a fresh session would trip on, as one-line guardrails: a venv symlinked to
 local disk because the project is on a synced volume (§1.1a), a manual settings-install
@@ -772,6 +776,18 @@ to the wiki** (§1.5b), not into `CLAUDE.md`: how-a-subsystem-works (architectur
 the why/failure history (decision/incident pages). See **Principle 2** for the one-line
 routing rule. Keep `CLAUDE.md` current — a stale contract is worse than none, because it
 misleads; update it in the same commit as the change that makes it wrong.
+
+**Name the reviewer — and what they verify against.** The `## Review` block above is small
+but load-bearing: the kit assumes a human steers and reviews the agent's work, and this is the
+one line that says *who* reviews and *against what*. Verification, not generation, is the scarce
+resource (the README's METR citation), so the harness assumes that reviewer can do four concrete
+things — **write a clear spec, define "done," verify output against a named source of truth (the
+audit, the spec, or the wiki — not their gut / "looks right"), and work in small batches.** The
+guide already leans on two of these: small commits *are* the review surface (**Principle 4**), and
+review rounds per feature are what §1.6a's **Rule of Five** counts. Naming the reviewer makes that
+review-capacity bottleneck concrete — the README's "steer = review the work in small batches" line,
+made actionable. Solo it's the one-liner (`reviewer = me`); a team's role-specific enablement — who
+reviews which class of change — scales up from it in the project's own docs, not the kit.
 
 ### 1.5a Seed the design system early (if the project has a UI)
 Before building the *second* screen, lay the styling foundation — it's trunk work (like the
@@ -1424,6 +1440,7 @@ don't have.
 - [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`
 - [ ] routing rule applied: guardrail → `CLAUDE.md`, machine-check → audit, full story (why/dead-ends/history) → wiki (Principle 2)
 - [ ] `CLAUDE.md` carries the **Knowledge & memory** directive: read-the-wiki-first + project-knowledge-in-the-repo-NOT-`~/.claude` (§1.5)
+- [ ] `CLAUDE.md` carries a `## Review` block: reviewer named + the source(s) of truth they verify against (audit / spec / wiki, **not "looks right"**) + small-batch discipline (§1.5)
 - [ ] human-facing `README.md` created from `readme-template.md`; `reconcile-code` anchor filled with its real source paths so the audit can flag drift (§1.5c)
 - [ ] (if non-throwaway) knowledge wiki scaffolded + seeded with 2–3 real incident/decision pages; **both** maintenance triggers wired (`/wiki` + the unattended reconcile pass); `WIKI_LINT_CMD` wired into the audit (see `llm-wiki-kickoff.md`)
 - [ ] (if non-throwaway) behavioral evals seeded — `evals-template/` → `evals/` + `claude-eval-base.sh` → `scripts/eval.sh`, one golden + one rubric case; re-run at a model upgrade / big `CLAUDE.md` edit / new skill (§1.6b)
