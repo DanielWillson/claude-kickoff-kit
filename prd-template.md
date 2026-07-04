@@ -7,7 +7,7 @@
 > **How it feeds the build:** the kickoff's §1.6 audit and `CLAUDE.md` extract this doc's
 > **load-bearing invariants** (the ones an agent could silently violate) into greps +
 > contract lines; the **Open decisions** table is what you resolve before fan-out
-> (Part 3's `CONTRACT.md`). Keep this lean — it states *what & why*, not *how*.
+> (Part 3's `BRIEF.md`). Keep this lean — it states *what & why*, not *how*.
 
 ## Problem & goal
 <The one job this exists to do, in 1–3 sentences. What's broken/missing today.>
@@ -34,7 +34,7 @@ audit grep (kickoff §1.6) and a `CLAUDE.md` line.>
 derived (API layer, not client — Principle 1). Omit for non-data projects.>
 
 ## Success criteria (machine-checkable where possible)
-<How you know it works: the spine integration test, key endpoints answer, expected
+<How you know it works: the critical-path integration test, key endpoints answer, expected
 output counts. This becomes the Definition of Done (Part 3.7).>
 
 ## Open decisions

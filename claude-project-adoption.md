@@ -26,8 +26,8 @@ Build the map before forming opinions (fan the broad sweeps out to subagents, Pa
 the map matters more than any single file):
 
 - **What already exists of the harness, under other names.** An `AGENTS.md`/`CLAUDE.md`, a
-  `docs/` tree, a Makefile/CI pipeline (those are sensors), lint/format configs, git hooks,
-  a test suite. The kit *adapts to* working machinery — it never replaces a sensor that
+  `docs/` tree, a Makefile/CI pipeline (those are verifiers), lint/format configs, git hooks,
+  a test suite. The kit *adapts to* working machinery — it never replaces a verifier that
   already fires with a kit-flavored equivalent (an operator lesson the field keeps
   re-learning: harness automation must earn its keep, per line, against what's already
   there).
@@ -64,7 +64,7 @@ Ask in **one batch**, not a drip (same rule as the kickoff intake).
 ### 0c. Propose — a written plan the user approves before anything changes
 
 Write the proposal: the gap list; what you'd add or change, **in what order and why**;
-what you'd explicitly *not* do (the existing sensors that stay, the kit pieces this
+what you'd explicitly *not* do (the existing verifiers that stay, the kit pieces this
 project doesn't need); and the risk each change carries to current behavior. Have it
 adversarially reviewed (Principle 6), then put it to the user. In an existing project the
 proposal *is* this step's product — the edits are what happens after a yes. (This is the
@@ -87,22 +87,22 @@ adoption-specific additions:
   `ask`/deny additions land as a PR with one-line rationales, not a silent settings change
   — the floor protects the repo *from the agent*; it shouldn't ambush the humans.
 
-## 2. Pin the oracle before improving anything (Principle 10, promoted to step 2)
+## 2. Pin the baseline before improving anything (Principle 10, promoted to step 2)
 
 In greenfield, Principle 10 is an appendix concern; in adoption it is the second thing you
 do. The project's current behavior is the asset. Capture it while it's still true:
 
 - Wire the audit skeleton (`claude-audit-base.sh` → `scripts/audit.sh`, kickoff §1.6) with
   the **TOOLING section pointed at the commands the team already runs** — the audit's
-  first job here is to make the existing sensors one-command runnable, not to add new
+  first job here is to make the existing verifiers one-command runnable, not to add new
   opinions.
 - **(if non-throwaway) seed the behavioral-eval scaffold** (`claude-eval-base.sh` →
-  `scripts/eval.sh`, `evals-template/` → `evals/`, kickoff §1.6b) — the judgment sensor beside
-  the audit's code sensor; a golden-output case that pins a judgment the project already relies
+  `scripts/eval.sh`, `evals-template/` → `evals/`, kickoff §1.6b) — the judgment verifier beside
+  the audit's code verifier; a golden-output case that pins a judgment the project already relies
   on, re-run at the next model upgrade to prove the retrofit didn't shift behavior.
-- If there's a calculation/aggregation layer, capture **golden outputs** from the current
+- If there's a calculation/aggregation layer, capture a **baseline** from the current
   code as a committed test now — before any harness-motivated refactor tempts anyone.
-- If there's no test the team trusts, one **spine test** (end-to-end through the core
+- If there's no test the team trusts, one **critical-path test** (end-to-end through the core
   path) is worth more than any document this guide produces. Build it first.
 
 ## 3. CLAUDE.md from evidence, not aspiration (kickoff §1.5)
@@ -133,9 +133,9 @@ relocate them and add frontmatter; regenerating them is the anti-pattern.
 Scale honestly (wiki guide §1): a small stable project may stop at detailed commit bodies
 plus audit guards; graduate to the wiki when the project outgrows them.
 
-## 5. Ratchet forward — adoption is a habit, not a sprint
+## 5. Safeguard forward — adoption is a habit, not a sprint
 
-Everything after the floor + oracle arrives **incrementally, pulled by real events**, not
+Everything after the floor + baseline arrives **incrementally, pulled by real events**, not
 as a big-bang harness sprint that halts feature work:
 
 - Every bug fixed from now on leaves the kit's three artifacts (Principle 2's routing
@@ -149,12 +149,12 @@ as a big-bang harness sprint that halts feature work:
 
 ## Order recap and Definition of Done
 
-**Evaluate → interview → propose (approved) → floor (+ secret triage) → oracle/audit →
-CLAUDE.md → wiki seed → ratchet.**
+**Evaluate → interview → propose (approved) → floor (+ secret triage) → baseline/audit →
+CLAUDE.md → wiki seed → safeguard.**
 
 Adoption is *done enough* when: the floor is committed and **proven to bite** (kickoff
 §1.4 — a denied secret read actually blocks); `bash scripts/audit.sh` runs the team's real
 checks and FAILs on a tracked secret; `CLAUDE.md` exists with only evidence-backed lines
 and the knowledge-routing block; the wiki holds at least three real incident/decision
 pages (or the project has consciously deferred it); and the next fixed bug leaves all
-three artifacts behind. Everything else is the ratchet's job.
+three artifacts behind. Everything else is the safety net's job.

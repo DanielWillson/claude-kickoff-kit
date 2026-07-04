@@ -21,7 +21,7 @@ plus building philosophy. The kit's documents live in this same directory.
   re-sequences the same kit for a live codebase, and its first step is three gated beats —
   **evaluate** the repo thoroughly (read-only), **interview** the user for what the code
   can't answer, then **propose** a written, adversarially-reviewed plan the user approves
-  *before any edit*. Only then: floor, oracle, contract, wiki-from-history. It points back
+  *before any edit*. Only then: floor, baseline, contract, wiki-from-history. It points back
   into the kickoff guide's sections as it goes — keep both at hand.
 
 ## How to run a kickoff (new project)
@@ -36,7 +36,7 @@ plus building philosophy. The kit's documents live in this same directory.
 3. Pull companions when their step comes up, not before:
    - `llm-wiki-kickoff.md` → §1.5b, before scaffolding the wiki (Standard tier and up)
    - `claude-audit-base.sh` → §1.6, copy to `scripts/audit.sh`, wire the TOOLING section
-   - `claude-eval-base.sh` + `evals-template/` → §1.6b, copy to `scripts/eval.sh` + `evals/` (non-throwaway — the judgment sensor)
+   - `claude-eval-base.sh` + `evals-template/` → §1.6b, copy to `scripts/eval.sh` + `evals/` (non-throwaway — the judgment verifier)
    - `scripts/harness-metrics.sh` + `HARNESS_LOG.md` → §1.6a, copy the script into the project + seed `HARNESS_LOG.md` at the repo root (non-throwaway — the ROI gauge)
    - `readme-template.md` → §1.5c, the human-facing README
    - `prd-template.md` → §1.7, hand to the user to fill in if no spec exists

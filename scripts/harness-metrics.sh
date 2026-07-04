@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Harness ROI scorecard — BASE TEMPLATE (stack-agnostic). Part of the Kickoff Kit
+# Harness scorecard — BASE TEMPLATE (stack-agnostic). Part of the Kickoff Kit
 # (see claude-project-kickoff.md §1.6a). Copy to <repo>/scripts/harness-metrics.sh
 # and adapt.
 #
 # WHAT THIS IS. The gauge on your own engine. The kit measures the *field* (the
 # README's evidence); nothing measures whether *this project's* harness — the audit,
-# the wiki, the ratchet — is actually paying off. This is a cheap, run-it-monthly
+# the wiki, the safety net — is actually paying off. This is a cheap, run-it-monthly
 # scorecard: a SNAPSHOT of a handful of numbers, APPENDED as one dated line to a trend
 # log so you can watch the direction of travel over time.
 #
 # WHAT THIS IS NOT. It is the quantitative half. Its companion is HARNESS_LOG.md at the
-# repo root — the qualitative flight recorder, where a *human* writes what changed in the
+# repo root — the qualitative harness change log, where a *human* writes what changed in the
 # harness and why. THIS SCRIPT NEVER WRITES HARNESS_LOG.md; the two are complementary and
 # separate. (Different file, too, from this script's own trend log — see below.)
 #
@@ -86,7 +86,7 @@ fi
 
 if [ -f "$AUDIT" ]; then
     # Approximate: count pass/warn/fail *calls* (not the helper definitions, which are
-    # `pass() { … }` — no space+quote after the name). It is a growth gauge — "is my ratchet
+    # `pass() { … }` — no space+quote after the name). It is a growth gauge — "is my safety net
     # accreting checks?" — not an exact census; tune the pattern to your audit's idiom.
     audit_checks=$(grep -oE '(^|[[:space:];{]|&&|\|\|)(pass|warn|fail)[[:space:]]+"' "$AUDIT" 2>/dev/null | wc -l | tr -d ' ')
     [ -n "$audit_checks" ] || audit_checks="0"
@@ -107,7 +107,7 @@ manual "review rounds per feature (Rule of Five)"   # the Rule of Five — defin
 manual "how often each guard fired"
 manual "% agent changes merged without rework"
 manual "defects caught by tests vs by humans"
-manual "escaped defects (missed by all sensors)"
+manual "escaped defects (missed by all verifiers)"
 manual "rollbacks needed"
 manual "effort per merged change"
 

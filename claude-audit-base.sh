@@ -375,7 +375,7 @@ if [ -f "$ROOT/README.md" ] && git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
-section "BEHAVIORAL EVALS (the judgment sensor — see kickoff §1.6b)"
+section "BEHAVIORAL EVALS (the judgment verifier — see kickoff §1.6b)"
 # Behavioral evals are saved tests for the agent's JUDGMENT (not the code): a task prompt +
 # a grade (golden-output equality — preferred, deterministic; or a blunt LLM-judge rubric).
 # They run at MAINTENANCE MOMENTS — a model upgrade, a big CLAUDE.md edit, a new skill — and
@@ -391,7 +391,7 @@ if [ "${n_evals:-0}" -gt 0 ]; then
     [ -f "$ROOT/scripts/eval.sh" ] && pass "eval runner wired (scripts/eval.sh)" \
                                    || warn "evals/ present but no scripts/eval.sh runner — copy claude-eval-base.sh → scripts/eval.sh (kickoff §1.6b)"
 else
-    warn "no behavioral evals — the judgment sensor that catches agent regressions at a model / CLAUDE.md / new-skill change; seed evals/ + scripts/eval.sh from the kit (kickoff §1.6b)"
+    warn "no behavioral evals — the judgment verifier that catches agent regressions at a model / CLAUDE.md / new-skill change; seed evals/ + scripts/eval.sh from the kit (kickoff §1.6b)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════

@@ -2,11 +2,11 @@
 
 > **This is a starter template the Claude Kickoff Kit seeded into your project, then
 > stepped away from. It is now yours.** It records changes to *this project's* harness —
-> the guides, sensors, templates, settings, and rules that shape how the agent works here.
+> the directives, verifiers, templates, settings, and rules that shape how the agent works here.
 > It is **not** a log of the kit. Delete this banner and the example entry once your own
 > first real entry is in.
 >
-> **Why keep it.** A harness change is a *bet*: every check, rule, or guide you add assumes
+> **Why keep it.** A harness change is a *bet*: every check, rule, or directive you add assumes
 > the model can't be trusted to get that thing right on its own. This log records the bet —
 > *what* changed and *why* — so a later reader (you, a teammate, or a future agent) can tell
 > which changes earned their keep and which were dead weight, instead of assuming. It is the

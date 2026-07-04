@@ -26,7 +26,7 @@ codebase, *the code itself*) is the ground truth it's reconciled against.
   large-scale retrieval: a codebase, a product, a domain an agent works in
   repeatedly. **Don't bother** for a throwaway task or a corpus of thousands of
   unrelated documents. At small scale the **incident/decision layer still matters**,
-  but detailed **commit bodies + audit regression guards** are an acceptable substitute
+  but detailed **commit bodies + audit safeguards** are an acceptable substitute
   for a full wiki — graduate to the wiki when the project outgrows them.
 
 The bet that makes it work: **maintenance is what kills human wikis** (bookkeeping
@@ -679,7 +679,7 @@ fixtures) consumed *every* file in the dir — including OS-generated sidecars (
 
 **Fix / status.** Filter the listing defensively in the loader (keep only the expected
 extension; skip dotfiles) **and** strip the artifacts at the transfer step — two guards,
-because the artifact appears at two stages. Regression-guarded in the audit.
+because the artifact appears at two stages. Safeguarded in the audit.
 
 > ⚠️ This is an *abstracted* example — write yours from a real incident, naming the actual
 > files and the actual dead ends; the failed attempts are the highest-value part.

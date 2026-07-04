@@ -45,9 +45,9 @@ one-claim-one-home rule (`llm-wiki-kickoff.md` §2.9) and reconcile-against-code
 **manual scaffolding** (he writes signatures + TODO comments, agent fills in — *"AI is very
 good at fill-in-the-blank or draw-the-rest-of-the-owl"*); a persistent **spec.md**
 re-anchors every session (*"Consult the @spec.md and work on some task"*) — the file, not
-the chat, is the memory; named the **"slop zone"** (agent looping on a bug it can't fix)
-with recovery by manual restructuring; ends every feature with a read-only review prompt
-(*"…Don't write any code."*). → Part 3.2 (trunk stays inline), Principle 7, Principle 9.
+the chat, is the memory; named the **"slop zone"** (agent looping on a bug it can't fix) —
+what we call the loop trap — with recovery by manual restructuring; ends every feature with a read-only review prompt
+(*"…Don't write any code."*). → Part 3.2 (foundation stays inline), Principle 7, Principle 9.
 
 **HumanLayer — Advanced Context Engineering for Coding Agents / ace-fca** (2025)
 <https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/ace-fca.md>
@@ -71,8 +71,8 @@ window are the ONLY lever you have to affect the quality of your output."* → P
 <https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents>
 After every review, lessons are written back into CLAUDE.md / docs / review agents, tested
 by *"Would the system catch this automatically next time?"* — *"The plan and review steps
-should comprise 80 percent of an engineer's time."* Independent convergence with the kit's
-ratchet (README "big idea"). Klaassen's CLAUDE.md rule: *"Keep it short, keep it alive."*
+should comprise 80 percent of an engineer's time."* What Every calls compound
+engineering, we call the safety net — independent convergence with it (README "big idea"). Klaassen's CLAUDE.md rule: *"Keep it short, keep it alive."*
 (2025-08-18, <https://every.to/source-code/my-ai-had-already-fixed-the-code-before-i-saw-it>)
 
 **Amp (Thorsten Ball, Quinn Slack) — Raising an Agent, ep. 9** (2026-01-22)
@@ -81,7 +81,9 @@ ratchet (README "big idea"). Klaassen's CLAUDE.md rule: *"Keep it short, keep it
 get feedback."* Build feedback affordances into the app itself: a CLI flag that screenshots
 the running TUI for the agent; data-only subcommands so verification doesn't require
 parsing a UI; AGENTS.md pointing at the right feedback tool per change. → the field's
-sharpest phrasing of guides-and-sensors as a *codebase property* (Fowler's harnessability).
+sharpest phrasing of what Fowler calls guides-and-sensors (we call them directives and
+verifiers) as a *codebase property* — Fowler's harnessability, which we call
+harness-friendliness.
 
 **Simon Willison**:
 - *Parallel coding agents* (2025-10-05, <https://simonwillison.net/2025/Oct/5/parallel-coding-agents/>):

@@ -11,7 +11,7 @@
 > `wiki/decisions/`), which the shipped root template must never do.
 
 **What this is.** An append-only, chronological record of every change to *this repo's
-harness* — the guides, sensors, templates, settings, and rules that make up the Claude
+harness* — the directives, verifiers, templates, settings, and rules that make up the Claude
 Kickoff Kit. One entry per harness change.
 
 **Why it exists (the meta-goal).** So we can tell, *over time*, which harness changes actually
@@ -38,7 +38,7 @@ here the kit runs the practice on itself, in its own `wiki/`. (Prior harness his
 > **date · change · rationale (the bet) · what it replaced · shelf-life/risk class ·
 > related ROADMAP item · commit · signal to watch · Retrospect**
 
-Shelf-life/risk class uses the README's durability taxonomy: **invariant** (its force comes
+Shelf-life/risk class uses the README's durability taxonomy: **permanent** (its force comes
 from a property of the world — keep forever), **depreciating** (existed because a model once
 needed it — re-audit at every model upgrade), or **appreciating** (worth more as the model
 improves). *(This is the kit's own, richer schema. The **shipped** root-level template carries a
@@ -79,7 +79,7 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
   kit already makes — **Principle 4** ("small commits are the review surface"), **§1.6a**'s Rule of
   Five (review rounds per feature), and the README's METR "verification is the bottleneck" citation
   + "steer = review in small batches" line — which the addition **references rather than restates**.
-- **Shelf-life/risk class.** **Invariant** — its force comes from a property of the world (human
+- **Shelf-life/risk class.** **Permanent** — its force comes from a property of the world (human
   review bandwidth doesn't scale with the model; a self-report is a claim from any model), the same
   basis under which the README files commit-granularity and independent-verification as *keep
   forever*. Zero blast-radius: documentation only, a template with placeholders — never a filled-in
@@ -112,16 +112,16 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
-## 2026-07-04 — ROI instrumentation on the ratchet (+ this journal's relocation)
+## 2026-07-04 — Harness scorecard on the safety net (+ this journal's relocation)
 
-- **Change.** Built the harness ROI gauge (ROADMAP item **B**) and its change-log companion
+- **Change.** Built the harness scorecard (ROADMAP item **B**) and its change-log companion
   (item **X**): a stack-agnostic `scripts/harness-metrics.sh` (a snapshot of cheap numbers plus
   an append-only trend log) and a blank root-level `HARNESS_LOG.md` **template**, both seeded into
   a project via a new `claude-project-kickoff.md` **§1.6a** and a Quick-Checklist line. As part of
   the same change, the kit's *own* filled-in journal — which had briefly lived at the repo root —
   moved **here to `wiki/harness-log.md`**, freeing the root name to be an unmistakable template.
 - **Rationale (the bet).** The kit measures the *field* (README citations) but never *its own*
-  machine; a cheap, run-it-monthly scorecard lets a project *prove* the ratchet pays off instead
+  machine; a cheap, run-it-monthly scorecard lets a project *prove* the safety net pays off instead
   of assuming it. The root file had to become a clean template (the kit-vs-repo rule): a filled-in
   `HARNESS_LOG.md` at the root was the **lone** kit template carrying real data — every other
   (`claude-audit-base.sh`, `claude-eval-base.sh`, `evals-template/`, the PRD/README templates)
@@ -131,11 +131,11 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 - **What it replaced.** The root `HARNESS_LOG.md` filled-in instance (commit `18a50fd`) — its
   content is preserved verbatim below (the anchor + the evals-scaffold entry), now living here.
   Otherwise net-new: the metrics script and the root template are additive.
-- **Shelf-life/risk class.** **Appreciating** — the ratchet and its instrumentation are worth
-  *more* as the model improves (the README files the ratchet under *appreciating*). Low
+- **Shelf-life/risk class.** **Appreciating** — the safety net and its instrumentation are worth
+  *more* as the model improves (the README files the safety net under *appreciating*). Low
   blast-radius: the script is a report (exit 0 always), degrades gracefully on absent inputs, and
   **never** writes this journal or the shipped `HARNESS_LOG.md`.
-- **Related ROADMAP item.** **B** (ROI instrumentation) + **X** (harness change log). Becomes a
+- **Related ROADMAP item.** **B** (harness scorecard) + **X** (harness change log). Becomes a
   conformance-checked artifact for **O**, and the anchor's version stamp is what **Y** (living
   adoption) reads.
 - **Commit.** `238eefe` (feature + sweep) + this log entry.
@@ -163,9 +163,9 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
-## 2026-07-04 — Behavioral-evals scaffold (the judgment sensor)
+## 2026-07-04 — Behavioral-evals scaffold (the judgment verifier)
 
-- **Change.** Added a second sensor beside the code-health audit: **behavioral evals** — saved
+- **Change.** Added a second verifier beside the code-health audit: **behavioral evals** — saved
   tests for the agent's *judgment* rather than its code. Ships as `claude-eval-base.sh` (the
   runner → a project's `scripts/eval.sh`) and `evals-template/` (the seed suite → a project's
   `evals/`), taught in `claude-project-kickoff.md` **§1.6b**, guarded and presence-checked in
@@ -180,8 +180,8 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
   miss — cheaply, because the preferred **golden-output** grade is deterministic string equality
   that needs no live model to score.
 - **What it replaced.** Net-new capability — nothing removed. It *complements* the audit
-  (`§1.6`): the audit is the after-every-edit code sensor, evals the at-a-model-change judgment
-  sensor. It also makes concrete the "behaviour evals" Part 3.7 only gestured at (the per-run
+  (`§1.6`): the audit is the after-every-edit code verifier, evals the at-a-model-change judgment
+  verifier. It also makes concrete the "behaviour evals" Part 3.7 only gestured at (the per-run
   DoD version), now cross-linked to §1.6b as a distinct standing artifact.
 - **Shelf-life/risk class.** **Appreciating** — per the README, a suite of behavioral evals is
   worth *more* as the model improves (it turns each upgrade into a checkable maintenance event).
@@ -189,12 +189,12 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
   it costs a throwaway nothing.
 - **Related ROADMAP item.** **A** (behavioral evals). Touches **X** (this is the log's first
   real entry), will be a checked artifact for **O** (conformance script), and is the cousin of
-  **I** (golden-oracle for non-deterministic output).
+  **I** (baseline for non-deterministic output).
 - **Commit.** `753e989` (feature) + this log entry.
 - **Code worth pointing at.**
   - `claude-eval-base.sh` — the runner. The two grade types live in the `case "$grade"` block:
     the `golden` arm is a plain `[ "$candidate" = "$expected" ]` (deterministic, no live model
-    to grade); the `rubric` arm shells a *fresh* judge (the doer/judge split). The model command
+    to grade); the `rubric` arm shells a *fresh* judge (the builder/judge split). The model command
     is overridable (`EVAL_CMD` / `EVAL_JUDGE_CMD` / `EVAL_DIR`) — the seam that lets the golden
     path be proven PASS/FAIL with a stub and no live model, which is how it was verified.
   - `claude-audit-base.sh` — the `tracked_kit` guard now catches the eval sources via **two

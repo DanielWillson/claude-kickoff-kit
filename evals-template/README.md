@@ -14,7 +14,7 @@ it do the right thing?" *Eval-driven development is to agents what TDD was to co
 At a **maintenance moment** — a **model upgrade**, a **big `CLAUDE.md` edit**, or a **new
 skill** — to prove the change *helped* rather than quietly regressed the agent's judgment.
 Not on every edit: evals cost tokens and shell out to a live model. The audit
-(`scripts/audit.sh`) is the after-every-edit sensor; this is the at-a-model-change sensor.
+(`scripts/audit.sh`) is the after-every-edit verifier; this is the at-a-model-change verifier.
 
 Run: `bash scripts/eval.sh`  (exit 0 = every eval passed).
 
@@ -89,7 +89,7 @@ fixture, generates a candidate answer, grades it, and prints per-eval PASS/FAIL,
 an exit code. The model command is **overridable** so a self-test can **stub** it — which is
 how the golden path is proven PASS/FAIL on demand with no live model:
 - `EVAL_CMD` — the agent under test (default `claude -p`), fed the task on stdin.
-- `EVAL_JUDGE_CMD` — the rubric judge, a *fresh* invocation (doer/judge split, kickoff Part
+- `EVAL_JUDGE_CMD` — the rubric judge, a *fresh* invocation (builder/judge split, kickoff Part
   3.8; default `claude -p`).
 - `EVAL_DIR` — where the fixtures live (default `<repo>/evals`).
 
