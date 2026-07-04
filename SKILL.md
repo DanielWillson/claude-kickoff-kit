@@ -37,6 +37,7 @@ plus building philosophy. The kit's documents live in this same directory.
    - `llm-wiki-kickoff.md` → §1.5b, before scaffolding the wiki (Standard tier and up)
    - `claude-audit-base.sh` → §1.6, copy to `scripts/audit.sh`, wire the TOOLING section
    - `claude-eval-base.sh` + `evals-template/` → §1.6b, copy to `scripts/eval.sh` + `evals/` (non-throwaway — the judgment sensor)
+   - `scripts/harness-metrics.sh` + `HARNESS_LOG.md` → §1.6a, copy the script into the project + seed `HARNESS_LOG.md` at the repo root (non-throwaway — the ROI gauge)
    - `readme-template.md` → §1.5c, the human-facing README
    - `prd-template.md` → §1.7, hand to the user to fill in if no spec exists
    - `templates/` + `CHEATSHEET.md` → Part 0 / §1.3, the settings layers
@@ -49,7 +50,7 @@ plus building philosophy. The kit's documents live in this same directory.
 - The kit is scaffolding, used once. **Never copy its files into the project repo**, and
   never `@`-import them from the project's `CLAUDE.md`. Only the ritual's *outputs*
   persist: `CLAUDE.md`, `.claude/settings.json`, `scripts/audit.sh`, `scripts/eval.sh`,
-  `evals/`, `wiki/`, `README.md`, the filled-in PRD.
+  `scripts/harness-metrics.sh`, `evals/`, `HARNESS_LOG.md`, `wiki/`, `README.md`, the filled-in PRD.
 - This skill cannot install the machine-wide managed floor (it is root-owned by design) —
   walk the user through Part 0 by hand instead.
 - If the project already exists and is set up, this skill does not apply: work from the

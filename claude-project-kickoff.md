@@ -25,7 +25,8 @@
 > bring to every new project: this **project-kickoff guide** (setup ritual +
 > principles), **`claude-audit-base.sh`** (the code-health audit you seed in §1.6),
 > **`claude-eval-base.sh`** + **`evals-template/`** (the behavioral-eval suite you seed in §1.6b),
-> **`llm-wiki-kickoff.md`** (how to stand up the project's self-maintaining,
+> **`scripts/harness-metrics.sh`** + **`HARNESS_LOG.md`** (the harness ROI scorecard + change log
+> you seed in §1.6a), **`llm-wiki-kickoff.md`** (how to stand up the project's self-maintaining,
 > reconciled-against-code knowledge wiki, §1.5b), **`prd-template.md`** (a fill-in PRD/spec
 > skeleton), and **`readme-template.md`** (a fill-in **human-facing README** stub, §1.5c),
 > plus your own per-project **styleguide** and filled-in **PRD/spec**. Together the Kickoff
@@ -850,6 +851,38 @@ Run `bash scripts/audit.sh` after any significant edit (note: `chmod` is often
 deny-listed under the sandbox — run via `bash`, and write temp logs to `$TMPDIR`,
 not `/tmp`). It complements, doesn't replace, a judgment review of what greps miss.
 
+### 1.6a Seed the harness scorecard (the ROI gauge — see `scripts/harness-metrics.sh` + `HARNESS_LOG.md`)
+The audit (§1.6) and evals (§1.6b) are sensors on the *work*; this is a sensor on the
+**harness itself**. The kit rests on measured evidence about the field at large (the README's
+citations), but nothing here measures whether *your* harness — the audit, the wiki, the ratchet —
+is actually paying off. A rich harness costs real effort to run, so "the ratchet is worth it"
+should be **shown, not assumed**. This is the gauge on your own engine: a cheap scorecard you
+glance at on a slow cadence (monthly is plenty) to watch the ratchet accrete value — the natural
+companion to §1.6's habit of stepping back across your fixes.
+
+Seed two files, the same way you seeded the audit:
+- Copy **`scripts/harness-metrics.sh`** into the project (parallel to §1.6's `claude-audit-base.sh`
+  → `scripts/audit.sh`). It prints a snapshot of a few cheap numbers and appends them as one dated
+  line to a trend log, so the direction of travel shows up over time.
+- Seed **`HARNESS_LOG.md`** at the repo **root**. This filename and location are **fixed and
+  mandated by setup** so any later session — and the skill — can always find it.
+
+**The two files are different and complementary.** The script is the *quantitative* gauge —
+numbers, auto-appended to its own trend log. `HARNESS_LOG.md` is the *qualitative* flight recorder —
+a **human** writes, in prose, *what changed in the harness and why*, one append-only entry per
+change. **The script never writes `HARNESS_LOG.md`.** The numbers tell you *that* something moved;
+the log tells you *why* you moved it.
+
+**Don't over-instrument — a few numbers looked at monthly beat forty ignored.** Start with only the
+two the script computes for free: `CLAUDE.md` line count and audit-check count. The higher-value
+measures are **human counts, not repo-derivable** — review rounds per feature (the **Rule of Five**,
+`LESSONS.md`; a per-artifact review measure — *not* §1.6's every-~5-*fixes* class ratchet, despite
+the shared five), defects caught by humans vs. by tests, escaped defects, rollbacks, effort per
+merged change. The script stubs each of these as an explicit *"human note required"* field; record
+the real ones in `HARNESS_LOG.md`, and promote one into the numeric trend only once it earns its
+keep and the project can compute it honestly. Never fabricate a zero to fill a column. Scale to the
+project: a solo effort's whole scorecard may be two numbers and a one-line log entry — that's fine.
+
 ### 1.6b Seed the behavioral evals (the judgment sensor — see `claude-eval-base.sh` + `evals-template/`)
 The audit (§1.6) is a sensor for the *code*; a **behavioral eval** is a sensor for the
 agent's *judgment* — the agent-behavior analogue of a test suite. A normal test checks the
@@ -901,7 +934,8 @@ guide, the templates, the audit *base*) is used **once**, at kickoff. **Do not c
 the project repo, and do not `@`-import it from `CLAUDE.md` or paste its content there** —
 either would reload the whole kit into *every* future session's context for no benefit. What
 persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.json`,
-`scripts/audit.sh`, `scripts/eval.sh`, `evals/`, `wiki/`, `README.md`, and the filled-in PRD.
+`scripts/audit.sh`, `scripts/eval.sh`, `scripts/harness-metrics.sh`, `evals/`, `HARNESS_LOG.md`,
+`wiki/`, `README.md`, and the filled-in PRD.
 Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
 everything forward. The source kit lives **outside** the repo (e.g. `~/dev/claude-kickoff-kit/`)
@@ -1385,6 +1419,7 @@ don't have.
 - [ ] settings committed with a detailed message
 - [ ] `CLAUDE.md` created: stack, deploy target + quirks, sensitive paths, daily commands
 - [ ] `scripts/audit.sh` seeded from `claude-audit-base.sh`; TOOLING section wired; git-hygiene secret gate active
+- [ ] (if non-throwaway) `scripts/harness-metrics.sh` (ROI gauge) seeded + `HARNESS_LOG.md` seeded at repo root (fixed name); start with the free-to-compute numbers (§1.6a)
 - [ ] (if a 2nd committer — Q6) secret-only `hooks/pre-commit` installed + `core.hooksPath` set + verified by a real blocked commit (§1.3b); `bash scripts/audit.sh` wired into CI
 - [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`
 - [ ] routing rule applied: guardrail → `CLAUDE.md`, machine-check → audit, full story (why/dead-ends/history) → wiki (Principle 2)

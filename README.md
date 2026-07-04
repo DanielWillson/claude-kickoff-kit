@@ -178,6 +178,15 @@ Each file is labeled with what it does, and why it earns a place.
   short README defining the fixture format and the two grade types, plus two example `.eval.md`
   cases (one golden, one rubric). Like the audit base, it ships mostly empty on purpose — grow
   it to roughly 8–15 representative cases over time.
+- **`scripts/harness-metrics.sh`** — a starter **harness ROI scorecard**, copied into the project
+  as `scripts/harness-metrics.sh`. It prints a handful of cheap numbers — the `CLAUDE.md` line
+  count, the audit's check count — and appends them to a trend log, so a project can *prove* its
+  ratchet is paying off rather than assume it: the gauge on the project's own engine, glanced at on
+  a slow cadence. It computes only what's free and stubs the rest as explicit human notes.
+- **`HARNESS_LOG.md`** — a fill-in **harness change log**, seeded at the project root (the name is
+  fixed so tooling can find it). The qualitative companion to the scorecard: where a human records
+  *what changed in the harness and why*, one append-only entry per change. The numbers say *that*
+  something moved; this says *why*. (The script never writes it.)
 - **`prd-template.md`** — a fill-in-the-blanks **product spec**: what's being built, why, and
   which rules must always hold. It is a guide — the place those must-never-break rules get named
   before any code exists.
@@ -236,7 +245,7 @@ Two ways to hand the kit to a fresh session:
 
 Either way: at the start of a new project, Claude runs the setup, takes the
 principles on board, and produces the project's lasting files: the instruction file, the
-settings, the health-check script, the behavioral-eval suite, the wiki, the README, and the
+settings, the health-check script, the behavioral-eval suite, the harness scorecard, the wiki, the README, and the
 filled-in spec. *Those* live
 in the project's code. The kit itself does not. After setup, the kit drops away — day-to-day
 work reads the project's own slim instruction file and wiki, never the kit again.
