@@ -945,6 +945,19 @@ checks. The valuable part grows over time:
   stale," the durable fix isn't a fourth patch — it's **one** guard that kills the class (a
   broader grep, a `CLAUDE.md` clarification, a reconcile rule). Propose it; never auto-apply.
   Same safety net, aimed at the *pattern* instead of the *instance*.
+- **Security & dependency depth ships wired, tier-scaled.** Beyond the generic hygiene
+  checks, the `SECURITY` and `DEPENDENCY VULNERABILITIES` sections now carry two extra safeguards.
+  A **known-vulnerability scan** detects the ecosystem from its *lockfile* and shells out to that
+  ecosystem's own scanner (`npm audit`, `pip-audit`, `cargo audit`, `govulncheck`, `bundler-audit`,
+  `composer audit`, …), gating on **high/critical** severity — the gap a secret scan and a pin
+  check both miss: a dep you already use, correctly pinned, that has *since* had a hole published
+  against it. And an **entropy secret pass** flags long, high-entropy strings that look like a
+  credential even when they wear no `key =` label the prefix grep can match. Both are **stack- and
+  tier-aware and degrade loud, not silent**: a scan that couldn't run — no lockfile, scanner not
+  installed, or offline — prints a visible `SKIPPED`, never a green pass. `SKIPPED ≠ PASS`, because
+  a check that reads as protection but never ran is worse than no check at all (it's "prose is not a
+  boundary" turned on the audit itself). Both WARN rather than FAIL (a Hardened-tier project may
+  promote the vuln scan to FAIL); a throwaway with no dependencies needs neither.
 Run `bash scripts/audit.sh` after any significant edit (note: `chmod` is often
 deny-listed under the sandbox — run via `bash`, and write temp logs to `$TMPDIR`,
 not `/tmp`). It complements, doesn't replace, a judgment review of what greps miss.
@@ -1520,6 +1533,7 @@ don't have.
 - [ ] settings committed with a detailed message
 - [ ] `CLAUDE.md` created: stack, deploy target + quirks, sensitive paths, daily commands
 - [ ] `scripts/audit.sh` seeded from `claude-audit-base.sh`; TOOLING section wired; git-hygiene secret gate active
+- [ ] (if the project has dependencies) known-vulnerability scan active in `scripts/audit.sh` — detects the lockfile's ecosystem + runs its scanner (`npm audit`/`pip-audit`/`cargo audit`/…), WARNs on high/critical, and reports a visible `SKIPPED` (never green) when it can't run; the `SECURITY` entropy pass complements the `key=` secret grep (§1.6)
 - [ ] (if non-throwaway) `scripts/harness-metrics.sh` (ROI gauge) seeded + `HARNESS_LOG.md` seeded at repo root (fixed name); start with the free-to-compute numbers (§1.6a)
 - [ ] (if a 2nd committer — Q6) secret-only `hooks/pre-commit` installed + `core.hooksPath` set + verified by a real blocked commit (§1.3b); `bash scripts/audit.sh` wired into CI
 - [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`
