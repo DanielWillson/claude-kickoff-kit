@@ -55,6 +55,14 @@ ours) vs *Hygiene/Catch-up* (the field already knows this; do it because it's lo
 *newcomers* from the cross-check are **R** (action-risk tiers) and **V** (name the reviewer) —
 both fill genuine holes. **O** remains the item that makes all the others actually stick.
 
+**⚠️ 2026-07-06 defect sweep.** A 7-agent Sonnet-5-max multi-lens review (full write-ups in
+[`fable-analysis-7-6-26/`](fable-analysis-7-6-26/00-synthesis.md)) reproduced concrete bugs in four
+already-"Built" items — **A**, **B**, **O**, **R** — plus gaps in the security templates (Part 0)
+and the **X**/`prompts/` hygiene layer. None of the underlying *designs* are wrong; each is a
+fixable implementation defect, caught by doing to the kit's own scripts exactly what they preach
+("prove it bites, don't trust a self-report") — the review is a live instance of Lesson 2, aimed at
+this repo. Full list, evidence, and repro steps: **§9**.
+
 ---
 
 ## 2. The "kit vs repo" rule (frames everything below)
@@ -84,6 +92,11 @@ is to agents what TDD was to code.*
   defect* — it must cite its source. This is the knowledge-work analogue of "tests passed."
 - **Caveat:** LLM-as-judge is noisy (bias; ~6pp infra swings; models can detect they're tested).
   Smoke alarm, not precision scale. Prefer golden-outputs.
+- **Known defect (found 2026-07-06, §9):** the golden-output FAIL path in `claude-eval-base.sh`
+  crashes the whole runner instead of reporting FAIL (a UTF-8 byte in the error message corrupts a
+  bash variable name under `set -u`) — reproduced on stock macOS bash and Homebrew bash. The rubric
+  judge's verdict-extraction (`grep` over the judge's full output, not just its first line) can also
+  flip a correct verdict either direction. Both are implementation bugs, not design flaws — see **§9**.
 
 ### B. Harness scorecard
 A scorecard that proves the safety net is paying off instead of assuming it. The kit measures the
@@ -99,6 +112,10 @@ A scorecard that proves the safety net is paying off instead of assuming it. The
 - **Companion — the harness change-log (`HARNESS_LOG.md`, item X):** ship a qualitative log next to
   the numbers — *what* changed and *why*. B is the gauge; the log is the flight recorder. Seed the
   basic version with B; the schema + cross-repo layer is item X.
+- **Known defect (found 2026-07-06, §9):** the audit-check count `scripts/harness-metrics.sh`
+  computes is inflated by commented-out example code in `claude-audit-base.sh` (measured 24% on the
+  kit's own reference template) and the script never counts eval-fixtures despite its sibling
+  script already knowing how — see **§9**.
 
 ### C. Flight recorder → feed the safety net
 A flight recorder for agent runs, so you can see *why* one went wrong or expensive.
@@ -210,6 +227,11 @@ whole kit.
   read-deny* is WARN — the managed floor's `Read(**/.env)` can cover a repo's secrets, so a floored
   machine may correctly omit the repo-level read-deny (FAILing it would break O's own "FAIL only what
   no correct adoption could omit" rule).
+- **Known defect (found 2026-07-06, §9):** `scripts/kit-conformance.sh` never validates that
+  `.claude/settings.json` is syntactically loadable JSON (a truncated file still gets a clean PASS on
+  the deny-floor row, while the script *does* `bash -n` its sibling `audit.sh` three sections up —
+  an inconsistency, not a scope decision), and it hardcodes `CLAUDE.md` with no `AGENTS.md` fallback
+  (a legitimately-adopted AGENTS.md-only repo gets a hard FAIL). Both reproduced on fixtures — see **§9**.
 
 ---
 
@@ -238,6 +260,12 @@ spend via an API, change a record other systems depend on.
   all joined by one greppable marker, the **`action-risk`** tag, so **O**'s "action-risk tiers defined (R)?"
   check greps that tag in `CLAUDE.md` **and** on a paired (active, non-comment) `.claude/settings.json` rule
   (tagged table but no tagged gate → WARN — prose is not a boundary).
+- **Known defect (found 2026-07-06, §9):** the action-risk mechanism's prescribed inline `//`
+  comment on a live `.claude/settings.json` array element (`templates/project.settings.json`'s worked
+  example) is not valid JSON — confirmed via `python3 json.load` — yet `scripts/kit-conformance.sh`
+  gives it a clean PASS. The kit's own dogfooded `.claude/settings.json` quietly avoids this exact
+  form, so the riskier construct it prescribes to every other project has never been battle-tested
+  against real usage. See **§9**.
 
 ### S. Rollback / recovery for non-git state *(new; generalizes "no-code rollback")*
 Git covers code; it does not cover state your project depends on that lives elsewhere — a database,
@@ -424,6 +452,10 @@ rubber-stamped it — the Lesson-7 failure in the wild.
 
 ## 8. Suggested build order
 
+**Before adding new surface, close the 2026-07-06 defect sweep (§9)** — the bugs found are in
+**A**/**B**/**O**/**R**'s own shipped scripts, and they undermine the exact "don't trust a
+self-report, prove it bites" promise those items make to every project that adopts them.
+
 1. ✅ **Fowler fix + README citations** (Q, P) — done in README (2026-07-03); Q propagated across
    the rest of the kit (2026-07-06).
 2. **Evals scaffold + harness-metrics script** (A, B) — the two to build first; A now includes the
@@ -438,3 +470,157 @@ rubber-stamped it — the Lesson-7 failure in the wild.
    layer: ✅ **X** (harness-log schema + vetted cross-repo learning) — done 2026-07-06; ✅ **Y**
    (kit-update proposals) — done 2026-07-06 on X's version stamp. Remaining: the hygiene/frontier
    tail (S, T, U, W, C, D, E, I, J, K–N, F).
+
+---
+
+## 9. Known defects in shipped items — 2026-07-06 Fable multi-lens review
+
+**Provenance.** A maintainer-requested review of the whole kit against its own three intentions
+(kickoff / adoption / teaching), run as one Fable-orchestrated fan-out of **seven independent
+Sonnet 5 (max-effort) agents**, one per area, plus a firsthand Fable read of the core docs. Every
+bug below was **reproduced** — in a scratch repo, against a hand-built fixture, or against live
+vendor documentation fetched during the review — not inferred from reading alone. Full per-area
+write-ups, including the untruncated evidence and additional lower-severity findings, live in
+[`fable-analysis-7-6-26/`](fable-analysis-7-6-26/00-synthesis.md). Unlike the rest of this ROADMAP,
+this section catalogs **defects in already-"Built" work**, not proposed additions — no letter is
+assigned; each bug is filed against the item it belongs to. **Status: open** as of 2026-07-06 unless
+noted.
+
+### 9.1 Reproduced script bugs
+
+**A — `claude-eval-base.sh` crashes on the exact failure it exists to catch.**
+Line 101's error message — `` efail "$name  [golden]  expected «$expected»  got «$candidate»" `` —
+places an unbraced `$candidate` directly before the closing guillemet `»` (UTF-8 lead byte `0xC2`);
+bash's identifier scanner consumes that byte into the variable name, and under `set -u` (line 46)
+this raises `unbound variable` and **aborts the whole script** instead of reporting `FAIL`.
+Reproduced identically on macOS system bash 3.2.57 and Homebrew bash 5.3.15 (`LANG=en_US.UTF-8`);
+not verified on Linux/glibc, so treat as a scoped-but-serious finding, not a universal one. It
+cascades: a golden failure on fixture #1 silently prevents fixtures #2+ from ever running — a
+12-case suite reports nothing about the other 11. Telling omission: this ROADMAP's own entries for
+**H**, **O**, and **X** carry explicit "proven on fixtures" annotations; **A**'s entry never did,
+and the untested path is exactly where the bug lives. **Fix:** quote/brace the interpolation
+(`"${expected}"`) or drop the guillemets; add a fixture that deliberately fails and assert the
+runner reports `FAIL` + continues, before trusting this script again.
+
+**A — the rubric judge's verdict extraction can flip a correct verdict either direction.**
+Line 113 — `` grep -m1 -oE 'PASS|FAIL' | head -1 `` — scans the **judge's entire output** for the
+first line containing either keyword, even though the judge prompt (line 112) asks for "ONE word
+on the first line." Proven both failure directions with stubbed judges that reason before
+concluding: a genuinely bad answer graded `PASS` because its reasoning said "...tempting to
+PASS..." before the real `Final verdict: FAIL`; a genuinely good answer graded `FAIL` because its
+reasoning mentioned "FAIL" while explaining why it did *not* fail, before the real `Overall
+verdict: PASS`. This is additive noise on top of the disclosed ~6pp LLM-judge infra-swing (already
+taught honestly elsewhere in the kit) — but this specific failure mode is a harness bug, not
+model noise, and is currently undisclosed. **Fix:** anchor extraction to line 1 of the judge's
+output, or require a fixed delimiter (e.g. `VERDICT: PASS`) the judge must emit last.
+
+**O — `scripts/kit-conformance.sh` gives a false PASS on a malformed settings floor.**
+The script never validates that `.claude/settings.json` is syntactically loadable JSON — it only
+checks file presence plus a text grep for deny patterns (lines 137–147), while it *does* run
+`bash -n` on its sibling `audit.sh` three sections earlier (lines 164–173) — an inconsistency, not
+a considered scope decision. Reproduced: a hand-truncated `settings.json` with unbalanced braces
+(confirmed invalid via `python3 -c json.load`) still printed "per-repo deny floor present — active
+secret-READ deny." This directly contradicts `claude-project-adoption.md`'s own Definition-of-Done,
+which promises the floor is "proven to bite... a denied secret read actually blocks" and names this
+exact script as the machine check of that promise. **Fix:** add a JSON-validity check ahead of the
+grep (prefer `jq` if present, else `python3 -c json.load`, else a loud `SKIPPED` naming that
+validity couldn't be confirmed — no hard dependency needed, and this preserves item **O**'s own
+`SKIPPED ≠ PASS` principle).
+
+**O — `scripts/kit-conformance.sh` hardcodes `CLAUDE.md`, with no `AGENTS.md` fallback.**
+Line 64 (`CLAUDE_MD="$TARGET/CLAUDE.md"`) contradicts the kit's own stated policy that "Claude
+reads either" (`claude-project-kickoff.md:727`) and that a project may keep `AGENTS.md` as the
+sole physical file with `CLAUDE.md` merely symlinked to it (`claude-project-adoption.md:117-119`).
+Reproduced: an `AGENTS.md`-only, no-symlink fixture gets a hard FAIL, exit 1 — which also silently
+skips the routing/budget/reviewer checks gated on `CLAUDE.md`'s presence. ROADMAP §4 names
+`AGENTS.md` as a real, actively-governed cross-tool convention, so this is likely to bite *more*
+over time, not less. **Fix:** resolve either filename (checking for a symlink or direct file)
+before gating the downstream checks on its presence.
+
+**R (certified by O) — the action-risk tag's prescribed JSON syntax is invalid JSON.**
+The mechanism requires an inline trailing `//` comment on a live `.claude/settings.json` array
+element (`templates/project.settings.json:20-25, 38-40`; the fenced example at
+`claude-project-kickoff.md:239-274`) — confirmed invalid via `python3 -c json.load`. Built a
+fixture using exactly the prescribed form: `scripts/kit-conformance.sh` gives it a clean
+"action-risk gates wired" PASS while Python's parser rejects the identical file. Whether Claude
+Code's own settings loader accepts trailing-comment JSONC (and whether a load failure would be
+silent or loud) was **not directly testable** in this review; open Claude Code feature requests
+found mid-2026 (`anthropics/claude-code` #29370, #12688, #17968) suggest it is not reliably parsed
+today. Notably, the kit's own live, committed `.claude/settings.json` sidesteps the risk — it uses
+only a leading comment banner before the opening brace, never an inline comment on an array
+element — so the one settings file known to be in real use has never exercised the riskier form
+prescribed to every other project. **Fix:** verify against the currently-installed Claude Code's
+actual settings parser before shipping the inline-comment form further; if unsupported, move the
+tag to a sibling non-JSON manifest or a comment-only banner line, and update the template + the
+kickoff §1.3c fenced example together.
+
+**B — `scripts/harness-metrics.sh`'s audit-check count is measurably inflated.**
+Line 91's grep pattern `` (pass|warn|fail)[[:space:]]+" `` matches the shape of a call anywhere in
+a line's text regardless of a leading `#`. Measured directly against `claude-audit-base.sh`: 18 of
+75 matches (24%) sit inside comment-only lines (the INVARIANTS section's worked examples, lines
+132–194), which never execute. The contamination doesn't shrink over time — it scales with how
+much illustrative commentary a project's real audit script accumulates, which is the opposite of
+what a trend metric needs. Separately, the script never counts eval fixtures despite
+`claude-audit-base.sh` (lines 667–674) already computing `n_evals` for its own purposes — an
+equally "free" number left off the scorecard. **Fix:** strip full-line and trailing `#`-comments
+before counting; add the eval-fixture count alongside the existing two free metrics.
+
+### 9.2 Security template gaps
+
+These weren't reproduced as code bugs (there's no script to break) but were verified against live
+Claude Code documentation fetched during the review, and represent the same class of risk as 9.1 —
+a gap between what the kit teaches and what it ships.
+
+- **The managed floor is the kit's only source of hard guarantees, and is a permanent, silent
+  `SKIP` with zero installer automation and zero durable verification** — true even with every
+  other ROADMAP item built, because item **O**'s own conformance script treats it as an
+  unconditional SKIP by design (`ROADMAP.md` §1, "the managed floor is a loud SKIP...
+  SKIPPED ≠ PASS"). Confirmed against Anthropic's current sandboxing docs that the stock,
+  zero-config default still allows reading `~/.aws/credentials` and `~/.ssh/`, and the permissions
+  docs that file reads require no approval by default — so the gap between "protected per this
+  guide" and "stock default" is exactly one un-nagged, manual, root-privileged step. No mechanism
+  anywhere in the kit — kickoff, adoption, or ongoing — will ever tell a user this step didn't
+  happen. **Fix:** a small `verify-floor` check that reads the (typically world-readable) managed
+  file's *content* and confirms its critical keys are present — checking content is different from
+  inferring from absence, so this doesn't violate `SKIPPED ≠ PASS`.
+- **`templates/project.settings.json` ships weaker credential protection than the kit's own
+  dogfooded settings.** The template's deny list covers only in-project paths with the comment
+  "machine creds are already denied in the managed floor" (lines 28-31) — but the kit's own
+  `.claude/settings.json` (lines 14-17) adds the same machine-credential denies
+  (`~/.ssh/**`, `~/.aws/**`, `~/.npmrc`, `*.pem`, `*.token`) redundantly anyway, exactly the
+  belt-and-suspenders duplication the guide argues for elsewhere. **Fix:** backport those lines
+  into the template — two lines, materially shrinks the blast radius of the point above for anyone
+  who never installs the managed floor.
+- **No template gates MCP servers or `WebFetch` domains by default**, despite three separate kit
+  docs correctly naming MCP and the native web tools as unsandboxed, un-audited surfaces
+  equivalent in risk to Bash (`claude-project-kickoff.md:502-506`). **Fix:** a repo-neutral
+  "deny `mcp__*` by default, allowlist per trusted server" line in `templates/project.settings.json`.
+- **No CI workflow template**, despite `claude-audit-base.sh`'s own comment (lines 304-307) arguing
+  CI enforcement of the audit is strictly superior to the client-side pre-commit hook the kit *does*
+  ship wiring for. **Fix:** a minimal `.github/workflows/audit.yml`-equivalent starter, least-
+  privilege token + SHA-pinned actions per the kit's own §1.3b guidance.
+- **`managed-settings.template.json`'s `docker *` sandbox exclusion has no companion guard against
+  privilege-escalating flags** — a `docker run --privileged` or a docker-socket bind-mount is a
+  well-known one-command host-root escape, and Anthropic's own sandboxing docs flag this exact risk.
+  **Fix:** an `ask` rule on `docker run --privileged*` / `-v /var/run/docker.sock*` alongside the
+  existing exclusion.
+
+### 9.3 Process / hygiene gaps
+
+- **`HARNESS_LOG.md`'s placeholder anchor (`<YYYY-MM-DD>`, `<kit-version>`, `<commit-sha>`) has no
+  enforcement or reminder to ever get filled in** — and both `scripts/kit-conformance.sh` and
+  `claude-audit-base.sh` explicitly, by documented design, exclude `HARNESS_LOG.md` from their
+  rosters (audit lines 336, 351: "in NEITHER clause BY DESIGN"). Item **Y** (built 2026-07-06)
+  depends entirely on that stamp being real; left as a placeholder — a plausible outcome for an
+  unenforced TODO — **Y** silently has nothing to diff against and nothing in the kit would ever
+  flag it. **Fix:** a one-line check (in the audit or conformance script) that WARNs if the anchor
+  entry's header still contains literal `<` characters.
+- **The `prompts/` directory (the build specs behind items O/R/V/X) is untracked, unreferenced,
+  and already stale.** `git status` shows it untracked; README/ROADMAP/glossary/wiki have zero
+  references to `prompts/` anywhere; two of its files (`build-R`, `build-V`, both dated
+  2026-07-04) open with the pre-rename path `claude-harness-kit`, while the later files
+  (`build-O`, `build-X`, both 2026-07-06) correctly say `claude-kickoff-kit` — the repo was renamed
+  between the two dates and the earlier prompts were never updated. The directory has no rot-check
+  analogous to item **H**, applied to itself. **Fix:** either track it with a short index +
+  the same anchor-check discipline as **H**, or fold each prompt's durable content into this
+  ROADMAP's item write-ups and delete the directory — undecided; the maintainer's call.
