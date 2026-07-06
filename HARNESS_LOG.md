@@ -29,7 +29,8 @@ Each entry carries these fields:
 
 > **date · change · rationale (the bet) · what it replaced · risk tier · origin**
 
-- **date** — `YYYY-MM-DD` of the change.
+- **date** — `YYYY-MM-DD` of the change; it lives in the entry's `## ` header, not a field line
+  (see *Portable schema* below).
 - **change** — what changed in the harness, in one or two plain sentences.
 - **rationale (the bet)** — what the change was supposed to buy: the failure it prevents or
   the leverage it adds.
@@ -44,13 +45,32 @@ Each entry carries these fields:
 > fields that cite tooling-internal or maintainer-only documents — this project doesn't have
 > them, and a reference nobody here can resolve is worse than none.
 
+## Portable schema — the cross-repo contract
+
+This log is **portable on purpose.** Because the filename (`HARNESS_LOG.md`) and location (the
+repo **root**) are fixed, and every entry holds the **same shape**, an agent handed *another*
+kit-derived repo's log can read it and surface what's worth borrowing (kickoff §1.6a,
+*cross-repo learning*). "Machine-legible" needs **no parser** — just a shape held consistently:
+
+- **One entry per change, newest-first,** each opening with a header line
+  `## YYYY-MM-DD — <short title>` (the *date* lives in the header).
+- **The other five fields as bold labels** beneath it — `- **change:** …`,
+  `- **rationale (the bet):** …`, `- **what it replaced:** …`, `- **risk tier:** …`,
+  `- **origin:** …`. Hold that header-plus-bold-label shape and the fields stay greppable in any
+  repo, no schema tooling required.
+- **These six fields are the whole portable contract** — deliberately lean and project-neutral.
+  Keep *only* these; richer maintainer-only fields (a roadmap-item pointer, a shelf-life class)
+  belong to a kit's own *internal* journal, never a portable project log — don't let them leak in.
+- **The first entry is the version stamp** (the anchor below): the adopted kit version/commit.
+  That is the machine-readable marker a later re-review reads to compute what the kit has *added
+  since* — the sibling capability that points the same read→propose habit at the current kit.
+
 ---
 
-## Anchor — kit adoption  ·  *(example — replace the placeholders with your real values)*
+## <YYYY-MM-DD> — Adopted the Claude Harness Kit  ·  *(the version-stamp anchor — replace the placeholders with your real values)*
 
-- **date:** `<YYYY-MM-DD>`
-- **change:** Adopted the Claude Harness Kit — seeded the harness (contract, audit, wiki,
-  settings floor, this log) at kit version `<kit-version>` (commit `<commit-sha>`).
+- **change:** Seeded the harness (contract, audit, wiki, settings floor, this log) at kit version
+  `<kit-version>` (commit `<commit-sha>`) — this first entry is the **version stamp**.
 - **rationale (the bet):** A durable harness makes the agent's work trustworthy without
   babysitting each step; this entry stamps the version we started from, so a later reader can
   tell what the harness looked like at the beginning and what has changed since.

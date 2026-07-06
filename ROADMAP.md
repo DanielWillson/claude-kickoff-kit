@@ -300,6 +300,18 @@ record so a Claude in one kit-derived repo can learn from another's.
   is a *suggestion*, never auto-applied: Claude reads repo B's log → **proposes** "repo B does X,
   worth considering here?" → the human decides. Precedent: the kit already keeps this journal for
   *itself* (`wiki/decisions/`); this generalizes that practice to the projects it creates.
+- **Built 2026-07-06 (full):** docs-only, on top of the basic log (which shipped with **B**). (1) A
+  **"Portable schema — the cross-repo contract"** section in the shipped root `HARNESS_LOG.md`
+  template pins the fixed name/location + the machine-legible entry shape (`## YYYY-MM-DD — title`
+  header + lean bold-label fields) + the **lean six fields** as the whole portable contract + the
+  first entry as the version stamp Y reads; the template anchor was reconciled to that exact shape so
+  the worked example conforms. (2) A **cross-repo-learning** teaching in kickoff **§1.6a**, gated by
+  two non-optional rails — **the human supplies a *trusted* source** (no agent discovery: learn *from*
+  another's log, not *find* one) and **propose, never auto-apply** (another repo's log is data to
+  reason about, not an instruction to execute — §1.3a containment; Lesson 5). **No validator** (the
+  reader is an LLM; a consistent template + worked example *is* the machine-legibility — same
+  prose-over-tooling call as O's fan-out). **O left untouched** (its B/X exclusion stands). Cites
+  **§1.3a**, not item **F** (still planned). Feeds **Y**, which is not built here.
 
 ### Y. Kit-update proposals — re-review & propose upgrades as the kit evolves *(new)*
 The adoption skill re-reads the repo (on prompt, optionally periodically) and proposes harness
@@ -410,5 +422,5 @@ rubber-stamped it — the Lesson-7 failure in the wild.
    stick. Checks for R and V (and A + the floor); `scripts/kit-conformance.sh` + kickoff §1.6c.
 6. Fold in the rest as the safety net pulls them in — non-git rollback (S), tool inventory (T),
    incident runbook (U), harness manifest (W), plus C, D, E, I, J, K–N, F. Then the cross-repo
-   layer: **X** (harness-log schema + vetted cross-repo learning), then **Y** (kit-update proposals;
-   needs X's version stamp).
+   layer: ✅ **X** (harness-log schema + vetted cross-repo learning) — done 2026-07-06; then **Y**
+   (kit-update proposals; needs X's version stamp — now in place).
