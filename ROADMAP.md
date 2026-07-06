@@ -42,7 +42,7 @@ ours) vs *Hygiene/Catch-up* (the field already knows this; do it because it's lo
 | **U** | **Incident runbook** for agent mistakes (forward, not retrospective) | Medium | Hygiene/Frontier · *new* |
 | **W** | **Harness manifest** (owner/version/last-verified/risk/sunset) | Medium | Hygiene · *new* |
 | **X** | **Harness change log** (`HARNESS_LOG.md`) + vetted **cross-repo learning** | Med–High | Frontier/Unique · *new* |
-| **Y** | **Kit-update proposals** — skill re-reviews repo & proposes upgrades as the kit evolves | Medium | Frontier · *new* |
+| **Y** | **Kit-update proposals** — skill re-reviews repo & proposes upgrades as the kit evolves | Medium | Frontier · ✅ **Built (2026-07-06)** |
 | **H** | **Safeguard-rot check** — safeguards assert their own anchor | Medium | Hygiene |
 | **J** | **Re-verify the harness after a Claude Code upgrade** | Medium | Hygiene |
 | **I** | **Baseline for fuzzy output** (tolerance/rubric) | Lower | Frontier (cousin of A) |
@@ -322,6 +322,19 @@ updates when the kit itself has improved since the repo adopted it.
 - **Depends on X** (the version stamp): build the log first.
 - **On-prompt before scheduled** (Ronacher: hooks must earn their keep; automation is not free) and
   **proposes, never auto-applies** — same posture as the adoption flow. Extends **O** and **W**.
+- **Built 2026-07-06:** docs-only, per "not a new machine." A new **§6 "Re-review as the kit evolves"**
+  in `claude-project-adoption.md` re-runs §0's evaluate→propose against the delta between a repo's
+  adopted kit version and the current kit; the human decides; the run **appends a reviewed-through
+  entry** to the repo's `HARNESS_LOG.md` that **advances the baseline** so a later run never re-raises
+  what was already declined (dedup-against-*seen* — the mechanic that keeps Y from being groundhog-day
+  noise). The **delta source is the dated `wiki/harness-log.md`** (built tables are undated snapshots —
+  X-full's dated schema is what makes the diff computable). Two supports: a **§1.6a precondition fix**
+  (seed step now instructs *filling* the version stamp with the kit's current commit — Y degrades to a
+  full re-review + fills it if it's still a placeholder), and the flipped "not built yet" gesture.
+  **Propose-never-apply, fit-first** (a solo repo correctly declines a team item; churn-control
+  second); on-prompt. The **sibling of X-full's cross-repo learning** (source = the newer kit, trusted
+  by construction) and the **forward complement of O** (missing vs. newly-available). **W** referenced
+  as *planned*. No differ script; no schema change.
 
 ---
 
@@ -422,5 +435,6 @@ rubber-stamped it — the Lesson-7 failure in the wild.
    stick. Checks for R and V (and A + the floor); `scripts/kit-conformance.sh` + kickoff §1.6c.
 6. Fold in the rest as the safety net pulls them in — non-git rollback (S), tool inventory (T),
    incident runbook (U), harness manifest (W), plus C, D, E, I, J, K–N, F. Then the cross-repo
-   layer: ✅ **X** (harness-log schema + vetted cross-repo learning) — done 2026-07-06; then **Y**
-   (kit-update proposals; needs X's version stamp — now in place).
+   layer: ✅ **X** (harness-log schema + vetted cross-repo learning) — done 2026-07-06; ✅ **Y**
+   (kit-update proposals) — done 2026-07-06 on X's version stamp. Remaining: the hygiene/frontier
+   tail (S, T, U, W, C, D, E, I, J, K–N, F).
