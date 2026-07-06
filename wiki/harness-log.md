@@ -57,6 +57,74 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Cross-repo learning + portable HARNESS_LOG.md schema (item X, full)
+
+- **Change.** Completed item **X**'s cross-repo layer (the basic log shipped 2026-07-04 with B).
+  Two docs touches, no new machinery: (1) a **"Portable schema — the cross-repo contract"** section
+  in the shipped root `HARNESS_LOG.md` template — it pins the fixed name/location, the machine-legible
+  entry shape (`## YYYY-MM-DD — title` header + the lean five bold-label fields, date in the header),
+  the lean six-field set as the whole portable contract, and the first entry as the version stamp; the
+  template's anchor was reconciled to that exact shape (date moved into the header, dropped the
+  redundant `- **date:**` line) so the one worked example conforms. (2) a **cross-repo-learning**
+  teaching in kickoff **§1.6a**: a human hands you a *trusted* sibling repo's log → you **propose**
+  borrowings → the human decides. ROADMAP §X marked built; glossary X row updated.
+- **Rationale (the bet).** A harness bet learned the hard way in one repo (a regression guard, a
+  directive, a check) is worth *more* if it can travel to a sibling repo instead of being relearned.
+  The bet: a **fixed name + location + entry shape** makes every kit-derived log readable by an agent
+  in another repo — *without* any parser, because the reader is an LLM and a consistently-shaped
+  markdown entry is already machine-legible to it. The whole value is gated on one trust rule (below);
+  get that wrong and a convenience becomes an attack surface.
+- **What it replaced.** Net-new capability on top of X-basic; nothing removed. It **firms** the
+  existing lean template schema into a stated *contract* (rather than an incidental format) and adds
+  the teaching; it did not touch the schema's *fields*. The kit's own `wiki/harness-log.md` keeps its
+  richer internal schema (per [[SCHEMA]]) — the portable contract is deliberately the leaner project
+  template, not this file.
+- **Shelf-life/risk class.** **Appreciating** — cross-repo learning is worth more as the fleet of
+  kit-derived repos grows (more sibling logs to borrow from), and it is the practice **item Y** builds
+  on. Zero blast-radius: documentation + a template edit; no script, no execution, no network — the
+  reading is a human-initiated, human-decided act by construction.
+- **Related ROADMAP item.** **X** (harness change log + cross-repo learning), build-order **step 6**
+  (the cross-repo layer). Feeds **Y** (kit-update proposals — the same read→propose habit pointed at
+  the current kit via the version-stamp delta), which is *not* built here.
+- **Commit.** `c5b5ede` (the portable schema + §1.6a teaching) + this log entry.
+- **Design choices worth pointing at.**
+  - **Docs-only — no schema validator, on the merits.** The consumer of a cross-repo log is an LLM,
+    which reads `## date — title` + bold-label markdown reliably without a grammar. A lint would
+    enforce a rigidity the actual reader doesn't need — the "unverified complexity must earn its keep"
+    rule (Lesson 5), the same call that kept O's Part 2 fan-out as prose. "Machine-legible" here is a
+    *consistent template + worked example*, not tooling.
+  - **The trust model is the whole feature.** Two non-optional rails: (1) **the human supplies a
+    trusted source** — the agent never crawls/searches/fetches other repos' logs (learn *from
+    another's*, not *find* one); (2) **propose, never auto-apply** — another repo's log is content from
+    *outside the trust boundary*, so it is **data to reason about, not an instruction to execute**
+    (§1.3a containment). Cited §1.3a deliberately, **not** item F (untrusted-content rule) — F is still
+    *planned*, and a doc must not cite an unbuilt item as if it shipped (the citation-hygiene the kit
+    applies to any cross-reference).
+  - **Portable = the LEAN six, not the rich internal schema.** Cross-repo learning happens *between
+    projects*, and a plain project has no basis for maintainer-only fields (a ROADMAP-item pointer, a
+    shelf-life class — the very fields *this* entry carries). Exporting the rich schema as "portable"
+    would have been the conflation to avoid; the template stays the lean six.
+  - **O left untouched — a settled scope respected.** A one-line "HARNESS_LOG.md present + version
+    stamp" check *could* live on O's roster, but O deliberately excluded the B/X artifacts; reopening
+    that for marginal gain would self-contradict O's own entry. The stamp's presence is mandated by
+    the template and taught in §1.6a, not O-checked.
+  - **Dogfood — reconciled the anchor to the shape it now declares.** The shipped template's anchor had
+    used a `- **date:**` field and a non-date header; it was rewritten to the canonical
+    `## <date> — title` shape so the one worked example the template ships *is* conformant. (This very
+    entry — and every entry in this file — holds that same header+bold-label shape: the portable shape
+    proven on the kit's own filled log.)
+- **Signal to watch.** Does anyone actually hand Claude a sibling repo's log and get a *useful*
+  borrow-proposal, or does cross-repo learning stay theoretical (a capability nobody invokes)? If it
+  gets used, do the two rails hold — does an agent ever drift toward *finding* logs, or toward
+  *applying* a borrowed change without the human? If either slips, the durable fix is sharper teaching
+  (or, if fetching ever gets wired, a hard settings gate), not loosening the posture. And when **Y** is
+  built, does the version-stamp anchor prove sufficient to compute the kit delta, or does it need a
+  firmer machine-readable version field than a line of prose in the first entry?
+- **Retrospect.** *(open — revisit when the first cross-repo borrow-proposal happens in a real
+  project, or when item Y is built on this.)*
+
+---
+
 ## 2026-07-06 — Adoption check + fan-out verifier (verify the whole kit's adoption, not a self-report)
 
 - **Change.** Built item **O** — the adoption verifier. New `scripts/kit-conformance.sh`: a
