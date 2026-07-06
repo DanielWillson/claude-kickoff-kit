@@ -168,3 +168,53 @@ but not reads), so a retrofit is done-enough when it reports **zero FAIL**. On a
 codebase, run it as a **fan-out** — one sub-agent per area, each loading only its slice (§0a's
 "fan the broad sweeps out to subagents," Part 3.13) — so no single context has to hold the whole
 kit; that is the same posture as the §1.4 "prove it bites" discipline this guide opens with.
+
+## 6. Re-review as the kit evolves — kit-update proposals (item Y)
+
+Adoption is a point-in-time fit between *your repo* and *the kit as it was the day you adopted*. The
+kit keeps improving; this is how a repo catches up **without re-adopting from scratch**. It is the
+**same read→propose habit as cross-repo learning** (kickoff §1.6a) — pointed at the **newer kit**
+instead of a sibling repo — and there is nothing new to build: it is **§0's evaluate→propose, re-run
+against the delta between what you adopted and what the kit offers now.** Run it **on prompt** ("has
+the kit moved on?"), not on a schedule.
+
+**Find your baseline, then the delta.**
+- **Baseline** = the most recent **reviewed-through** entry in *your* `HARNESS_LOG.md` — one a prior
+  Y run wrote (`origin: kit-update proposal (Y)`), naming the kit commit it reviewed through. If
+  there is none, fall back to the **adoption version stamp** (the anchor's first entry). If *that* is
+  still an unfilled `<commit-sha>` placeholder (a repo seeded before the stamp was mandated), degrade
+  gracefully: do a **full re-review** against the whole current kit, and **fill the stamp now** —
+  record the current kit commit as the first reviewed-through marker, so the next run has a baseline.
+- **Delta** = what the kit changed since that baseline. The source is the kit's **dated
+  `wiki/harness-log.md`**: its entries *are* the kit's harness changes, "new since I adopted" is the
+  entries after your baseline commit/date, and the kit's current version is that log's top entry.
+  (The built tables in `ROADMAP.md` / `glossary.md` are undated snapshots — use them for the
+  *what-it-is / where-it-lives* detail on each candidate, **not** to compute the delta.)
+
+**Propose — a written plan, same shape as §0c.** For each thing the kit added, judge it **against
+*this* repo**: what's worth retrofitting, in what order, and **what to skip and why**. Have it
+adversarially reviewed (Principle 6), then put it to the owner. **Propose, never auto-apply** — for
+two reasons, and the first is the deeper one:
+1. **Fit.** Only the owner knows whether a newer practice suits *this* project's tier. A solo hobby
+   repo **correctly declines** a team-scale item; a pure library correctly declines the non-git
+   rollback ritual. Declining is a first-class outcome, not a miss — the kit's "scale honestly"
+   thread, turned on its own upgrades.
+2. **Churn.** The harness shouldn't rewrite itself unattended (a control people disable is worse than
+   none; automation must earn its keep). On-prompt, human-approved.
+
+Unlike **cross-repo learning** (§1.6a), the source here is *trusted by construction* — it is the kit
+you already chose to adopt (Lesson 5) — so the gate is **fit + churn**, not the untrusted-source
+caution a sibling repo's log carries.
+
+**Close the loop — advance the baseline.** End the run by appending one entry to *your*
+`HARNESS_LOG.md`: *reviewed against kit @ `<commit>`; **adopted** [items]; **declined** [items] (with
+the reason)*, tagged `origin: kit-update proposal (Y)`. This is what keeps Y from becoming noise: the
+next run diffs from **here**, so it never re-raises what you already declined — *unless the reason
+lapses* (you declined a team-scale item as a solo dev; a second committer later arrives; now it
+fits). No new fields — the lean six carry it.
+
+**Where this sits.** Y is the forward sibling of the **Definition of Done** above and of **item O**:
+`bash scripts/kit-conformance.sh` tells you what's *missing* against the kit you adopted; Y tells you
+what's *newly available* since. (When the harness manifest — **item W**, still *planned* — exists, a
+mature repo would record each accepted upgrade there.) **Scale honestly:** a small, stable repo may
+run this once a year or never — a capability held in reserve, not a chore.

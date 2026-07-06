@@ -57,6 +57,73 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Kit-update proposals (item Y — re-review against a newer kit)
+
+- **Change.** Built item **Y** — the living-adoption loop, docs-only (no new machinery, per §Y). A
+  new **§6 "Re-review as the kit evolves"** in `claude-project-adoption.md`: re-run §0's
+  evaluate→propose against the delta between a repo's adopted kit version and the current kit, propose
+  retrofits *for this repo*, human decides, then append a **reviewed-through** entry that advances the
+  baseline. One **precondition fix** in kickoff §1.6a — it now instructs *filling* the version stamp
+  with the kit's current commit at seeding (Y's diff needs a real commit, not a placeholder). Flipped
+  §1.6a's "item Y, not built yet" gesture. ROADMAP §Y + build-order marked built; glossary moved Y
+  planned→built.
+- **Rationale (the bet).** A repo adopts the kit at a point in time; the kit keeps improving, and
+  without a catch-up path the gap silently widens. The bet: Y needs **no new machine** — it is the
+  adoption guide's evaluate→propose re-invoked against a *delta*, and X-full just made that delta
+  computable (a dated, machine-legible `wiki/harness-log.md`). Two mechanics carry the weight (below);
+  get them wrong and Y is either groundhog-day noise or has nothing to diff.
+- **What it replaced.** Net-new capability; nothing removed. It is the **sibling of X-full's
+  cross-repo learning** (same read→propose habit, source = the newer *kit* instead of a sibling repo)
+  and the **forward complement of O** (O: what's *missing* vs. what I adopted; Y: what's *newly
+  available* since). Reuses §0 (evaluate→propose), the version stamp (X), and the lean six log fields
+  (no schema change) — three existing pieces wired into a loop, not a fourth artifact.
+- **Shelf-life/risk class.** **Appreciating** — Y is worth more as the kit accretes items to propose
+  (every future ROADMAP item becomes a candidate a Y run can surface). Zero blast-radius:
+  documentation only; the one thing Y *writes* is a human-approved `HARNESS_LOG.md` entry recording
+  the owner's own accept/decline decisions — no auto-edit of the harness, on-prompt not scheduled.
+- **Related ROADMAP item.** **Y** (kit-update proposals), build-order **step 6** (the last named
+  item). Depends on **X** (the version stamp — now built), extends **O** (built), and references **W**
+  (harness manifest — *planned*, cited as such).
+- **Commit.** `05cc863` (§6 procedure + §1.6a precondition) + this log entry.
+- **Design choices worth pointing at.**
+  - **Baseline-advance — the mechanic that separates useful from noise.** The naive design diffs from
+    the *original adoption stamp* every run and so re-proposes everything already **declined** — the
+    "tuned out until ignored" failure the kit fights everywhere. Fix: each Y run ends by appending a
+    **reviewed-through** entry (`origin: kit-update proposal (Y)`, naming the kit commit reviewed
+    through); the next run diffs from **that**, and declined-with-reason isn't re-raised unless the
+    reason lapses. Dedup-against-*seen*, not against-*adopted* — the trap-avoidance O's exit model
+    encodes. Rides the append-only log X-full made legible; **no schema change**.
+  - **The delta source is the DATED log, not the built tables.** `ROADMAP.md` / `glossary.md` built
+    tables are undated snapshots (what/where); the dated `wiki/harness-log.md` is what makes
+    "new-since-my-adoption" computable (entries after the baseline; current version = the top entry).
+    A clean loop-close: X-full's dated schema is precisely Y's diff source. Built tables supply the
+    per-candidate detail.
+  - **Precondition caught and fixed.** X-full formalized the stamp's *shape*; §1.6a mandated the
+    *file* but never told the project to *fill* the stamp — so it could ship as a `<commit-sha>`
+    placeholder and leave Y nothing to diff. Added the one-line seed instruction, and made Y **degrade
+    gracefully** on a placeholder (full re-review + fill the stamp now).
+  - **Fit-to-project leads; churn-control follows.** Propose-never-apply has two reasons, and the
+    deeper one is fit: only the owner knows a newer practice suits *this* repo's tier (a solo repo
+    correctly declines a team item). That is *why* the declined-with-reason record matters. Churn
+    (Ronacher: automation isn't free; on-prompt not scheduled) is the second. And the trust posture is
+    **lighter than X-full's**: the kit is a source the repo already chose (Lesson 5), so the gate is
+    fit + churn, not untrusted-content.
+  - **Docs-only — no differ script.** The delta that matters is *does this fit this repo, in what
+    order* — agent judgment, not a mechanical date-filter. Same prose-over-tooling call as O's fan-out
+    and X's reader. Resisted a "list-items-since" helper on the merits.
+  - **W cited as planned, not built** — the citation hygiene X-full applied to item F.
+- **Signal to watch.** On the *second* run in a real repo, does the reviewed-through marker actually
+  suppress the already-declined items, or does Y still feel repetitive (marker missed, or
+  decline-reasons too coarse to match)? Do owners *fill* the version stamp at seeding now that §1.6a
+  says to, or does it still ship as a placeholder (sending every Y run down the full-re-review
+  fallback)? And does "fit-to-project" hold as the lead — do solo repos comfortably decline
+  team-scale items, or does Y nudge toward over-adopting? If the marker proves too coarse, the durable
+  fix is a sharper reviewed-through record (per-item, not per-run), not automation.
+- **Retrospect.** *(open — revisit after the first real second-run of Y in an adopted project, or when
+  W lands and accepted upgrades get a manifest home.)*
+
+---
+
 ## 2026-07-06 — Cross-repo learning + portable HARNESS_LOG.md schema (item X, full)
 
 - **Change.** Completed item **X**'s cross-repo layer (the basic log shipped 2026-07-04 with B).

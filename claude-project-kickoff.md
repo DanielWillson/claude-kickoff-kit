@@ -991,7 +991,11 @@ Seed two files, the same way you seeded the audit:
   → `scripts/audit.sh`). It prints a snapshot of a few cheap numbers and appends them as one dated
   line to a trend log, so the direction of travel shows up over time.
 - Seed **`HARNESS_LOG.md`** at the repo **root**. This filename and location are **fixed and
-  mandated by setup** so any later session — and the skill — can always find it.
+  mandated by setup** so any later session — and the skill — can always find it. **Fill the anchor's
+  version stamp *now***: record the kit's current commit (`git -C <kit-dir> rev-parse --short HEAD`,
+  where `<kit-dir>` is the kit you were handed) and today's date in the first entry. Don't leave the
+  `<commit-sha>` placeholder — that stamp is the baseline **kit-update proposals** (item Y) diffs
+  against to find what the kit has added since you adopted.
 
 **The two files are different and complementary.** The script is the *quantitative* gauge —
 numbers, auto-appended to its own trend log. `HARNESS_LOG.md` is the *qualitative* flight recorder —
@@ -1028,8 +1032,8 @@ The kit already lives this way — it keeps its own harness journal (`wiki/harne
 decision records (`wiki/decisions/`); this just lets the projects it seeds learn from each other the
 same way. Point the *same* read→propose habit at the **current kit** instead of a sibling repo —
 re-reviewing against the version stamp to catch what the kit has added since you adopted — and you
-have **kit-update proposals** (ROADMAP item Y, not built yet), the sibling capability the stamp also
-feeds. **Scale honestly:** a solo project may never open another repo's log; this is a capability
+have **kit-update proposals** (ROADMAP item Y — see `claude-project-adoption.md`, *Re-review as the
+kit evolves*), the sibling capability the stamp also feeds. **Scale honestly:** a solo project may never open another repo's log; this is a capability
 held in reserve, not a chore.
 
 ### 1.6b Seed the behavioral evals (the judgment verifier — see `claude-eval-base.sh` + `evals-template/`)

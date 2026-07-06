@@ -123,6 +123,7 @@ Shipped into the kit; each points to where it lives.
 | G | **Dependency-vulnerability scan** | An audit step that detects each ecosystem from its lockfile and shells out to that ecosystem's own scanner (npm/pip/cargo/…) to flag dependencies with published CVEs, plus an entropy pass that catches unlabeled secrets the `key=` grep misses. | [`claude-audit-base.sh`](claude-audit-base.sh) (`DEPENDENCY VULNERABILITIES` + entropy pass in `SECURITY`) + kickoff §1.6 + Quick Checklist |
 | H | **Safeguard-rot check** | Each safeguard asserts its own anchor so it WARNs (rotted) instead of silently dying green; a self-check audits the audit's own guards. Structural rot only — semantic drift is a human read. | [`claude-audit-base.sh`](claude-audit-base.sh) (`guarded` helper + `SAFEGUARD SELF-CHECK`) + kickoff §1.6 + Quick Checklist |
 | O | **Adoption check + fan-out verifier** | A roster check that a repo *actually* adopted the kit's artifacts (CLAUDE.md + routing/reviewer blocks, the secret-read floor, a valid audit, evals, ≥3 wiki pages, action-risk gates), rolled into an adoption scorecard; FAILs only the irreducible floor, WARNs what a lean project may skip, and fans out one sub-agent per area so no single context reads the whole kit. | [`scripts/kit-conformance.sh`](scripts/kit-conformance.sh) + kickoff §1.6c (teaching + fan-out playbook) + [`claude-project-adoption.md`](claude-project-adoption.md) DoD + Quick Checklist |
+| Y | **Kit-update proposals** | Re-review a repo against a *newer* kit: re-run the adoption guide's evaluate→propose over the delta since the version stamp, propose fit-appropriate retrofits, the human decides, then append a reviewed-through entry that **advances the baseline** so already-declined items aren't re-raised. Docs-only, on-prompt, propose-never-apply. | [`claude-project-adoption.md`](claude-project-adoption.md) §6 + kickoff §1.6a (fill the version stamp) |
 
 ## Roadmap items — planned
 
@@ -138,7 +139,6 @@ Names locked; definitions use the vocabulary above. Build state and detail live 
 | T | **Tool inventory** | A list of every tool/connector the agent has — scopes, where its credential lives, how to disable it. |
 | U | **Incident runbook** | The forward "when an agent does damage" procedure: contain → revoke → identify what was touched → undo → add a safeguard. |
 | W | **Harness manifest** | A running list of the harness's own parts, each tagged with what it assumes and when it was last checked. |
-| Y | **Kit-update proposals** | The adoption skill re-reviews a repo and proposes upgrades when the kit itself has improved since adoption. |
 | I | **Baseline for fuzzy output** | The tolerance/rubric version of the baseline check, for output that isn't exactly reproducible. |
 | J | **Post-upgrade re-verify** | Re-running the "prove it still bites" checks after a Claude Code upgrade. |
 | F | **Untrusted-content rule** | Fetched/tool content is *data, not instruction* (the sandbox limits damage, not the hijack). |
