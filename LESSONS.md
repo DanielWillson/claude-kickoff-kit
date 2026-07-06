@@ -11,7 +11,7 @@ apply these lessons; this one explains them.*
 
 ## Lesson 1 — The field converged on one loop, from four directions
 
-Four groups who never compared notes shipped the same design. Martin Fowler calls it
+Four groups who never compared notes shipped the same design. Birgitta Böckeler calls it
 guides-and-sensors. Anthropic's harness team built an initializer → generator → evaluator
 pipeline. Every calls it "compound engineering." This kit calls it the safety net. Strip the
 vocabulary and it's one idea:

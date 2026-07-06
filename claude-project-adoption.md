@@ -158,3 +158,13 @@ checks and FAILs on a tracked secret; `CLAUDE.md` exists with only evidence-back
 and the knowledge-routing block; the wiki holds at least three real incident/decision
 pages (or the project has consciously deferred it); and the next fixed bug leaves all
 three artifacts behind. Everything else is the safety net's job.
+
+**Verify that with a verifier, not by re-reading this list.** `bash scripts/kit-conformance.sh`
+(kickoff §1.6c, ROADMAP item O) is the machine check of the roster above — it **FAILs** only what
+no correct adoption could omit (a `CLAUDE.md`, the `.claude/settings.json` floor file, a valid
+`scripts/audit.sh`) and **WARNs** what a lean adoption may legitimately skip (wiki, evals, a named
+reviewer, action-risk gates — and, concordant with the audit, a settings floor that guards writes
+but not reads), so a retrofit is done-enough when it reports **zero FAIL**. On a large existing
+codebase, run it as a **fan-out** — one sub-agent per area, each loading only its slice (§0a's
+"fan the broad sweeps out to subagents," Part 3.13) — so no single context has to hold the whole
+kit; that is the same posture as the §1.4 "prove it bites" discipline this guide opens with.

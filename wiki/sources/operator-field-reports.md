@@ -11,7 +11,7 @@ summary: "First-hand practitioner accounts of what actually worked or failed in 
 
 # Operator field reports (2025–2026)
 
-Beyond the kit's headline sources (Fowler, OpenAI, Stripe, Karpathy). Each entry: the
+Beyond the kit's headline sources (Böckeler, OpenAI, Stripe, Karpathy). Each entry: the
 battle-tested specific, quote-checked against the primary page on 2026-07-01. Ordered by
 how hard the finding cuts.
 
@@ -81,8 +81,8 @@ engineering, we call the safety net — independent convergence with it (README 
 get feedback."* Build feedback affordances into the app itself: a CLI flag that screenshots
 the running TUI for the agent; data-only subcommands so verification doesn't require
 parsing a UI; AGENTS.md pointing at the right feedback tool per change. → the field's
-sharpest phrasing of what Fowler calls guides-and-sensors (we call them directives and
-verifiers) as a *codebase property* — Fowler's harnessability, which we call
+sharpest phrasing of what Böckeler calls guides-and-sensors (we call them directives and
+verifiers) as a *codebase property* — Böckeler's harnessability, which we call
 harness-friendliness.
 
 **Simon Willison**:

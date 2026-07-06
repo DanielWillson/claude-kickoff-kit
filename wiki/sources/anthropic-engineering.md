@@ -61,7 +61,7 @@ then re-checked by independent adversarial verifiers. This page backs the kit's 
   *"only when it demonstrably improves outcomes."* → the kit's stdlib-only / no-framework
   posture (Principle 8).
 - Agents need *"'ground truth' from the environment at each step"*; sandboxed testing +
-  guardrails because autonomy compounds errors. → directives and verifiers (Fowler's
+  guardrails because autonomy compounds errors. → directives and verifiers (Böckeler's
   guides-and-sensors), the sandbox floor.
 
 **Effective context engineering for AI agents** (2025-09-29)

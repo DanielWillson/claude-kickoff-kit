@@ -1050,6 +1050,49 @@ the two grade types; it ships with one golden and one rubric example). Run `bash
 at the maintenance moments above (exit 0 = every eval held). Like the audit, it ships mostly
 empty on purpose — its worth grows as you add the cases that encode *this* project's judgment.
 
+### 1.6c Seed the adoption check (the conformance verifier — see `scripts/kit-conformance.sh`)
+The audit (§1.6), the scorecard (§1.6a), and the evals (§1.6b) each verify one artifact; **this
+verifies that the harness itself got *adopted* — completely and conformantly.** It is §1.4's
+"prove it bites, don't trust a self-report" discipline turned on the *whole kit*: a roster check
+over the artifacts kickoff (or adoption) should have produced — `CLAUDE.md` and its routing and
+reviewer blocks, the per-repo secret-read floor, a working `scripts/audit.sh`, the behavioral
+evals, the wiki's incident pages, the action-risk gates. Seed it like the others:
+`scripts/kit-conformance.sh` ships pre-placed; run `bash scripts/kit-conformance.sh` after setup
+and periodically thereafter (it is also the anchor **item Y** reads to re-propose upgrades as the
+kit itself evolves).
+
+**It is NOT a second audit — different altitude, different cadence.** The audit asks "is the
+*code* healthy?" after every edit; this asks "is the *harness* installed?" once, then
+periodically. `scripts/audit.sh` is just **one line item** on this roster — checked *present and
+`bash -n`-valid*, never **executed** here (running it would check code health at the wrong cadence
+and couple the two scripts). Where the two overlap they share a predicate on purpose — the
+`action-risk` marker-join, the `*.eval.md` count, the `## Review` and `## Knowledge & memory`
+anchors — one language, two questions.
+
+**The exit model is deliberately lenient — and that is what keeps it agnostic.** It **FAILs only
+what no correct adoption could omit** (a `CLAUDE.md`; the `.claude/settings.json` floor file; a valid
+audit) and **WARNs everything a lean-but-correct project may legitimately skip** (the wiki, evals, a
+named reviewer, action-risk gates — a code-only solo throwaway has none of these and is *right* not
+to; and, concordant with the audit, a settings floor that guards writes but not reads is a WARN, not
+a FAIL, since the managed floor's `Read(**/.env)` may cover the repo's secrets).
+It exits nonzero **only on FAIL**, so a lean adoption passes clean-with-warnings and only a missing
+*floor* artifact blocks. And it is **structural only**: it proves an artifact is *present*, not
+that it is *correct* (a routing block that actually routes; evals that test something real) — that
+read is the fan-out's job, below.
+
+**For a big adoption, fan out — the kit's own Part 3 playbook, turned on itself.** When the kit is
+too big for one session to read without blowing its context — the very risk that makes a
+mark-it-done self-report untrustworthy — don't make one agent check everything. A **coordinator**
+assigns **one sub-agent per conformance area** (contract/floor · evals · wiki · action-risk ·
+reviewer), each **loading only its slice** of the kit and the project, each running its part of
+`kit-conformance.sh` **and** doing the semantic read the grep can't; a final pass **merges the
+verdicts into one adoption scorecard**. That is the kit's own fan-out doctrine aimed at itself —
+parallel read-only verifiers + a single writer (**Part 3.1**), each returning a conclusion so no one
+context holds the whole kit (**Part 3.13**), under the **"don't trust a subagent's self-report"**
+rule (**Part 3.8**).
+**Scale honestly:** a lean adoption gets just the script; fan out only when the kit outgrows a
+single context.
+
 ### 1.7 Confirm and hand off
 Tell the user setup is done, remind them to **enter auto mode (`Shift+Tab` cycles the
 permission mode) and restart so the sandbox initializes** (the sandbox comes from settings, not
@@ -1060,8 +1103,8 @@ guide, the templates, the audit *base*) is used **once**, at kickoff. **Do not c
 the project repo, and do not `@`-import it from `CLAUDE.md` or paste its content there** —
 either would reload the whole kit into *every* future session's context for no benefit. What
 persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.json`,
-`scripts/audit.sh`, `scripts/eval.sh`, `scripts/harness-metrics.sh`, `evals/`, `HARNESS_LOG.md`,
-`wiki/`, `README.md`, and the filled-in PRD.
+`scripts/audit.sh`, `scripts/eval.sh`, `scripts/harness-metrics.sh`, `scripts/kit-conformance.sh`,
+`evals/`, `HARNESS_LOG.md`, `wiki/`, `README.md`, and the filled-in PRD.
 Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
 everything forward. The source kit lives **outside** the repo (e.g. `~/dev/claude-harness-kit/`)
@@ -1098,7 +1141,7 @@ Build *simple*, not merely *easy*.
   across every consumer (dashboard, MCP tools, future clients).
 - **Favor agent-legible structure — within the stack you were handed.** Clear module
   boundaries, explicit types, one decision in one place, a small dependency surface: these
-  make a codebase *navigable to an agent* — what Fowler calls **harnessability** (crediting
+  make a codebase *navigable to an agent* — what Birgitta Böckeler calls **harnessability** (crediting
   Ned Letcher's **"ambient affordances"**); we call it **harness-friendly** (and those
   affordances **harness-friendly features**). Optimize for it *inside* the chosen stack; do
   **not** read this as license to pick the stack for the agent's benefit — the stack is the
@@ -1252,7 +1295,7 @@ gate** (that fights autonomy):
 This is also the cheapest instance of a general **placement** rule: run *fast, deterministic,
 cheap* checks early (a throwaway plan, the audit greps, type-checks) and reserve *slow,
 expensive, probabilistic* ones (adversarial agents, persona panels, actually running the app)
-for later, higher-stakes gates — Fowler's **"keep quality left,"** which we call **front-load
+for later, higher-stakes gates — Böckeler's **"keep quality left,"** which we call **front-load
 verification**. Placement is a real lever
 but a *secondary* one here: the kit's primary axes for where a check lives are
 **enforceability** (deterministic backstop vs. probabilistic classifier) and the **go-live
@@ -1430,7 +1473,7 @@ don't have.
    the project has an audit script (§1.6), fold `bash scripts/audit.sh` passing
    into the DoD — it checks invariants the tests don't. *(A baseline + fixtures-first DoD +
    a critical-path test is what the field calls **behaviour evals** — verifying functional correctness,
-   the hardest control to automate (Fowler). The practice belongs here; the heavyweight
+   the hardest control to automate (Böckeler). The practice belongs here; the heavyweight
    eval-framework machinery — datasets, graders — deliberately does not. The standing
    judgment-eval **suite** (run at a model upgrade, not per build) is a distinct artifact —
    that's §1.6b.)*
@@ -1559,6 +1602,7 @@ don't have.
 - [ ] human-facing `README.md` created from `readme-template.md`; `reconcile-code` anchor filled with its real source paths so the audit can flag drift (§1.5c)
 - [ ] (if non-throwaway) knowledge wiki scaffolded + seeded with 2–3 real incident/decision pages; **both** maintenance triggers wired (`/wiki` + the unattended reconcile pass); `WIKI_LINT_CMD` wired into the audit (see `llm-wiki-kickoff.md`)
 - [ ] (if non-throwaway) behavioral evals seeded — `evals-template/` → `evals/` + `claude-eval-base.sh` → `scripts/eval.sh`, one golden + one rubric case; re-run at a model upgrade / big `CLAUDE.md` edit / new skill (§1.6b)
+- [ ] `scripts/kit-conformance.sh` seeded; `bash scripts/kit-conformance.sh` reports **zero FAIL** after setup — the *adoption* verifier (is the harness installed? — not code health, that's the audit): FAILs only the irreducible floor, WARNs what a lean project may skip; **fan out per area for a big adoption** (§1.6c, item O)
 - [ ] (if UI) design tokens + a starter primitive seeded before the second screen (Principle 5)
 - [ ] backups/dumps/temp kept OUT of the repo tree (`$TMPDIR`); data store + its sidecars + `*.bak` gitignored (§1.2)
 - [ ] (if on a mounted/synced volume) venv + caches symlinked to local disk; `git check-ignore` verified; mtime not trusted (§1.1a)
