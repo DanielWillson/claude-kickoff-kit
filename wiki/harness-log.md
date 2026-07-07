@@ -57,6 +57,57 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — The recovery layer: non-git rollback (S) + tool inventory (T) + incident runbook (U)
+
+- **Change.** Built S, T, U together as one **recovery layer** — the kit's answer to "what happens when
+  prevention fails," which it was almost silent on. **S** (teaching-only): a new Principle 10 bullet generalizing
+  its migration case to *all* out-of-git state (DB, hosted config, deploy, external backend), adding the
+  kit-missing concept of a **recovery owner** — the triad is *snapshot + documented way back + recovery owner*,
+  gated to the existing Intake Q5/Q7 + §1.3a Hardened signals. **T**: a tier-optional root **`TOOL_INVENTORY.md`**
+  (scope · reads · writes · credential-location · how-to-disable per tool). **U**: a tier-optional root
+  **`RUNBOOK.md`** (contain → revoke/rotate → identify → undo/notify → safeguard). Both artifacts teach from
+  **§1.3a** (the security/recovery material), not the §1.6 verifier family.
+- **Rationale (the bet).** The kit is overwhelmingly *prevention* (deny floors, audit, evals, conformance,
+  freshness). Recovery was its thinnest seam. The three interlock — U's revoke step reads T's credential-location
+  column; U's undo step restores from S's snapshot — so building them together yields a runbook that points at
+  real artifacts rather than three docs each referencing two that don't exist. Bet: a small, tier-optional
+  recovery layer closes the kit's biggest *categorical* gap at low marginal cost.
+- **Research method.** Mapped the three slot-in points with **three parallel Sonnet subagents** (one per item,
+  read-only), then integrated as a single writer — the kit's own fan-out pattern (item O) turned on itself. All
+  three independently converged on the artifact shapes below.
+- **Three design calls.** (1) **S needs no file** — it's a ritual-at-a-moment, not a registry; a Principle 10
+  bullet + a checklist line, no proliferation. (2) **T and U are separate files, not one `RECOVERY.md`** — they
+  fire on *orthogonal* triggers (a library using an MCP server wants T, not U; a deployed app with no tools wants
+  U, not T), so the marginal cost per project is 0-or-1, not 2; and their read-modes differ (T = a maintained
+  table read at audit; U = a terse procedure read under stress). (3) **T is its own file, not a manifest section**
+  — different axis (access-scope vs assumption×freshness); merging would break the manifest's "no disagreeing
+  rosters" rule.
+- **Self-containment (the recurring trap, guarded).** Both `TOOL_INVENTORY.md` and `RUNBOOK.md` are
+  project-retained, so both are **grep-clean of `§`/`Principle`/`item-letter`/actionable-`the-kit` refs** (only
+  the provenance banner names the kit); every cross-reference is to another *project-retained* file by filename,
+  with "if you keep one" graceful degradation. Same lesson as the `HARNESS_MANIFEST.md` scrub.
+- **Enumeration sweep — caught a latent W miss.** Adding root files re-triggered the "enumerate the outputs"
+  consistency class (cf. E's routing sweep). Found that **`HARNESS_MANIFEST.md` (item W) had never been added to
+  the canonical output lists** — the kickoff "what persists" list (`:1211`), the audit's scaffolding comment
+  (`:370`), and the README roster. Fixed all three lists to include the manifest *and* the two new files, and
+  added `TOOL_INVENTORY.md`/`RUNBOOK.md` to the audit's "ships-at-output-name, NEITHER clause BY DESIGN" note.
+- **What it replaced.** Net-new recovery layer. Principle 10's migration bullet is now framed as one instance of
+  the general out-of-git-state rule (not replaced — subsumed).
+- **Shelf-life/risk class.** **Permanent** — recovery discipline (snapshot before change, know what has access,
+  have a procedure) is not model-dependent. Low blast radius: two tier-optional templates + docs; no executable
+  path added.
+- **Related ROADMAP item.** **S**, **T**, **U** (the recovery layer). **No conformance/audit presence-check**
+  for T or U — consciously, matching W's tier-optional precedent (absent is legitimate). Feeds **R** (T's
+  writes-column is action-risk raw material) and the wiki's retrospective incident pages (U's step-5 handoff).
+- **Commit.** *(uncommitted at time of writing — on branch `feat/STU-recovery-layer`; stamp on merge.)*
+- **Signal to watch.** (1) A project keeping `RUNBOOK.md` but no `TOOL_INVENTORY.md`, hitting step 2 with no
+  credential map → the "if you keep one" degradation is doing its job, or the pairing needs a stronger nudge. (2)
+  A tool inventory going stale (rows for tools long disconnected) → same freshness risk as any registry; a
+  future placeholder/last-reviewed check (deferred, like the manifest's) may be worth it.
+- **Retrospect.** *(pending — revisit after a project actually runs the runbook in a real incident.)*
+
+---
+
 ## 2026-07-06 — Internal-consistency fixes K / L / N (the K–N cluster closes)
 
 - **Change.** Closed the last three **internal-consistency fixes** (docs-only), completing the K–N cluster

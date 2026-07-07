@@ -504,7 +504,13 @@ regardless of mode. But know what it does **not** cover:
   exfiltrate as freely as you let it. When a project uses MCP, **allowlist exactly the
   servers you trust** (`enabledMcpjsonServers`) rather than auto-loading whatever a
   `.mcp.json` declares; same posture as the trusted-repo boundary. (Inert for an MCP-free
-  project.)
+  project.) **Then inventory the fleet (item T).** The allowlist decides *whether* a tool
+  loads; nothing records *what the ones you loaded can do*. Once the agent has tools that
+  reach outside the repo (MCP servers, connectors, API integrations), seed a
+  **`TOOL_INVENTORY.md`** at the repo root — one row per tool: its scope, whether it can
+  write, **where its credential lives, and how to disable it**. That last pair is what a
+  stressed human (or the runbook below) reaches for the moment a tool misbehaves. Scale
+  honestly: one MCP server → one row; no external tools → skip the file.
 - **Skills and plugins are installed *instructions* — vet them like dependencies.** A skill
   is prose the agent follows (often plus scripts it runs); installing one puts its author
   inside the prompt-level trust boundary — prompt injection you opted into, on every
@@ -529,6 +535,19 @@ regardless of mode. But know what it does **not** cover:
   mode) — never a soft deny and never a sentence in the conversation. This is exactly why
   the floor moves `git push` into `ask` and hard-denies the agent editing its own
   enforcement files (`.claude/settings.json`, `hooks/**`).
+- **When prevention fails — keep a runbook (item U).** Everything above is *prevention*; none of
+  it is *recovery*. For any project with a live system an agent could damage, seed a short
+  **`RUNBOOK.md`** at the repo **root** — the forward, terse procedure you run *the moment* an agent
+  does something wrong, before you understand why: **contain** (stop the run / kill a mid-flight
+  job) → **revoke/rotate** any credential it used (your `TOOL_INVENTORY.md` says where each lives and
+  how to disable it) → **identify what was touched** (files, records, messages, external state) →
+  **undo or notify** (restore from the snapshot you took *before* the change — that *before* half is
+  Principle 10 / item S; if it can't be undone, notify whoever's affected) → **safeguard** (add a
+  check that catches it next time, then write the retrospective up as a wiki incident page). Root-level
+  so a stressed human finds it fast, not buried in the wiki. Inert for a throwaway with nothing to
+  recover. Together, `TOOL_INVENTORY.md` (what has access), Principle 10's snapshot ritual (the way
+  back), and `RUNBOOK.md` (the procedure) are the kit's **recovery layer** — the complement to all
+  the prevention above.
 
 **The floor is always on; the maturity trigger adds *conditional hardening above it*.** Auto
 mode + the committed per-repo floor (§1.3) is the default at every tier — you do **not** drop to a
@@ -784,7 +803,7 @@ the *same set* you put in `denyWrite` §1.3; they belong in both places).
 - **Tokenize the UI** — named tokens + composed primitives; no raw colours/spacing in markup.
 - **When stuck, instrument — don't loop** — after ~2 failed tries at one idea, find the real cause, then change approach.
 - **Dependency restraint** — stdlib/existing first; pin versions; verify any API against the *installed* version, not memory.
-- **Evolving live code is its own risk** — pin a golden-output test before refactoring a calc; a data migration isn't `git revert`-able (back up first).
+- **Evolving live code is its own risk** — pin a golden-output test before refactoring a calc; a data migration — or any change to state outside git (a database, a deploy, hosted config) — isn't `git revert`-able, so snapshot a way back first.
 - **Routing:** guardrail → this file · machine-check → the audit · intended behavior (what & the product intent) → the spec/PRD · full story (why the *code* is this way / dead-ends / history) → the wiki.
 
 ## Stack
@@ -1191,7 +1210,9 @@ the project repo, and do not `@`-import it from `CLAUDE.md` or paste its content
 either would reload the whole kit into *every* future session's context for no benefit. What
 persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.json`,
 `scripts/audit.sh`, `scripts/eval.sh`, `scripts/harness-metrics.sh`, `scripts/kit-conformance.sh`,
-`evals/`, `HARNESS_LOG.md`, `wiki/`, `README.md`, and the filled-in PRD.
+`evals/`, `HARNESS_LOG.md`, `wiki/`, `README.md`, the filled-in PRD, and — when the project's
+harness grows into them — the tier-optional `HARNESS_MANIFEST.md`, `TOOL_INVENTORY.md`, and
+`RUNBOOK.md`.
 Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
 everything forward. The §1.5 **"How we build here"** block *is* that digest — the **one
@@ -1445,6 +1466,17 @@ prevent. Defaults for evolving a live system (each gated to when it applies):
   down that rollback needs *both* (restore the data **and** reset the code). Prefer
   additive migrations — never edit a shipped one; keep a replaced column/table dormant
   rather than dropping it in the same step that stops using it.
+- **Git covers code, not the *state* your project depends on elsewhere.** *(Only if the
+  project has out-of-git state — a database, a hosted config, an external/SaaS/no-code
+  backend, infrastructure, a deployed release, a published artifact; a pure library with
+  none needs none of this.)* The migration case above is one instance of a general rule:
+  before an agent-assisted change to *any* such state, have three things in place — a
+  **snapshot** (taken via that system's real backup/export API, so you can actually
+  restore it), a **documented way back** (written down, not remembered — for a migration,
+  *both* restore-the-data and reset-the-code), and a **recovery owner** (who restores it
+  if it goes wrong — solo: you; just make sure the snapshot really exists). This is the
+  *before* half of recovery; the undo step of an incident runbook (`RUNBOOK.md`, item U)
+  is where that snapshot gets *used* after something goes wrong.
 - **A hardening/audit pass can introduce the bug it hunts.** The reflex when hardening
   is to *add a guard* — a floor, a filter, an epoch — but a guard adds state and a new
   failure mode, and some "fixes" are over-corrections the simpler behavior never
@@ -1683,6 +1715,7 @@ don't have.
 - [ ] (if shared repo — Q6) **server-side** branch protection on `main` (block force-push + deletion, require the CI check) + CODEOWNERS on `.claude/**`/`hooks/**`/`.github/**`/`CLAUDE.md` (note: CODEOWNERS doesn't guard direct pushes) + least-privilege/SHA-pinned CI (§1.3b)
 - [ ] settings validated with `claude doctor` (silently-stripped keys) / `/permissions` / `/status` (active source); security controls **proved to bite** — denied secret read blocked, bypass rejected (only the controls you adopted); **re-run this list after any Claude Code major upgrade — a tool upgrade can silently drop a setting** (§1.4, item J)
 - [ ] (if MCP used) `enabledMcpjsonServers` allowlist — MCP + web tools are unsandboxed (§1.3a)
+- [ ] (if the agent has tools reaching outside the repo — MCP/connectors/APIs) `TOOL_INVENTORY.md` seeded at root — per tool: scope, reads/writes, **credential location + how to disable** (item T, §1.3a); one MCP server → one row
 - [ ] (if a worktree under `allowUnsandboxedCommands:false`) kept **in-repo + gitignored**, not a sibling path that hard-fails (Part 3.11)
 - [ ] `chmod` deny relaxed if deploy target requires it
 - [ ] settings JSON validated — **strict JSON, no `//` comments** (a comment makes Claude Code silently drop the whole file, §9.1; `scripts/audit.sh` FAILs a non-loadable one); auto-commit hook pipe-tested (surfaces a *blocked* commit, not a false success); (if a blocking hook §1.3b) proved it FIRES via a real blocked commit
@@ -1706,6 +1739,8 @@ don't have.
 - [ ] backups/dumps/temp kept OUT of the repo tree (`$TMPDIR`); data store + its sidecars + `*.bak` gitignored (§1.2)
 - [ ] (if on a mounted/synced volume) venv + caches symlinked to local disk; `git check-ignore` verified; mtime not trusted (§1.1a)
 - [ ] (evolving a live system) baseline pinned before a calc refactor; data migration → backup + branch + two-part rollback (Principle 10)
+- [ ] (if the project has out-of-git state — DB / hosted config / deploy / external backend) before an agent-assisted change to it: **snapshot + documented way back + a recovery owner** (item S / Principle 10); a pure library needs none
+- [ ] (if a live system an agent could damage) `RUNBOOK.md` seeded at root — the forward contain → revoke/rotate → identify → undo-or-notify → safeguard procedure, kept where a stressed human finds it fast (item U, §1.3a)
 - [ ] user reminded to enter auto mode (`Shift+Tab`) **and restart so the sandbox initializes** (sandbox is from settings, not `Shift+Tab`)
 - [ ] noted the maturity trigger: it **adds conditional hardening above the always-on floor** (Q9 secret add-ons · Q6 server-side + CODEOWNERS) — *not* a switch to a more restrictive mode (the managed hard floor is **Part 0**, done once per machine)
 - [ ] principles internalized; ready for the spec

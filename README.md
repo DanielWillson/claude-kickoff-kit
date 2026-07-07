@@ -187,6 +187,18 @@ Each file is labeled with what it does, and why it earns a place.
   fixed so tooling can find it). The qualitative companion to the scorecard: where a human records
   *what changed in the harness and why*, one append-only entry per change. The numbers say *that*
   something moved; this says *why*. (The script never writes it.)
+- **`HARNESS_MANIFEST.md`** — a tier-optional **harness manifest**: a small table of the harness's
+  own parts, each tagged with what it assumes, when it was last verified, and the event (a model or
+  tool upgrade) that makes it stale — so *which bets are due for a re-check* is something you read,
+  not remember.
+- **`TOOL_INVENTORY.md`** — a tier-optional **tool inventory**: one row per tool the agent can reach
+  *outside* the repo (MCP servers, connectors, APIs) — its scope, whether it can write, where its
+  credential lives, and how to disable it. Where you look when something has too much access, or needs
+  killing *now*.
+- **`RUNBOOK.md`** — a tier-optional **incident runbook**: the short, forward procedure for when the
+  agent does something wrong in a live system — contain → revoke/rotate → find what was touched →
+  undo or notify → safeguard. Kept at the root so a stressed human finds it fast. The recovery
+  complement to all the prevention elsewhere in the kit.
 - **`prd-template.md`** — a fill-in-the-blanks **product spec**: what's being built, why, and
   which rules must always hold. It is a directive — the place those must-never-break rules get named
   before any code exists.

@@ -334,6 +334,15 @@ back + a recovery owner (solo: you — just ensure the snapshot exists). Princip
 data migration is not git-reversible"; this generalizes to *all* out-of-git state and makes the
 snapshot ritual explicit. Absorbs the kickoff-reader's "rollback weak for non-git things" gap.
 Scale honestly: a pure library with no external state needs none of this.
+- **Built 2026-07-06 (teaching-only — no new file, deliberately).** S is a *ritual at a moment*, not a
+  registry, so it needed no artifact (unlike T/U). Realized as a new **Principle 10 bullet** that generalizes
+  the existing "a data migration is not git-reversible" case to *all* out-of-git state, and adds the concept
+  that was genuinely missing kit-wide (grep-confirmed): a **recovery owner**. The triad is **snapshot (via the
+  system's real backup/export) + a documented way back + a recovery owner**, gated to when the project has
+  out-of-git state (fires on the same Intake Q5/Q7 + §1.3a Hardened-tier signals that already exist — no new
+  intake question). The self-contained §1.5 digest echo was broadened to match; a Quick-Checklist line added.
+  Cross-linked to **U**: S is the *before* half (take the snapshot), `RUNBOOK.md`'s undo step is where it gets
+  *used* after.
 
 ### T. Tool inventory *(new; generalizes "connector/MCP inventory")*
 Any project where the agent has tools — MCP servers, connectors, plugins, browser extensions, API
@@ -342,6 +351,16 @@ data it can read, whether it can write, where its credential lives, last review 
 disable it. The security docs cover credential *layering* and rotation but no artifact inventories
 the *fleet of tools* a given project runs. As the tool surface grows, this is where you look when
 something has too much access or needs killing. Scale honestly: one MCP server → one line.
+- **Built 2026-07-06.** Ships a tier-optional **root `TOOL_INVENTORY.md`** template (self-contained;
+  worked-example rows) — deliberately its **own file, not a section of `HARNESS_MANIFEST.md`**: the axes
+  differ (T = access-scope × credential-location × blast-radius; the manifest = assumption × freshness), and
+  merging would break the manifest's own "no disagreeing rosters" rule. Columns: *tool · owner · scope · reads
+  · writes · **credential location** · last reviewed · **how to disable***, with the last two called out as the
+  load-bearing pair a stressed human reaches for. Teaching extends the **§1.3a** MCP-allowlist material (the
+  allowlist decides *whether* a tool loads; the inventory records *what the loaded ones can do*) + a
+  Quick-Checklist line. **No kit-self dogfood** — this repo runs no project-owned MCP tools (no `.mcp.json`);
+  a worked-example row in the template serves instead. Feeds **U**'s revoke step (where the credential lives)
+  and **R**'s action-risk gating (a `writes = Y` tool is a gate candidate).
 
 ### U. Incident runbook for agent mistakes *(new)*
 Distinct from the wiki's *retrospective* incident pages (symptom → cause → fix, written after).
@@ -352,6 +371,17 @@ page). The kit is strong on *prevention*; this is the "when prevention fails" pl
 the live system could be a personal server, an open-source project's CI, or a business's backend.
 - **Build:** a short RUNBOOK section (or wiki page) with the ordered steps, kept where a stressed
   human can find it fast.
+- **Built 2026-07-06.** Ships a tier-optional **root `RUNBOOK.md`** (a standalone file, not a wiki page — the
+  wiki is itself tier-optional and buried; "a stressed human finds it fast" demands root visibility). The
+  5-step forward spine: **contain → revoke/rotate → identify what was touched → undo or notify → safeguard**,
+  with two handoffs — step 2 sends you to `TOOL_INVENTORY.md` (item T) for *where the credential lives*, and
+  step 4 restores from the snapshot (item S) for non-git state; the final step hands off to the wiki's existing
+  *retrospective* incident-page shape (which U stays distinct from — U is the live procedure, the wiki page is
+  the after-the-fact analysis). **Self-contained** (grep-clean of `§`/`Principle`/`item-letter`/`the-kit`
+  refs — the same discipline as `HARNESS_MANIFEST.md`): every cross-reference is to another *project-retained*
+  file by filename, with graceful "if you keep one" degradation. Teaching placed with the **§1.3a** security
+  material as the "when prevention fails" complement — **not** the §1.6 verifier family (a runbook isn't a
+  verifier). Quick-Checklist line added. Together S + T + U are the kit's **recovery layer**.
 
 ### V. Name the reviewer — the human dimension *(new; the ROADMAP's own blind spot)*
 The whole kit assumes a human steers and reviews, but never says *who* or *what they must be able
@@ -566,8 +596,12 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
    three internal-consistency fixes) — done 2026-07-06: CLAUDE.md-skeleton budget acknowledged (menu, not
    mandate); the "How we build here" digest named as the intended paste-exception; and the solo-on-`main`
    rule reconciled across Principle 4, Part 3.11, and the seeded digest (self-contained). **With M + K/L/N
-   done, the entire K–N consistency cluster is closed.**
-   **Remaining hygiene/frontier tail:** S, T, U, C, D, I, F.
+   done, the entire K–N consistency cluster is closed.** ✅ **S/T/U** (the recovery layer) — done
+   2026-07-06: **S** generalizes Principle 10 to all out-of-git state + a recovery owner (teaching-only);
+   **T** ships `TOOL_INVENTORY.md` (what has access + how to disable it); **U** ships `RUNBOOK.md` (the
+   forward when-prevention-fails procedure). The kit was prevention-heavy; this is its recovery complement.
+   **Remaining tail:** C (flight recorder), D (cross-project memory), I (fuzzy-output baseline), F
+   (untrusted-content rule).
 
 ---
 

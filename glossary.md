@@ -128,6 +128,9 @@ Shipped into the kit; each points to where it lives.
 | J | **Post-upgrade re-verify** | Treat a Claude Code *tool* upgrade like a model upgrade — a scheduled maintenance event: re-run §1.4's "prove it bites" checks, because an upgrade can silently drop a setting (CC 2.1.201, verified 2026-07-06, discards a whole settings.json on a `//` comment). Realized as the manifest's re-verify trigger. | kickoff §1.4 + §1.6a + README shelf-life doctrine + the [`HARNESS_MANIFEST.md`](HARNESS_MANIFEST.md) trigger column |
 | E | **Spec-as-source** | The spec/PRD as a *living* doc, not fill-once: it carries the same `reconcile-code` freshness anchor as the README (any root doc with the anchor is audit-checked), holds *intended behavior + product intent* in the routing (distinct from the wiki's *why the code is this way*), and is updated in the same commit as any deliberate behavior change. | [`prd-template.md`](prd-template.md) (anchor + living-doc note) + [`claude-audit-base.sh`](claude-audit-base.sh) (generalized doc-freshness check) + kickoff §1.5c/§1.7 routing |
 | K–N | **Internal-consistency fixes** | The four small edits reconciling places the kit contradicted itself: **K** the CLAUDE.md-skeleton budget (menu, not mandate), **L** the "How we build here" digest as the intended paste-exception, **M** date-stamping version-pinned facts, **N** the solo-on-`main` rule across Principle 4 / Part 3.11 / the seeded digest. | kickoff §1.4/§1.5/§1.6a + `CHEATSHEET.md` + ROADMAP §K–N |
+| S | **Non-git rollback** | Before an agent-assisted change to state git doesn't cover (DB, hosted config, deploy, external backend): a *snapshot* + a *documented way back* + a *recovery owner*. Generalizes Principle 10's migration case to all out-of-git state; the *before* half of recovery (the runbook's undo step is the *after*). Teaching-only — no new file. | kickoff Principle 10 + Quick Checklist |
+| T | **Tool inventory** | A tier-optional root registry of every tool the agent can reach *outside* the repo (MCP/connectors/APIs): scope · reads · writes · **credential location** · **how to disable**. Distinct axis from the manifest (access-scope, not freshness). Where you look when something has too much access. | [`TOOL_INVENTORY.md`](TOOL_INVENTORY.md) + kickoff §1.3a |
+| U | **Incident runbook** | A tier-optional root `RUNBOOK.md`: the forward, terse when-prevention-fails procedure — contain → revoke/rotate (→T) → identify what was touched → undo/notify (restore from S's snapshot) → safeguard (+ hand off to a retrospective wiki incident page). Self-contained; root-level so a stressed human finds it fast. | [`RUNBOOK.md`](RUNBOOK.md) + kickoff §1.3a |
 
 ## Roadmap items — planned
 
@@ -137,9 +140,6 @@ Names locked; definitions use the vocabulary above. Build state and detail live 
 | Item | Name | One-line definition |
 |---|---|---|
 | C | **Flight recorder** | A durable record of what an agent did during a run, so you can inspect *why* it went wrong or got expensive. |
-| S | **Non-git rollback** | Snapshot-and-recover rituals for state git doesn't cover (databases, hosted configs, deploys, external backends). |
 | D | **Cross-project memory** | A queryable knowledge layer for when per-project markdown files stop scaling across many projects. |
-| T | **Tool inventory** | A list of every tool/connector the agent has — scopes, where its credential lives, how to disable it. |
-| U | **Incident runbook** | The forward "when an agent does damage" procedure: contain → revoke → identify what was touched → undo → add a safeguard. |
 | I | **Baseline for fuzzy output** | The tolerance/rubric version of the baseline check, for output that isn't exactly reproducible. |
 | F | **Untrusted-content rule** | Fetched/tool content is *data, not instruction* (the sandbox limits damage, not the hijack). |

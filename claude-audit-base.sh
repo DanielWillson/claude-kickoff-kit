@@ -367,7 +367,8 @@ if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     [ -n "$tracked_data" ] && { warn "data-store / backup artifact tracked in git — confirm no secrets + keep bulk data out of the repo"; echo "$tracked_data" | sed 's/^/       /'; } \
                            || pass "no data-store / backup artifacts tracked"
     # Harness Kit scaffolding is ONE-TIME: its OUTPUTS persist (CLAUDE.md, this script, wiki/,
-    # README.md, the PRD, scripts/eval.sh, evals/, scripts/harness-metrics.sh, HARNESS_LOG.md),
+    # README.md, the PRD, scripts/eval.sh, evals/, scripts/harness-metrics.sh, HARNESS_LOG.md,
+    # and the tier-optional HARNESS_MANIFEST.md / TOOL_INVENTORY.md / RUNBOOK.md),
     # its SOURCE guides/templates should not —
     # committed, they reload into every future session's context for nothing. WARN if any
     # source file is tracked. This guard uses TWO structurally different mechanisms, because
@@ -382,10 +383,10 @@ if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     #       project's own README.md, so they need a PATH-SEGMENT clause instead:
     #       (^|/)evals-template/ — matches the committed SOURCE dir but not the renamed output
     #       dir evals/ (and not near-misses like evals-templates/ or my-evals-template/).
-    #   (3) scripts/harness-metrics.sh, root HARNESS_LOG.md, and root HARNESS_MANIFEST.md are in
-    #       NEITHER clause BY DESIGN. Unlike claude-audit-base.sh (a root source RENAMED to
-    #       scripts/audit.sh on copy), the kit ships these AT their output name/path — so a project's
-    #       copy is byte-identical to a legitimate output: there is no distinct source form to catch,
+    #   (3) scripts/harness-metrics.sh and the root docs HARNESS_LOG.md / HARNESS_MANIFEST.md /
+    #       TOOL_INVENTORY.md / RUNBOOK.md are in NEITHER clause BY DESIGN. Unlike claude-audit-base.sh
+    #       (a root source RENAMED to scripts/audit.sh on copy), the kit ships these AT their output
+    #       name/path — so a project's copy is byte-identical to a legitimate output: there is no distinct source form to catch,
     #       and nothing is harmful if one is "copied" (it equals what the project keeps anyway).
     #       harness-metrics.sh ships pre-placed in scripts/ so ROOT resolves and it runs in place; that
     #       naming asymmetry is intentional — don't "fix" any of these into the alternation.
