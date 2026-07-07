@@ -350,6 +350,40 @@ kind of event** — it can silently drop a setting a new default no longer accep
 checks after it, exactly as you would after a model upgrade. Which parts are due, and what triggers each, is what a
 `HARNESS_MANIFEST.md` makes readable instead of remembered (kit items **W** + **J**).
 
+## The principles travel past code
+
+The kit is **code-first on purpose** — its examples are repos, diffs, and tests, because that
+is where most agent work happens today and where the mechanics are most concrete. But almost
+nothing load-bearing here is *about code*. The unit is **model + harness**, and the harness
+ideas are claims about working with a non-deterministic agent — the same whether the deliverable
+is a program, a research memo, a data analysis, a written argument, or an ops change. Several
+parts of the kit already say so out loud: the behavioral evals are scoped *"incl. non-code
+workflows,"* the knowledge wiki is domain-agnostic by construction, the action-risk boundary is
+explicitly *"generalized beyond code edits"* (kickoff §1.3c), and the provenance rule — *a naked
+factual claim is a defect; it must cite its source* — simply **is** the citation standard any
+knowledge work already owes. So what follows is a **mapping, not a second kit**: each load-bearing
+idea has a non-code form of the same shape, only the artifact changes.
+
+| Harness idea (code framing) | Its non-code form |
+|---|---|
+| The **audit** — a deterministic check the code must pass | A **checkable rubric** the deliverable must pass — the go/no-go invariants of a good memo/analysis/answer, not "looks right" |
+| **Independent verification** — a fresh agent re-runs the DoD, never the builder | A fresh reviewer checks the output **against a source of truth**, never its author — the builder/judge split is domain-free |
+| **Behavioral evals** — saved tasks checking the agent's *judgment* | Saved representative tasks with a golden or rubric grade for "did it research / summarize / decide well" — the same fixture schema |
+| **The provenance rule** — every factual claim cites its source | *Unchanged* — never code-specific; a report or analysis owes it more, not less |
+| **The wiki** — reconciled-against-truth knowledge, not memory | *Unchanged* — a reconciled store for any domain; the reconcile target is the domain's ground truth instead of code |
+| **Action-risk gates** — reversibility × reach; deny/ask the dangerous | *Unchanged* (§1.3c is already the general form) — publish, send, spend, delete are the classes, whatever produces them |
+| **Name the reviewer** — who reviews, against what | *Unchanged* — review capacity, not generation, is the constraint in any knowledge work |
+
+The worked shape exists as a **pattern**, not just a claim: a research or analysis task run as
+**fan out across sources → fetch each → adversarially verify the claims → synthesize a cited
+report** is this harness applied to knowledge work — directives (the question, and what a good
+answer must cite), verifiers (the adversarial check), and provenance (every claim sourced), with
+no code in sight. **The discipline is knowing where to stop.** This is a mapping that *proves the
+principles travel* — not a guide to doing research, writing, or ops. The moment it starts
+prescribing a domain's specifics it has become the parallel kit it shouldn't be; keep it agnostic
+(no assumed business, team, or single domain), and let each project's own docs carry the domain
+detail. The kit stays code-first; the principles were never code-bound.
+
 ## Where these ideas come from
 
 The kit didn't invent this approach. It assembles a set of ideas the field has been working out

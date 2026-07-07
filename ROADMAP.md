@@ -949,13 +949,16 @@ even a codebase where the theme generalizes past one. Lettering continues the se
 that premise wrong. Z was **~80% already shipped** (model routing = Part 3 #13, budget levers = Part 3
 #10, cost measure = **B**, spend gate = **R**, expensive-run feed = **C**); its real delta was small
 (the economics *gauge* that closes the loop over those, + one missing scorecard stub) and is now built.
-The genuine new-territory build is **AA** (generalize the harness past code) — that's the "if you do
-only one" now.
+**Follow-on (2026-07-07): AA is now built too** — and turned out to be the *same species* as Z (a
+mapping of principles that already travel, not new territory; it landed as a README section, not a
+file). **That leaves only AB** — and AB is a deliberate *don't-build-yet watch-item*, not a build. So
+§10's buildable candidates are **closed**; the next real backlog will come from a future §4-style review,
+not from this list.
 
 | # | Candidate | Impact | Type | Status |
 |---|---|---|---|---|
 | **Z** | **Agent-fleet economics** — model routing + cost-governed orchestration | High | Frontier/Unique | ✅ **Built (2026-07-07)** — mostly pre-existing; delta = the economics gauge + a cost stub |
-| **AA** | **Non-code companion track** — generalize the harness past code (humble pointer) | Medium | Frontier | *proposed* |
+| **AA** | **Non-code companion track** — generalize the harness past code (humble pointer) | Medium | Frontier | ✅ **Built (2026-07-07)** — a README mapping section; collects what already travels |
 | **AB** | **Cross-tool portability watch** (`AGENTS.md` / AAF) — a *don't-build-yet* watch-item | Lower | Hygiene | *proposed* |
 
 ### Z. Agent-fleet economics — model routing + cost-governed orchestration *(new)*
@@ -1010,6 +1013,25 @@ reconciled knowledge store (already agnostic); **evals** → the fixture schema 
 to research, not code. **Risk to manage:** scope creep. The deliverable is a *mapping note* that
 proves the principles travel, not a parallel guide — the moment it starts assuming a non-code
 domain's specifics, it's over-built.
+- **Built 2026-07-07 — and, like Z, the same species as it turned out to be.** Building AA showed it
+  is **not** "the biggest new territory" — it is *collect + map + scope-guard principles that already
+  travel*. The kit had **already generalized** four of the pieces this stub lists as work: the evals are
+  scoped *"incl. non-code workflows"* (**A**), the wiki is domain-agnostic by construction, **§1.3c** is
+  literally titled *"the deny/ask boundary, generalized beyond code edits"* (**R**), and the provenance
+  rule *is* the citation standard already. So AA's honest contribution is the **mapping**, cross-referencing
+  those existing generalizations rather than restating them — the same discipline that kept Z's paragraph
+  from re-teaching #13/#10. **Placement (corrected from this stub):** a **section in the README** (`The
+  principles travel past code`), **not a standalone file** — a near-empty `beyond-code.md` would read as
+  page one of the parallel guide AA forbids, and would *invite* the domain specifics it must exclude; the
+  claim is philosophy (it sits by *"What scales with the model"*), and the README is the more discoverable
+  front door. **Two corrections to this stub's own text:** (1) the `deep-research` skill does **not** live
+  *in this repo* (verified: no such file; it's a session-available skill, not a kit artifact) — the README
+  describes the research-harness *pattern* generically (fan out → fetch → adversarially verify → cite) with
+  no specific-skill dependency a reader might lack; (2) "biggest new-territory candidate" was overstated,
+  per the above. **Scope held:** a mapping table (code idea → non-code form, several rows honestly marked
+  *Unchanged* because they already travel) + the generic pattern + a hard **"know where to stop"** guard
+  (map only; no domain how-to; agnostic per §2). Logged in `wiki/harness-log.md` (README teaching change).
+  Teaching-only, no script or template touched.
 
 ### AB. Cross-tool portability watch (`AGENTS.md` / AAF) — a watch-item, not a build *(new)*
 §4 flags `AGENTS.md` as a now-real cross-tool convention (Linux Foundation **Agentic AI
