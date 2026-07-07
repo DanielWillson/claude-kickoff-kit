@@ -944,12 +944,17 @@ here that would need live-URL verification before it could ship (Lesson 7); each
 back at §4's already-sourced framing. These are **proposals, not built** — the same status the
 A–Y items had at the top of this doc — recorded so the forward direction isn't lost. Same
 project-agnostic constraint as everything above (§2's steer): never assume a business, a team, or
-even a codebase where the theme generalizes past one. Lettering continues the sequence (Z, AA, AB);
-"if you do only one, **Z**" — it has the clearest near-term leverage and builds on shipped items.
+even a codebase where the theme generalizes past one. Lettering continues the sequence (Z, AA, AB).
+**Correction (2026-07-07):** the first draft flagged "if you do only one, **Z**" — building it proved
+that premise wrong. Z was **~80% already shipped** (model routing = Part 3 #13, budget levers = Part 3
+#10, cost measure = **B**, spend gate = **R**, expensive-run feed = **C**); its real delta was small
+(the economics *gauge* that closes the loop over those, + one missing scorecard stub) and is now built.
+The genuine new-territory build is **AA** (generalize the harness past code) — that's the "if you do
+only one" now.
 
 | # | Candidate | Impact | Type | Status |
 |---|---|---|---|---|
-| **Z** | **Agent-fleet economics** — model routing + cost-governed orchestration | High | Frontier/Unique | *proposed* |
+| **Z** | **Agent-fleet economics** — model routing + cost-governed orchestration | High | Frontier/Unique | ✅ **Built (2026-07-07)** — mostly pre-existing; delta = the economics gauge + a cost stub |
 | **AA** | **Non-code companion track** — generalize the harness past code (humble pointer) | Medium | Frontier | *proposed* |
 | **AB** | **Cross-tool portability watch** (`AGENTS.md` / AAF) — a *don't-build-yet* watch-item | Lower | Hygiene | *proposed* |
 
@@ -967,6 +972,28 @@ short routing heuristic + a budget-cap pattern in the guide (and, if it earns it
 column for cost-per-stage), **not** a scheduler or an auto-router — name the decision, wire the cap
 deterministically where money is at stake (the **R** action-risk posture applied to spend). Builds
 directly on **B** + **C**; the frontier beat is turning "we measure cost" into "we *govern* it."
+- **Built 2026-07-07 — and the act of building corrected this entry's own premise.** The claim above —
+  *"Part 3's fan-out playbook has the mechanics but not the when / which model / how much governance"* —
+  **was wrong**, written (last turn) without checking Part 3. In fact: **Part 3 #13** *is* the which-model
+  governance (it already carries the judgment *"capability is per-task, not per-reputation — when a cheap
+  tier verifiably passes its DoD, the expensive tier is waste there"*), **Part 3 #10** *is* the how-much
+  lever (and honestly states the baseline harness has **no per-run token primitive**), **B** carries the
+  cost measure, **R** gates spend, **C** post-mortems the outliers. So Z was **~80% already shipped**, and
+  the faithful build was the *small genuine delta*, not a manufactured Part 3 #15 (which would have
+  re-taught #13/#10 and failed the kit's own "would removing this cause mistakes?" bar). **The delta, in
+  §1.6a (next to the number that drives it, not Part 3):** (1) name **tokens/$ per merged change** as the
+  *economics gauge* — the number that turns the four scattered levers (#13 route · #10 cap · R gate · C
+  post-mortem) into a **governance loop**: watch it on the scorecard's slow cadence and let it *drive* the
+  next routing / fan-out-width choice — *govern* the spend, don't just observe it; (2) a matching
+  `manual "cost per merged change (tokens/$)"` **human-note stub** in `scripts/harness-metrics.sh`
+  (genuinely missing — the script stubbed *effort per merged change*, which is **human labor**, but never
+  the compute *spend*) — kept a human note (tokens/$ isn't repo-derivable → never a fabricated zero) and
+  deliberately **not** added to the trend tab-line. **Proven:** `bash scripts/harness-metrics.sh` runs
+  **exit 0** across two runs (seed + trend read-back), the new stub prints with a literal `$` (no shell
+  expansion), and the append/delta still parse. **Scaled down honestly** per §2: a solo project running one
+  agent has no fleet to govern — the whole of Z reduces to *"don't burn the top-tier model on a grep"*; it
+  appreciates only as orchestration does. Logged in `wiki/harness-log.md` (a real harness change — the
+  script was edited, unlike the §10 planning additions, which correctly took no log entry).
 
 ### AA. Non-code companion track — generalize the harness past code *(new)*
 §4 states it plainly: the load-bearing ideas — **directives/verifiers, verification, provenance,

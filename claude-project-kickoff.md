@@ -1112,6 +1112,29 @@ the real ones in `HARNESS_LOG.md`, and promote one into the numeric trend only o
 keep and the project can compute it honestly. Never fabricate a zero to fill a column. Scale to the
 project: a solo effort's whole scorecard may be two numbers and a one-line log entry — that's fine.
 
+**The economics gauge — measure cost-per-merged-change, then *govern* by it (item Z).** One human-note
+measure earns a governing role once you fan out across agents: **tokens/$ per merged change** — the
+run's *spend* (distinct from *effort per merged change* above, which is human labor). The **levers to
+act on it already ship, scattered across the playbook** — Z's contribution is naming the number that
+closes the loop over them, not re-teaching them:
+- **route by model tier** — mechanical lanes (inventory, broad search, rote edits, log-summarizing) to
+  a fast/cheap tier; architecture, integration, and final verification kept at the strongest (Part 3
+  #13, which already carries the governing judgment: *capability is per-task, not per-reputation — when
+  a cheap tier verifiably passes its lane's DoD, the expensive tier is waste there*);
+- **cap the fan-out by the run's budget** — the baseline harness has **no per-run token primitive**, so
+  the levers are per-agent turn caps, effort levels, fan-out *width*, and the quota window (Part 3 #10),
+  plus any richer budget control the harness-probe (Part 3 preamble) turned up in *this* environment;
+- **gate real spend deterministically** — a *spend via a paid API* action belongs in the action-risk
+  table as an `ask`/`deny`, never prose (item R, §1.3c);
+- **post-mortem the expensive outliers** — a run that cost 5× with no bug is signal, fed back as a
+  cheaper route or a directive (item C, §1.6).
+The gauge is what makes those a *loop* instead of four disconnected habits: watch cost-per-merged-change
+on the scorecard's slow cadence and let it **drive the next routing and fan-out-width choice** — govern
+the spend, don't just observe it. It stays a **human note** (tokens/$ isn't repo-derivable — never a
+fabricated zero) until the environment can report it honestly. **Scale down hard:** a solo project
+running one agent has no fleet to govern — the whole of Z reduces to *"don't burn the top-tier model on
+a grep."* It appreciates only as orchestration does.
+
 **Cross-repo learning — the log's portable half.** Because `HARNESS_LOG.md` has a fixed name, a
 fixed location (repo root), and a fixed entry shape (its *Portable schema* section), an agent in a
 *different* kit-derived repo can read it. That unlocks one specific, bounded move: when someone

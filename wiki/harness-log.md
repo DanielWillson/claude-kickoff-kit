@@ -57,6 +57,56 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-07 — Agent-fleet economics (item Z): the cost-governance gauge — and a corrected premise
+
+- **Change.** Built item **Z** (first of the §10 next-horizon backlog) — but building it *disproved its
+  own §10 stub*. The stub claimed Part 3 lacked the "which-model / how-much" governance; in fact **Part 3
+  #13** already carries the model-tiering *judgment* (*capability is per-task, not per-reputation*), **Part
+  3 #10** already carries the budget levers (and states the baseline harness has **no per-run token
+  primitive**), **B** the cost measure, **R** the spend gate, **C** the expensive-run post-mortem. Z was
+  **~80% already shipped.** So the faithful build was the *small genuine delta*, not a manufactured Part 3
+  #15:
+  - **`claude-project-kickoff.md` §1.6a** — a new paragraph naming **tokens/$ per merged change** as the
+    *economics gauge* that closes a **governance loop** over the four existing levers (#13 route · #10 cap
+    · R gate · C post-mortem): watch it on the scorecard's slow cadence and let it *drive* the next
+    routing / fan-out-width choice. It **references** #13/#10/B/R/C rather than re-teaching them.
+  - **`scripts/harness-metrics.sh`** — added a `manual "cost per merged change (tokens/$)"` human-note stub
+    (the script stubbed *effort per merged change* = human labor, but never the compute *spend*). Human
+    note (not repo-derivable → never a fabricated zero); **not** in the trend tab-line.
+- **Rationale (the bet).** A fanned-out run's cost is the field's stated governor (§4: "orchestrated
+  fleets governed by economics"), but the kit *measured* cost without *naming the number that governs by
+  it*. The bet: one gauge, tying four scattered habits into a loop, is worth more than the four alone —
+  and worth **more than a fat new item** that would have re-stated them. The anti-bloat call *is* the bet.
+- **What it replaced.** Nothing removed. It **corrected** a wrong claim — the §10 Z stub's "Part 3 has the
+  mechanics but not the governance" — which had been written without checking Part 3 #13/#10. The §10
+  entry, its table row, and the "if you do only one, Z" line were all reconciled to the honest scope (Z
+  ~80% pre-existing; **AA** is now the genuine next-territory build).
+- **Shelf-life/risk class.** **Appreciating** — worth more as orchestration deepens (a solo one-agent
+  project has no fleet to govern; the gauge earns its keep only as fan-out grows). Low blast-radius: one
+  paragraph + one human-note stub, no computed metric, no settings touched.
+- **Related ROADMAP item.** **Z** (§10). Consolidates **B** (scorecard), **C** (expensive-run feed), **R**
+  (spend gate), and Part 3 **#13** (model tiering) + **#10** (budget window) — references all five, adds
+  the gauge that unifies them.
+- **Commit.** `feat/Z-fleet-economics` (this change) + this log entry.
+- **Code worth pointing at.**
+  - `claude-project-kickoff.md` **§1.6a** — the economics-gauge paragraph; note it leads by *disclaiming*
+    novelty ("the levers already ship, scattered") and contributes only the closing gauge — the honest
+    frame for a mostly-pre-existing item.
+  - `scripts/harness-metrics.sh` (human-note block) — the new stub sits beside `effort per merged change`
+    with a comment drawing the labor-vs-spend line, so the two aren't later merged by mistake.
+  - Part 3 **#13** / **#10** were **left untouched** — editing their content would break no numbering, but
+    they already say the right thing; the loop lives in §1.6a next to the metric, not in the playbook.
+- **Signal to watch.** Does any project ever record a real tokens/$ figure and actually *re-route* off it,
+  or does the stub stay an unfilled human note (like most of the §1.6a manual block so far)? If it's never
+  filled across several projects, the honest read is "the gauge is premature for current adopters" — demote
+  it to a one-line mention, don't add machinery. Also watch whether a future harness exposes a real per-run
+  budget primitive (Part 3 #10's gap) — if so, the cap lever graduates from design-discipline to a wired
+  control and this entry's "no per-run primitive" note dates.
+- **Retrospect.** *(open — revisit when a project first governs a real fan-out by cost, or when a per-run
+  budget primitive ships in the harness.)*
+
+---
+
 ## 2026-07-07 — The tail closes: cross-project memory (D) + fuzzy baseline (I) + untrusted-content rule (F)
 
 - **Change.** Built the three remaining ROADMAP tail items, all **teaching-only**, in one change (the

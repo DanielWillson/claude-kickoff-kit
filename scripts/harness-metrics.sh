@@ -129,7 +129,10 @@ manual "% agent changes merged without rework"
 manual "defects caught by tests vs by humans"
 manual "escaped defects (missed by all verifiers)"
 manual "rollbacks needed"
-manual "effort per merged change"
+manual "effort per merged change"                   # HUMAN labor (review rounds, rework) — distinct from...
+manual "cost per merged change (tokens/\$)"         # ...item Z: the run's SPEND (compute). Govern routing +
+                                                    # fan-out width by it (§1.6a); not repo-derivable → human
+                                                    # note, never a fabricated zero, never in the trend tab-line.
 
 # ═══════════════════════════════════════════════════════════════════════════
 section "TREND  ($LOG)"
