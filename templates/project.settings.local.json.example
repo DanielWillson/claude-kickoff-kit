@@ -1,3 +1,8 @@
+// ⚠⚠ THIS `.example` FILE IS DELIBERATELY JSONC (comments) — Claude Code will SILENTLY IGNORE it verbatim.
+// ⚠⚠ After copying to `.claude/settings.local.json`, DELETE EVERY `//` LINE: one surviving comment makes
+// ⚠⚠ Claude Code drop the WHOLE file with no error (verified CC 2.1.201 — see ../templates/README.md),
+// ⚠⚠ and NO audit/conformance check covers settings.local.json — nothing will tell you it's void.
+//
 // PER-MACHINE, PER-REPO — copy to `.claude/settings.local.json` (gitignored; does NOT travel to teammates).
 // Two jobs:
 //   1. per-repo `sandbox.enabled` — ONLY if you scope the sandbox per-project instead of machine-wide in managed;

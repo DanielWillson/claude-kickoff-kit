@@ -14,10 +14,14 @@ against Claude Code **2.1.201**, 2026-07-06, via its own settings-load debug log
 loaded `0 rule(s)`; JSONC support is [anthropics/claude-code#17968](https://github.com/anthropics/claude-code/issues/17968),
 still open. If it ever ships this reverses — and re-checking it is exactly item **Y**'s job.)*
 
-**So these templates ship comment-free, and all their teaching lives in this README.** When you adapt one,
-keep it valid JSON — put notes here or in `CLAUDE.md`, never in the JSON. Both `scripts/audit.sh` and
-`scripts/kit-conformance.sh` **FAIL** a settings file that isn't strict-JSON-loadable, so a stray comment
-surfaces loudly instead of silently voiding your gates.
+**So the two real templates (`managed-settings.template.json`, `project.settings.json`) ship comment-free,
+and all their teaching lives in this README.** When you adapt one, keep it valid JSON — put notes here or in
+`CLAUDE.md`, never in the JSON. Both `scripts/audit.sh` and `scripts/kit-conformance.sh` **FAIL** a
+`.claude/settings.json` that isn't strict-JSON-loadable, so a stray comment there surfaces loudly. **The one
+deliberate exception: `project.settings.local.json.example` is JSONC** — safe only because the `.example`
+extension keeps it inert. That safety ends at copy time, and **no shipped check covers `settings.local.json`**
+— so when you copy it (step 3 below), **delete every `//` line**, or the whole file (including its
+`autoMode` policy and any sandbox enable) is silently void.
 
 **A control is only as strong as the agent's inability to reach it.** Weakest → strongest:
 `CLAUDE.md` / `autoMode` prose (advisory) → committed project settings (agent-editable) →
@@ -51,11 +55,16 @@ own `allow`s and hosts*. That is the whole point — hardness without enterprise
    staged rollout (shakeout mode → per-repo inventory → flip `allowUnsandboxedCommands:false`).
 2. **Per repo:** copy `project.settings.json` to `.claude/settings.json`; fill in the daily commands, hosts, and
    sensitive paths. Commit it.
-3. **Optional:** copy `project.settings.local.json.example` to `.claude/settings.local.json` (and gitignore it).
+3. **Optional:** copy `project.settings.local.json.example` to `.claude/settings.local.json` (and gitignore it) —
+   then **strip every `//` line** (the example is JSONC; a copied comment silently voids the whole file, and no
+   check covers `settings.local.json`).
 4. **Once:** set `defaultMode:"auto"` in your user `~/.claude/settings.json`.
 5. **Verify it bites** (post-restart): read `~/.ssh/id_rsa` → blocked; `cat .env` → blocked;
    `git push --force` on a throwaway branch → **prompts**; attempt bypass mode → **rejected** (and `/status`
-   shows the source as `managed`).
+   shows the source as `managed`); **and an out-of-project write** (e.g. `touch ~/Downloads/probe.txt`) →
+   **blocked**. That last one is the only check on this list that proves the **sandbox** is actually on —
+   the first four all pass on permission denies alone, so without it you can run the whole checklist green
+   with the wall down (kickoff Part 0 names the same tell).
 
 ## Wiring an action-risk gate (comment-free)
 

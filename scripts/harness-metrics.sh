@@ -31,7 +31,6 @@
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-TMP="${TMPDIR:-/tmp}"                     # $TMPDIR is sandbox-writable; /tmp may not be
 TODAY="$(date +%Y-%m-%d)"
 
 # The trend log is an append-only, dated-line file — the log.md analogue from the wiki

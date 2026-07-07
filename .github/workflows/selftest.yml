@@ -37,7 +37,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1 — SHA-pinned per §1.3b / templates/ci-audit.yml; re-pin via `gh api repos/actions/checkout/git/refs/tags/<tag>`
 
       - name: bash version (recorded for context)
         run: bash --version | head -1

@@ -41,7 +41,6 @@
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-TMP="${TMPDIR:-/tmp}"                          # $TMPDIR is sandbox-writable; /tmp may not be
 
 # TARGET = the project being checked. Overridable ($1 or env) so a throwaway fixture can be
 # checked without copying this script into it. Default = the repo this script ships in.

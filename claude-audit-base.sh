@@ -26,7 +26,7 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TMP="${TMPDIR:-/tmp}"            # $TMPDIR is sandbox-writable; /tmp may not be
 
 # Resolve the always-loaded contract file: CLAUDE.md OR AGENTS.md. Kit policy is "Claude reads
-# either" (kickoff §1.5 "On names", :733-734), and a project may keep AGENTS.md as the sole
+# either" (kickoff §1.5 "On names", :764-765), and a project may keep AGENTS.md as the sole
 # physical file with CLAUDE.md merely symlinked to it (adoption :116-118). Prefer CLAUDE.md — a
 # real file OR a symlink, since [ -f ] follows symlinks — else fall back to AGENTS.md. Keeps this
 # audit concordant with scripts/kit-conformance.sh, which resolves the same pair (§9.1 item O).
@@ -301,6 +301,17 @@ if [ -f "$ar_settings" ] && command -v python3 >/dev/null 2>&1; then
         pass ".claude/settings.json is strict-JSON loadable — Claude Code will apply its rules (§9.1)"
     else
         fail ".claude/settings.json is NOT strict JSON — Claude Code SILENTLY DROPS the whole file, so every deny/ask rule takes no effect (a // comment? verified CC 2.1.201; §9.1) — remove comments / fix the JSON"
+    fi
+fi
+# settings.local.json is per-machine + gitignored, so its VALIDITY is only checkable here, on this
+# machine, when it exists. The kit's own .example ships as JSONC — copied verbatim it is silently
+# void (§9.1) and nothing else would ever say so. WARN, not FAIL: the file is optional/advisory.
+ar_settings_local="$ROOT/.claude/settings.local.json"
+if [ -f "$ar_settings_local" ] && command -v python3 >/dev/null 2>&1; then
+    if python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$ar_settings_local" 2>/dev/null; then
+        pass ".claude/settings.local.json is strict-JSON loadable (§9.1)"
+    else
+        warn ".claude/settings.local.json is NOT strict JSON — Claude Code silently ignores it whole (copied the .example without stripping its // comments? templates/README.md step 3); its autoMode policy and any sandbox enable are NOT in effect"
     fi
 fi
 if [ -f "$ar_claude" ] && grep -q '<!-- action-risk -->' "$ar_claude" 2>/dev/null; then
