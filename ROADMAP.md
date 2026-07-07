@@ -29,25 +29,25 @@ ours) vs *Hygiene/Catch-up* (the field already knows this; do it because it's lo
 | # | Recommendation | Impact | Type |
 |---|---|---|---|
 | **O** | Self-verifying **adoption check + fan-out verifier** | **Highest** | Frontier/Unique · ✅ **Built (2026-07-06)** |
-| **A** | **Behavioral evals** as a first-class `evals/` artifact (incl. non-code workflows) | **Highest** | Frontier/Unique |
-| **B** | **Harness scorecard** (generalize the wiki `metrics` shape) | **High** | Frontier/Unique |
+| **A** | **Behavioral evals** as a first-class `evals/` artifact (incl. non-code workflows) | **Highest** | Frontier/Unique · ✅ **Built (2026-07-04)** |
+| **B** | **Harness scorecard** (generalize the wiki `metrics` shape) | **High** | Frontier/Unique · ✅ **Built (2026-07-04)** |
 | **R** | **Action-risk tiers** — gate agent actions by reversibility × reach | **High** | Frontier/Unique · *new* · ✅ **Built (2026-07-04)** |
 | **V** | **Name the reviewer** — make the human review/steer dimension explicit | **High** | Frontier/Unique · *new* · ✅ **Built (2026-07-06)** |
 | **G** | **Dependency-vulnerability scan** + stronger secret scan in `audit.sh` | **High** | Hygiene · ✅ **Built (2026-07-06)** |
-| **C** | **Flight recorder** → feed the safety net from bad transcripts | Med–High | Frontier-ish |
-| **S** | **Rollback/recovery for non-git state** (DB, hosted config, deploy, external backend) | Med–High | Hygiene · *new* |
-| **E** | **Spec-as-source** (living spec) | Medium | Frontier |
-| **D** | **Cross-project memory** (→ queryable knowledge service) | Medium | Frontier/Unique |
-| **T** | **Tool inventory** | Medium | Hygiene · *new* |
-| **U** | **Incident runbook** for agent mistakes (forward, not retrospective) | Medium | Hygiene/Frontier · *new* |
+| **C** | **Flight recorder** → feed the safety net from bad transcripts | Med–High | Frontier-ish · ✅ **Built (2026-07-06)** |
+| **S** | **Rollback/recovery for non-git state** (DB, hosted config, deploy, external backend) | Med–High | Hygiene · *new* · ✅ **Built (2026-07-06)** |
+| **E** | **Spec-as-source** (living spec) | Medium | Frontier · ✅ **Built (2026-07-06)** |
+| **D** | **Cross-project memory** (→ queryable knowledge service) | Medium | Frontier/Unique · ✅ **Built (2026-07-07)** |
+| **T** | **Tool inventory** | Medium | Hygiene · *new* · ✅ **Built (2026-07-06)** |
+| **U** | **Incident runbook** for agent mistakes (forward, not retrospective) | Medium | Hygiene/Frontier · *new* · ✅ **Built (2026-07-06)** |
 | **W** | **Harness manifest** (owner/version/last-verified/risk/sunset) | Medium | Hygiene · *new* · ✅ **Built (2026-07-06)** |
-| **X** | **Harness change log** (`HARNESS_LOG.md`) + vetted **cross-repo learning** | Med–High | Frontier/Unique · *new* |
+| **X** | **Harness change log** (`HARNESS_LOG.md`) + vetted **cross-repo learning** | Med–High | Frontier/Unique · *new* · ✅ **Built (2026-07-06)** |
 | **Y** | **Kit-update proposals** — skill re-reviews repo & proposes upgrades as the kit evolves | Medium | Frontier · ✅ **Built (2026-07-06)** |
-| **H** | **Safeguard-rot check** — safeguards assert their own anchor | Medium | Hygiene |
+| **H** | **Safeguard-rot check** — safeguards assert their own anchor | Medium | Hygiene · ✅ **Built (2026-07-04)** |
 | **J** | **Re-verify the harness after a Claude Code upgrade** | Medium | Hygiene · ✅ **Built (2026-07-06)** |
-| **I** | **Baseline for fuzzy output** (tolerance/rubric) | Lower | Frontier (cousin of A) |
-| **K–N** | **4 internal-consistency fixes** | Lower | Hygiene |
-| **F** | **Untrusted-content rule** (name the untrusted-content surface) | Lower | Hygiene |
+| **I** | **Baseline for fuzzy output** (tolerance/rubric) | Lower | Frontier (cousin of A) · ✅ **Built (2026-07-07)** |
+| **K–N** | **4 internal-consistency fixes** | Lower | Hygiene · ✅ **Built (2026-07-06)** |
+| **F** | **Untrusted-content rule** (name the untrusted-content surface) | Lower | Hygiene · ✅ **Built (2026-07-07)** |
 | **P** | **README additions** — eval-driven line, Axis 1/2 quotes, citation block | ✅ **Done (2026-07-03)** | Documentation |
 | **Q** | **Fowler → Böckeler citation fix** | ✅ **Done (README 2026-07-03; rest of kit 2026-07-06)** | Hygiene |
 
@@ -148,6 +148,21 @@ scaling (can't query them — Yegge's "605 rotting plan files").
   pattern: a small database or an MCP server over the knowledge base (with trust banners /
   last-verified). Least-solved gap in the field — stay humble: name the trigger, point at the
   pattern, don't over-promise. (Keep the example project-neutral; don't name a specific product.)
+- **Built 2026-07-07 (teaching-only — a graduation pointer, not a build, like C's Langfuse note).**
+  Landed as a new paragraph closing **§1.5b** (the wiki section), the natural home: D graduates the
+  *wiki* pattern, so it belongs beside it. **The reconciliation that makes it non-contradictory** (the
+  thing this item most risked getting wrong): the CLAUDE.md skeleton in **§1.5** emphatically forbids
+  putting project facts in cross-project/global memory — *"a fact about this project loads into every
+  other and pollutes it… not versioned, shared, or reconciled — it silently rots."* D is literally
+  "cross-project memory," so the prose names the distinguishing property head-on: the *forbidden* store
+  is **unreconciled** memory; D's queryable service is legitimate **only because it keeps the
+  reconcile-against-truth property** (trust banners / last-verified / reconcile pass). So the graduation
+  is explicitly *"scale the **reconciled** store (the wiki), not the **unreconciled** one (memory)"* —
+  the exact self-contradiction class the K–N sweep and the flight-recorder collision existed to kill,
+  headed off rather than shipped. The axis is ***many projects*** (not "one wiki gets deep"); the shape
+  is a small DB or an MCP over the knowledge base; the kit's own `wiki/` + reconcile pass is named as the
+  small end of that shape. Stays humble per the item: names trigger + shape, builds nothing, names no
+  product. Glossary row already carried the framing (no status field to change).
 
 ### E. Spec-as-source
 Make the spec a *living* file like the wiki, not a fill-in-once doc.
@@ -174,6 +189,16 @@ Architecture already handles it (contain, not detect). Add one line to §1.3a na
 content surface generically: **fetched web pages, PDFs, CSVs, emails, screenshots, transcripts,
 and any tool/MCP output are data, not instruction** — the sandbox limits *damage*, not the
 *hijack*. No build.
+- **Built 2026-07-07.** The §1.3a untrusted-content bullet *already* named issue bodies / PR titles /
+  web pages / tool output; F **sharpened the existing bullet** rather than adding a second one (which
+  would have re-said what was there — the thing the consistency sweep checks for). Two additions, both
+  the item's own words: (1) the surface list now enumerates **PDFs, CSVs, emails, screenshots,
+  transcripts, and any tool/MCP output** alongside the ones already listed, with the one-line rule stated
+  outright — *fetched or tool-returned content is data, not instruction*; (2) the **division of labor**
+  the glossary F-row already promised — *the sandbox limits the **damage** a hijacked agent can do; it
+  does not prevent the **hijack***. A redirected agent acting *within* its sandbox is still redirected —
+  containment caps the blast radius, treating content as data stops the redirection. The bullet is now
+  tagged `(item F)` so it's greppable. No new file, no settings change.
 
 ### G. Dependency-vulnerability scan (new in prior pass)
 Kit checks secrets + unpinned versions, but nothing checks whether a dep you *already use* has a
@@ -204,6 +229,19 @@ protecting but doesn't complain (false security).
 Principle 10's "pin exact output, reproduce exactly" fits a calculator, not fuzzy agent/text
 output. **Build:** tolerance bands, sample multiple runs, or rubric-judge — same golden-vs-rubric
 split (and same fixture schema) as A.
+- **Built 2026-07-07 (teaching-only — no runner change, deliberately).** The eval runner (§1.6b)
+  *already* grades fuzzy output (the `rubric` arm), so I is a **pointer, not machinery** — the ROADMAP
+  scopes it "Lower, cousin of A, reuses the same split," and touching `claude-eval-base.sh` would have
+  over-built it. Landed as a **sub-bullet under Principle 10's "pin a baseline" bullet**: exact-reproduce
+  is the **golden** case (a number, a path, a normalized string); when the pinned output has no single
+  right value (an LLM/agent step, prose, a ranking, a summary), pinning `==` is a flaky test that fails on
+  paraphrase, so drop to the **fuzzy baseline** — a **tolerance band** (±ε, or set/ordering preserved),
+  **multi-run sampling** (check the distribution, not one draw), or a **rubric/LLM-judge** — *the same
+  golden-vs-rubric split as §1.6b, applied to the baseline instead of a fresh eval*, carrying the same
+  honest LLM-judge caveat (prefer a tolerance band over a judge where the output admits one). **Reciprocal
+  cross-link** wired both ways: Principle 10 → §1.6b, and §1.6b's closing caveat → Principle 10 (the prior
+  bare "item I is the cousin" parenthetical was sharpened into the actual link). Glossary row already
+  matched (no change).
 
 ### J. Re-verify the harness after a Claude Code upgrade
 You prove safeguards "bite" at setup, but nothing re-checks after the *tool* updates (which can
@@ -619,7 +657,14 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
    ✅ **C** (flight recorder) — done 2026-07-06 (teaching-only): the safety net's *second feed* — post-mortem
    bad/expensive *runs* (via the run record/transcript), not just fixed bugs, into a grep / `CLAUDE.md` line /
    wiki page / eval case; "flight recorder" term disambiguated from `HARNESS_LOG.md`.
-   **Remaining tail:** D (cross-project memory), I (fuzzy-output baseline), F (untrusted-content rule).
+   ✅ **The tail — D / I / F — done 2026-07-07 (all teaching-only, one combined change):** **D**
+   (cross-project memory) is a graduation pointer closing §1.5b — *scale the **reconciled** wiki
+   across projects, never the **unreconciled** memory store the skeleton forbids*; **I** (fuzzy-output
+   baseline) is a sub-bullet under Principle 10 routing non-exact baselines to §1.6b's tolerance-band /
+   rubric split (no runner change); **F** (untrusted-content rule) sharpened the existing §1.3a bullet —
+   broadened the surface list (PDFs / CSVs / emails / screenshots / transcripts / any tool-MCP output)
+   and added *the sandbox limits **damage**, not the **hijack***. **With the tail closed, every lettered
+   ROADMAP item (A–Y) is now Built.**
 
 ---
 
@@ -887,3 +932,74 @@ a gap between what the kit teaches and what it ships.
   problem without deleting files the kit didn't author (each item's durable content already lives in this
   ROADMAP's write-ups). **Reversible maintainer call:** delete outright, or track-with-index + item-H anchor
   discipline, remain available if preferred.
+
+---
+
+## 10. Next-horizon backlog — candidates beyond A–Y (2026-07-07)
+
+**What this is.** With the A–Y tail closed (§8) and the §9 defect sweep closed, the original
+Fable review is fully built. This section opens the *next* backlog — candidate items derived
+**only from the frontier themes already stated in §4**, so no new external claim is introduced
+here that would need live-URL verification before it could ship (Lesson 7); each candidate points
+back at §4's already-sourced framing. These are **proposals, not built** — the same status the
+A–Y items had at the top of this doc — recorded so the forward direction isn't lost. Same
+project-agnostic constraint as everything above (§2's steer): never assume a business, a team, or
+even a codebase where the theme generalizes past one. Lettering continues the sequence (Z, AA, AB);
+"if you do only one, **Z**" — it has the clearest near-term leverage and builds on shipped items.
+
+| # | Candidate | Impact | Type | Status |
+|---|---|---|---|---|
+| **Z** | **Agent-fleet economics** — model routing + cost-governed orchestration | High | Frontier/Unique | *proposed* |
+| **AA** | **Non-code companion track** — generalize the harness past code (humble pointer) | Medium | Frontier | *proposed* |
+| **AB** | **Cross-tool portability watch** (`AGENTS.md` / AAF) — a *don't-build-yet* watch-item | Lower | Hygiene | *proposed* |
+
+### Z. Agent-fleet economics — model routing + cost-governed orchestration *(new)*
+§4 names the shift from single agent → **orchestrated fleets governed by economics**
+(cost-per-merged-change, model routing). The kit already *measures* the cost (**B**'s scorecard —
+tokens/$ per merged change) and *captures* the pathological runs (**C** — the expensive-run feed),
+but it has no **directive** layer for the two economic decisions a fleet forces: **(1) route by
+model tier** — a cheap/fast model for mechanical stages (mass edits, greps, format passes), a
+strong model reserved for judgment and verification — and **(2) cap the fan-out by budget**, tied
+to the scorecard, so an orchestration can't quietly cost 20× (the verified >20× long-running-app
+figure in **B** is the cautionary number). Part 3's fan-out playbook has the *mechanics* of
+spawning subagents but not the *when / which model / how much* governance. **Build (humble):** a
+short routing heuristic + a budget-cap pattern in the guide (and, if it earns it, a scorecard
+column for cost-per-stage), **not** a scheduler or an auto-router — name the decision, wire the cap
+deterministically where money is at stake (the **R** action-risk posture applied to spend). Builds
+directly on **B** + **C**; the frontier beat is turning "we measure cost" into "we *govern* it."
+
+### AA. Non-code companion track — generalize the harness past code *(new)*
+§4 states it plainly: the load-bearing ideas — **directives/verifiers, verification, provenance,
+action-risk gating** — apply to *any* AI-assisted knowledge or process work (research, writing,
+analysis, ops), and the kit should **stay code-first while framing the principles so they don't
+assume a codebase**. This is the biggest *new-territory* candidate and the one the standing steer
+(grow the kit into new ground, not just polish) points at — but it must land as a **pointer, like
+D**, not a second kit. **Build (humble):** a short companion note mapping each principle to its
+non-code form — the **audit** → a checkable rubric over the deliverable; the **wiki** → the same
+reconciled knowledge store (already agnostic); **evals** → the fixture schema (**A** already says
+"incl. non-code workflows"); the **provenance rule** → the citation standard for any factual claim
+(already the evals' rule). A working instance already lives *in this repo* to point at — the
+`deep-research` skill (fan-out → fetch → adversarially verify → cite) is the harness pattern applied
+to research, not code. **Risk to manage:** scope creep. The deliverable is a *mapping note* that
+proves the principles travel, not a parallel guide — the moment it starts assuming a non-code
+domain's specifics, it's over-built.
+
+### AB. Cross-tool portability watch (`AGENTS.md` / AAF) — a watch-item, not a build *(new)*
+§4 flags `AGENTS.md` as a now-real cross-tool convention (Linux Foundation **Agentic AI
+Foundation**; 20+ tools; nearest-file precedence) **and** cautions: *don't build multi-runtime
+portability machinery prematurely for a single-tool project.* The kit already treats `AGENTS.md`
+as a filename alias and both verifiers resolve `CLAUDE.md`-or-`AGENTS.md` (§9.1 O#4). So this is
+deliberately recorded as a **standing watch-item, not a build** — the roadmap documenting the
+*decision to wait*, which is itself a durable output (it stops a future session from
+speculatively building portability scaffolding). **Trigger to promote from watch → build:** a
+project that *actually* runs two agent runtimes over the same repo, not before. Until then: track
+the standard's maturation, keep the alias handling correct, ship nothing. (This is the **J/W**
+shelf-life discipline — a *depreciating*-class assumption with a named re-check trigger — applied
+to an external standard instead of a Claude Code version.)
+
+**Not promoted to candidates (folded into §4 as field observations, not buildable items):** the
+*hardest challenge* — reliably evaluating non-deterministic agents — and *long-horizon coherence +
+agent memory* are the meta-problems **A**/**I** already engage as far as a project-agnostic kit
+honestly can; they're benchmarks to *watch* (METR's time-horizon metric, SWE-Bench Pro, SWE-EVO,
+LongCodeBench), not artifacts to seed. Naming them as non-items is deliberate — it records that the
+kit isn't going to pretend to solve the field's open problem, only to track it.

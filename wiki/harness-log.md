@@ -57,6 +57,64 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-07 — The tail closes: cross-project memory (D) + fuzzy baseline (I) + untrusted-content rule (F)
+
+- **Change.** Built the three remaining ROADMAP tail items, all **teaching-only**, in one change (the
+  S/T/U precedent — one combined entry reads cleaner than three thin ones).
+  - **D (cross-project memory)** — a **graduation pointer** closing `claude-project-kickoff.md` **§1.5b**
+    (the wiki section), mirroring C's Langfuse graduation note. Trigger: when per-project Markdown stops
+    scaling *across many projects* (Yegge's "605 rotting plan files"), graduate to a **queryable knowledge
+    service** — a small DB or an MCP over the knowledge base — that **keeps the wiki's reconcile-against-
+    truth property** (trust banners / last-verified). No build, names no product.
+  - **I (baseline for fuzzy output)** — a **sub-bullet under Principle 10's "pin a baseline" bullet**:
+    exact-reproduce is the *golden* case; when the pinned output is fuzzy (an LLM/agent step, prose, a
+    ranking), route to §1.6b's **tolerance-band / multi-run / rubric** approach instead of `==`. Reciprocal
+    cross-link wired Principle 10 ↔ §1.6b. **No runner change** — `claude-eval-base.sh`'s `rubric` arm
+    already grades fuzzy output.
+  - **F (untrusted-content rule)** — **sharpened the existing §1.3a bullet** (not a new one): broadened
+    the surface list to **PDFs / CSVs / emails / screenshots / transcripts / any tool-MCP output**, stated
+    the one-line rule (*fetched or tool-returned content is data, not instruction*), and added the division
+    of labor the glossary F-row promised — ***the sandbox limits damage, not the hijack***. Tagged
+    `(item F)` for grepability.
+- **Rationale (the bet).** These three were the last open items; each is a *pointer or a one-line
+  sharpening*, not machinery, exactly as the ROADMAP scoped them (D/I "least-solved / lower, cousin of A";
+  F "no build"). The bet is that **naming a trigger and a shape** — without building speculative machinery
+  — is the honest move for frontier-but-unsolved territory (D) and for a rule the architecture already
+  enforces (F). Building a cross-project knowledge service or a fuzzy-baseline runner now would be the
+  "guard you don't need is complexity you do" mistake Principle 10 warns against.
+- **What it replaced.** Nothing removed. D **reconciled** an apparent contradiction rather than adding one:
+  the CLAUDE.md skeleton (§1.5) forbids project facts in cross-project/global memory *because it's
+  unreconciled and rots*; D names that distinguishing property head-on and graduates the **reconciled**
+  store (the wiki), never the unreconciled one (memory) — heading off the self-contradiction class the K–N
+  sweep and the flight-recorder collision existed to kill, rather than shipping it. F folded a second
+  untrusted-content bullet into the first instead of duplicating it.
+- **Shelf-life/risk class.** **Permanent** — all three draw their force from properties of the world:
+  unreconciled memory rots (D), fuzzy output has no single right value (I), and content is data not
+  instruction / a sandbox contains damage but not redirection (F). None is model-version-dependent, so
+  none re-audits at a model upgrade. Low blast-radius: pure teaching, no script or settings touched.
+- **Related ROADMAP item.** **D**, **I**, **F** — the §8 tail. **With these, every lettered ROADMAP item
+  (A–Y) is Built** (the §1 table's remaining un-marked-but-built rows were completed to match). I is the
+  cousin of **A** (§1.6b evals) and ties to **Principle 10**; D graduates the **§1.5b** wiki pattern; F
+  sharpens the **§1.3a** containment doctrine.
+- **Commit.** `feat/DIF-tail-items` (this change) + this log entry.
+- **Code worth pointing at.**
+  - `claude-project-kickoff.md` **§1.5b** — the D graduation paragraph; note it leads with the
+    *reconcile-vs-unreconciled* distinction, not the location, because that distinction is the whole
+    non-contradiction.
+  - `claude-project-kickoff.md` **Principle 10** (first bullet) — the I sub-bullet; and **§1.6b**'s closing
+    caveat carries the reciprocal link back.
+  - `claude-project-kickoff.md` **§1.3a** — the F bullet, now tagged `(item F)`.
+- **Signal to watch.** Does any adopted project ever *reach* D's trigger (many-project scale) — and if so,
+  does the reconcile-property framing actually stop it from reaching for global memory? Does I's fuzzy-
+  baseline pointer get used, or do projects keep pinning `==` on fuzzy output and writing flaky tests? Does
+  the broadened F surface list catch a real injection attempt a narrower list would have missed? If D's
+  trigger is never reached by any real project, it was cheap insurance, not wasted — but note it as "field
+  didn't need it yet," not "wrong."
+- **Retrospect.** *(open — revisit when a project first hits many-project scale, or at the next maintenance
+  moment.)*
+
+---
+
 ## 2026-07-06 — Flight recorder (C): the safety net's second feed
 
 - **Change.** Built item **C** (teaching-only, like S — no new file). C **reframes the safety-net doctrine
