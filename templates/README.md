@@ -70,12 +70,52 @@ gate that command deterministically (kickoff §1.3c). The kit used to tag the se
 `scripts/audit.sh` (and `scripts/kit-conformance.sh`) join the two **by the rule string** and WARN if the table
 names a rule that isn't wired — proving the *specific* dangerous command is gated, not just described.
 
+## Gating outbound access — MCP and web (comment-free)
+
+`project.settings.json` ships two default-off outbound gates, because MCP servers and the native web tools are
+**unsandboxed, un-audited surfaces equivalent in risk to Bash** (kickoff §1.3a) — the OS sandbox governs *Bash*
+egress only, never these.
+
+- **MCP is denied by default** — `deny: ["mcp__*"]` turns off **every** MCP tool across all servers (the exact
+  form the [permissions docs](https://code.claude.com/docs/en/permissions) bless for this). **A `deny` is
+  absolute:** it outranks `ask` and `allow` at *every* scope and **carries no exceptions**, so you **cannot**
+  re-enable one server by adding an `allow` rule next to it. To use a server: **remove the `mcp__*` line**
+  (optionally replace it with per-server denies like `mcp__somebadserver` for the ones you still want off),
+  then configure that server — its tools prompt on first use. For centrally-enforced allowlisting, use
+  **managed** `allowManagedMcpServersOnly` + `allowedMcpServers`.
+- **Web fetches are allowlisted by domain.** `WebFetch` prompts per domain by default; pre-approve trusted hosts
+  with `allow: ["WebFetch(domain:example.com)"]` (a `deny` on bare `WebFetch` removes the tool entirely and
+  can't carry per-domain exceptions, so allowlist rather than deny). For a **hard** lock that auto-blocks every
+  other host with no prompt, set **managed** `sandbox.network.allowManagedDomainsOnly: true`. Note
+  `sandbox.network.allowedDomains` gates only *sandboxed Bash* egress — not `WebFetch`/`WebSearch`.
+
 ## Adapting `project.settings.json`
 
 Comment-free, so adapt by structure: `allow` is THIS project's routine daily commands (intake Q4 — swap in your
 stack's build/test/lint); `ask` gates what leaves the machine (push/merge) plus any action-risk rule; `deny` is
 this project's secret reads + native writes to its own guards — add the load-bearing paths that must never be
-rewritten. Keep **zero** project-specific names in the **managed** template; those live per-repo, here.
+rewritten. The shipped `deny` now also carries the **machine-credential read denies** (`~/.ssh`, `~/.aws`,
+`~/.npmrc`, `**/*.pem`, `**/*.token`) belt-and-suspenders — redundant with the managed floor on purpose, so a
+machine that never installed the floor still can't read them. Keep **zero** project-specific names in the
+**managed** template; those live per-repo, here.
+
+## CI: wire the audit into a required check
+
+`ci-audit.yml` is a starter GitHub Actions workflow — **copy it to `.github/workflows/audit.yml`.** It runs
+`scripts/audit.sh` on every push/PR: the tool-agnostic enforcer that fires no matter who committed (a different
+LLM/tool, a human, or a branch that skipped the client-side pre-commit hook — which never runs in CI). It gates
+on the audit's `RESULT: FAIL` only (WARNs are surfaced, not fatal, so a lean repo isn't red on day one); flip to
+strict by replacing the run step with a bare `bash scripts/audit.sh`. The token is least-privilege
+(`contents: read`) and `actions/checkout` is pinned to a full commit SHA per §1.3b — re-pin when you bump it.
+
+## A note on the managed `docker` escalation gates
+
+The managed template `ask`-gates `docker run --privileged` and docker-socket bind-mounts (`-v`/`--volume`/
+`--mount` of `/var/run/docker.sock`) — well-known one-command host-root escapes. Treat these as a **best-effort
+backstop, not a boundary:** `docker *` is in the sandbox's `excludedCommands` (it runs **unsandboxed**), so the
+`ask` rule is the *only* gate, and Bash argument-matching is fragile — a different flag spelling, argument order,
+or wrapper can slip past it (the permissions docs warn about exactly this). The real boundary against a container
+escape is not running untrusted `docker` at all; the gate just makes the obvious escalations prompt.
 
 See **`../CHEATSHEET.md`** for the verified mechanics behind all of this.
 

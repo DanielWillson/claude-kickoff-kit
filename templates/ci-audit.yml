@@ -1,0 +1,51 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI audit — STARTER TEMPLATE (copy to your repo's .github/workflows/audit.yml).
+#
+# Runs scripts/audit.sh in CI. This is the TOOL-AGNOSTIC enforcer the kit argues
+# for (claude-audit-base.sh, "SECRET FILE TRACKED IN GIT" section): it fires no
+# matter WHO committed — a different LLM/tool, a human, or a branch that never ran
+# the client-side pre-commit hook (which does NOT run in CI). A client-side hook is
+# skippable; a required CI check is not.
+#
+# GATING: this job fails the build on the audit's RESULT: FAIL only — the must-pass
+# floor ("fix all ✗"). WARNs are surfaced in the log but stay green, so a lean
+# adoption isn't red on day one over an advisory (no eval.sh yet, SCA scanner not
+# installed, …). To gate STRICTLY (any WARN fails too), replace the run step's body
+# with a single `bash scripts/audit.sh` — the audit already exits nonzero on WARN.
+#
+# HARDENING (kickoff §1.3b): least-privilege token (contents: read) + an action
+# pinned to a full commit SHA, not a moving tag. Re-pin when you bump the action;
+# verify a SHA with:  gh api repos/actions/checkout/git/refs/tags/<tag> --jq .object.sha
+# ─────────────────────────────────────────────────────────────────────────────
+name: audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: code-health audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Run scripts/audit.sh (gates on FAIL; WARNs surfaced, not fatal)
+        shell: bash
+        run: |
+          set -uo pipefail
+          out=$(bash scripts/audit.sh 2>&1) || true
+          printf '%s\n' "$out"
+          if ! printf '%s' "$out" | grep -q 'RESULT:'; then
+            echo "::error::audit did not finish (no RESULT line) — treating as failure"
+            exit 1
+          fi
+          if printf '%s' "$out" | grep -q 'RESULT: FAIL'; then
+            echo "::error::audit reported RESULT: FAIL — fix the ✗ items above"
+            exit 1
+          fi
+          echo "audit passed (no FAIL; review any ⚠ WARN above)"
