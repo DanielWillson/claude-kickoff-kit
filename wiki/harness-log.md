@@ -57,6 +57,45 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — kit-conformance: resolve CLAUDE.md **or** AGENTS.md before gating (defect §9.1 item O)
+
+- **Change.** Fixed the §9.1-item-O defect in `scripts/kit-conformance.sh` (the adoption verifier). **Bug:**
+  it hardcoded `CLAUDE_MD="$TARGET/CLAUDE.md"` and set `have_claude` from `[ -f ]` on it, then gated the
+  routing / budget / reviewer / action-risk rows on that flag. This contradicts the kit's own "Claude reads
+  either" policy (kickoff §1.5 "On names", :733-734) and the adoption guide's symlink-one-name pattern
+  (:116-118). **Reproduced:** an `AGENTS.md`-only, no-symlink fixture got a hard **FAIL, exit 1**, and the
+  CLAUDE.md-gated rows were **silently skipped** — a correctly-adopted AGENTS.md project reported unadopted.
+  **Fix:** a small resolution block *before* any gating — prefer `CLAUDE.md` (a real file **or** a symlink,
+  since `[ -f ]` follows symlinks), else fall back to `AGENTS.md`, else neither → the existing FAIL, now
+  naming *both* filenames. `$CLAUDE_MD` is repointed at the resolved file, so every downstream check inherits
+  the resolution unchanged — only the source file moves.
+- **Rationale (the bet).** The kit *actively governs* AGENTS.md as a cross-tool convention (ROADMAP §4:
+  Linux Foundation, 20+ tools), so a verifier that only knows one of the two names will misreport a growing
+  share of adoptions over time. The bet: fix the resolution at one point (the assignment), not by editing
+  every downstream string — cheapest change, no altitude/exit-model disturbance, and the symlink pattern the
+  adoption guide prescribes keeps working for free (`[ -f ]` already follows the link).
+- **What it replaced.** The single hardcoded `CLAUDE_MD="$TARGET/CLAUDE.md"` line (now a 3-branch resolve),
+  and the contract section's present/absent messages (name the resolved filename on PASS; name *both* on
+  FAIL). Downstream check *predicates* are untouched — the prompt's "only the source file moves" contract.
+- **Shelf-life/risk class.** **Appreciating.** As AGENTS.md adoption spreads across the tool ecosystem, the
+  fraction of projects this fix correctly resolves only grows. Zero blast radius — a read-only verifier; the
+  change strictly *widens* what it accepts, never loosens a FAIL floor.
+- **Related ROADMAP item.** §9.1 item **O**. A fix to shipped "Built" work (the O verifier itself), same
+  defect class as A and B — a gap between what the kit teaches (reads either name) and what it shipped.
+- **Commit.** *(uncommitted at time of writing — left for review per the fix-O prompt; stamp the hash when it
+  lands.)*
+- **Signal to watch.** Any AGENTS.md-only project that still reports a contract FAIL → resolution regressed.
+- **Sibling verifier fixed the same way (same commit).** `claude-audit-base.sh` had the identical
+  hardcoding at `:284` (the action-risk join) and `:651` (the DOCUMENTATION presence line). Left alone, an
+  AGENTS.md-only project would pass O's contract row but be misread by its own audit — a "two verifiers must
+  not disagree" break (the same rule that already governs the settings-floor row). Fixed by resolving a
+  `CONTRACT_MD` once near the top (mirroring kit-conformance's block) and pointing both sites at it. Proven
+  on an AGENTS.md-only fixture: the action-risk join reads AGENTS.md's table and matches the settings rule
+  (`action-risk gates wired`), and DOCUMENTATION reports `AGENTS.md present`.
+- **Retrospect.** *(pending — revisit once an AGENTS.md-primary project is actually seeded and run.)*
+
+---
+
 ## 2026-07-06 — The kit's first CI: run its own self-tests (eats its own "wire your verifier into CI" cooking)
 
 - **Change.** Added `.github/workflows/selftest.yml` — the kit's **first** CI (there was no `.github/` at

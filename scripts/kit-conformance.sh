@@ -82,19 +82,33 @@ PY
 echo "Kit conformance — adoption verifier (item O)"
 echo "Target: $TARGET"
 
-CLAUDE_MD="$TARGET/CLAUDE.md"
+# Resolve the always-loaded contract file BEFORE gating anything on it. Kit policy is that
+# "Claude reads either" CLAUDE.md OR AGENTS.md (kickoff §1.5, "On names", :733-734), and a
+# project may keep AGENTS.md as the sole physical file with CLAUDE.md merely symlinked to it
+# (adoption §"edit it in place", :116-118; ROADMAP §4 names AGENTS.md a real cross-tool
+# convention). Prefer CLAUDE.md — a real file OR a symlink, since [ -f ] follows symlinks, so
+# a symlinked CLAUDE.md keeps working — else fall back to AGENTS.md. Every downstream check
+# reads $CLAUDE_MD, so it inherits the resolution for free; only the source file moves.
+if [ -f "$TARGET/CLAUDE.md" ]; then
+    CLAUDE_MD="$TARGET/CLAUDE.md"; CONTRACT_NAME="CLAUDE.md"
+elif [ -f "$TARGET/AGENTS.md" ]; then
+    CLAUDE_MD="$TARGET/AGENTS.md"; CONTRACT_NAME="AGENTS.md"
+else
+    CLAUDE_MD="$TARGET/CLAUDE.md"; CONTRACT_NAME="CLAUDE.md/AGENTS.md"   # neither exists → FAIL below
+fi
 SETTINGS="$TARGET/.claude/settings.json"
 
 # ═══════════════════════════════════════════════════════════════════════════
-section "CONTRACT (CLAUDE.md — the always-loaded agent contract)"
-# CLAUDE.md is the kit's core artifact: FAIL if absent (nothing downstream can be judged).
-# Its blocks (routing / reviewer / budget) are WARN — a lean adoption may legitimately omit them.
+section "CONTRACT (CLAUDE.md / AGENTS.md — the always-loaded agent contract)"
+# The contract is the kit's core artifact: FAIL if absent (nothing downstream can be judged).
+# Either filename counts (resolved above). Its blocks (routing / reviewer / budget) are WARN —
+# a lean adoption may legitimately omit them.
 # ═══════════════════════════════════════════════════════════════════════════
 if [ -f "$CLAUDE_MD" ]; then
-    pass "CLAUDE.md present"
+    pass "$CONTRACT_NAME present (the always-loaded agent contract)"
     have_claude=1
 else
-    fail "no CLAUDE.md at target root — the kit's core artifact is missing (kickoff §1.5)"
+    fail "no CLAUDE.md or AGENTS.md at target root — the kit's core artifact is missing (kickoff §1.5)"
     have_claude=0
 fi
 
