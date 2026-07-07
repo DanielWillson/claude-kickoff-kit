@@ -57,6 +57,56 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-07 — Non-code companion track (item AA): a README mapping of principles that already travel
+
+- **Change.** Built item **AA** (second §10 backlog item) — and, like **Z** the turn before, building it
+  reframed it. AA is **not** "the biggest new territory"; it is *collect + map + scope-guard principles the
+  kit had already generalized*. Realized as a new README section, **`The principles travel past code`**,
+  placed by the durability section (*"What scales with the model"*) — philosophy altitude, front-door
+  discoverability. It: (1) opens by naming the kit **code-first on purpose**, then points at the four
+  generalizations already shipped — evals *"incl. non-code workflows"* (**A**), the domain-agnostic wiki,
+  **§1.3c**'s *"generalized beyond code edits"* action-risk (**R**), and the provenance rule that already
+  *is* the citation standard; (2) a **mapping table** (code idea → non-code form), several rows honestly
+  marked *Unchanged* because they already travel — the honest signal that most of this pre-existed; (3) the
+  research-harness **pattern** (fan out → fetch → adversarially verify → cite) as the worked shape; (4) a
+  hard **"know where to stop"** guard — a mapping that proves the principles travel, *not* a guide to doing
+  research/writing/ops; agnostic per §2.
+- **Rationale (the bet).** §4 says the harness ideas apply past code but the kit should stay code-first;
+  the risk was building a *parallel guide*. The bet: a **one-section mapping that cross-references the
+  existing generalizations** (not a `beyond-code.md` file) proves the point without inviting the domain
+  specifics a near-empty companion file would beg to be filled with. Same anti-bloat call as Z's §1.6a
+  paragraph — the discipline *is* the deliverable.
+- **What it replaced.** Nothing removed. **Corrected** the §10 AA stub on two counts, both surfaced by
+  actually checking: (a) the `deep-research` skill does **not** live in this repo (no such file — it's a
+  session-available skill, not a kit artifact), so the README names the *pattern* generically, no
+  specific-skill dependency; (b) "biggest new-territory candidate" was overstated — it's a Z-species map of
+  what already travels. The §10 entry/row and the Z-correction intro line were reconciled: with AA built,
+  §10's **buildable** candidates are closed (AB is a deliberate don't-build-yet watch-item).
+- **Shelf-life/risk class.** **Permanent** — it draws its force from a property of the world (the unit is
+  *model + harness*, which is independent of whether the deliverable is code), and it's a mapping, not a
+  model-dependent how-to. Low blast-radius: one README section, no guide/script/template/settings touched.
+- **Related ROADMAP item.** **AA** (§10). Cross-references **A** (evals/non-code), **R**/§1.3c
+  (action-risk beyond code), the wiki, and the provenance rule — the generalizations it *collects* rather
+  than invents. Sibling of **D** (both new-territory ideas that landed as a pointer, no file).
+- **Commit.** `feat/AA-noncode-track` (this change) + this log entry. *(Stacked on `feat/Z-fleet-economics`,
+  which was still open at build time — both touch §10.)*
+- **Code worth pointing at.**
+  - `README.md` **§ The principles travel past code** — note it leads by *disclaiming* novelty
+    ("several parts already say so out loud") and that several table rows read *Unchanged* — the honest
+    frame for a collect-what-exists item, same as Z's "the levers already ship, scattered."
+  - The four existing generalizations it cites — `evals-template/` + §1.6b (non-code workflows), §1.3c
+    (action-risk beyond code), the wiki guide, and the §1.6b provenance rule — were **left untouched**;
+    AA points at them, it does not re-teach them.
+- **Signal to watch.** Does anyone actually run the kit's principles on a non-code deliverable and report
+  back that the mapping held — or does the section stay an unexercised claim? And watch the boundary: if a
+  future edit starts adding "how to do research/writing/ops" under this heading, that's the scope-creep AA
+  named — cut it back to the mapping. If the non-code use never materializes across real adopters, the
+  honest read is "the kit's audience is code, keep the section short," not "expand it."
+- **Retrospect.** *(open — revisit when a project first runs the harness on a non-code deliverable, or if
+  the section starts drifting toward a parallel guide.)*
+
+---
+
 ## 2026-07-07 — Agent-fleet economics (item Z): the cost-governance gauge — and a corrected premise
 
 - **Change.** Built item **Z** (first of the §10 next-horizon backlog) — but building it *disproved its
