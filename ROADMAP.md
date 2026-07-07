@@ -460,8 +460,11 @@ self-report, prove it bites" promise those items make to every project that adop
 (details in §9.1 and `wiki/harness-log.md`). **Eval-runner defects (§9.1 A, both) — ✅ closed 2026-07-06:**
 the golden-fail crash (braced interpolation) and the rubric verdict-flip (trailing-`VERDICT:` extraction),
 each reproduced then fixed, guarded by a committed `evals-template/eval-runner.selftest.sh` — now run in the
-kit's first CI (`.github/workflows/selftest.yml`, ubuntu + macOS) — (details in §9.1 and `wiki/harness-log.md`). **Still open:** the metrics inflation (**B**), the `AGENTS.md` fallback
-(**O #4**), the §9.2 security-template gaps, and the §9.3 process gaps.
+kit's first CI (`.github/workflows/selftest.yml`, ubuntu + macOS) — (details in §9.1 and `wiki/harness-log.md`). **Metrics inflation (§9.1 B) — ✅ closed 2026-07-06:** the audit-check count dropped 77 → 59 on
+`claude-audit-base.sh` by stripping full-line comments before the grep, plus a new free eval-fixture metric
+(details in §9.1 and `wiki/harness-log.md`). **`AGENTS.md` fallback (§9.1 O #4) — ✅ closed 2026-07-06:**
+the kit verifiers resolve `CLAUDE.md` OR `AGENTS.md` before gating (merged as #13). **Still open:**
+the §9.2 security-template gaps and the §9.3 process gaps.
 
 1. ✅ **Fowler fix + README citations** (Q, P) — done in README (2026-07-03); Q propagated across
    the rest of the kit (2026-07-06).
@@ -627,6 +630,19 @@ what a trend metric needs. Separately, the script never counts eval fixtures des
 `claude-audit-base.sh` (lines 667–674) already computing `n_evals` for its own purposes — an
 equally "free" number left off the scorecard. **Fix:** strip full-line and trailing `#`-comments
 before counting; add the eval-fixture count alongside the existing two free metrics.
+**✅ Fixed 2026-07-06 — measured first, then proven to shrink.** Stripped full-line comments
+(`grep -vE '^[[:space:]]*#'`) *before* the existing audit-check grep: measured against
+`claude-audit-base.sh` the count drops **77 → 59** (−18, the entire comment-line contamination —
+the "18 of 75" this entry cited, now 18 of 77 as the base audit has since grown), and the
+remaining 59 spot-check to real `pass`/`warn`/`fail` call sites. Trailing-`#` comments on a code
+line are deliberately **left in** (a naive strip corrupts a legitimate `grep '#foo'` arg — a rare
+edge, documented in a one-line comment: honest growth gauge, not exact census). **Added** the
+eval-fixture count as the third free metric (`find "$ROOT/evals" -name '*.eval.md' | wc -l`,
+mirroring the base audit's own `n_evals`) — wired into the snapshot, trend-log line + header, and a
+`delta`; degrades to a clean **skip** when `evals/` is absent (proven in the kit repo itself, which
+ships `evals-template/`, not `evals/`). The trend read-back stays back-compatible: a prior log line
+predating the field reads `eval_fixtures=n/a` and the `delta` guard rejects it — no crash, no
+fabricated zero. Whole script runs exit 0 in place. Details in `wiki/harness-log.md`.
 
 ### 9.2 Security template gaps
 
