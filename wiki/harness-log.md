@@ -57,6 +57,60 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-07 — Kickoff closes with an HTML report + comprehension quiz (§1.7)
+
+- **Change.** §1.7 gains a closing step (Standard+): emit a small self-contained **HTML kickoff
+  report** — each artifact created, each gate wired *with its verbatim bite-test result*, what
+  the tier skipped and why — **ending in a ~5-question comprehension quiz** (which layer is the
+  hard floor, what the sandbox does/doesn't cover, what a `//` in settings.json does, who
+  reviews against what, where a new fact goes). Explicitly an *ephemeral review surface*: left
+  uncommitted; the durable truth stays `kit-conformance.sh` + the files. Checklist row added.
+- **Rationale (the bet).** Two article practices composed: format-follows-reader (the one
+  document the user most needs to actually read, in the format humans actually read) and
+  Shihipar's quiz (verify the *human* understood). Aimed at the fable review's named gap —
+  "nothing checks that the person learned" — at its cheapest possible instance: the moment the
+  gates were just proven, while the bite-test output is fresh.
+- **What it replaced.** Nothing — §1.7 ended at "ask for the spec."
+- **Shelf-life/risk class.** **Appreciating** (the human-understanding gap widens as the
+  harness grows); the HTML half depreciates with rendering surfaces (re-check at tool
+  upgrades).
+- **Related ROADMAP item.** Fable-review (d) "human-verification layer of the teaching goal."
+- **Commit.** *(this change + log entry)*
+- **Signal to watch.** Does the user actually take the quiz, and does a wrong answer ever
+  drive a real fix (a re-read, a gate re-test)? If it's skipped as ceremony, demote it to the
+  teaching track rather than padding every kickoff.
+- **Retrospect.** *(open — revisit at the next maintenance moment.)*
+
+---
+
+## 2026-07-07 — Intake Q10: production runtime lands in the PRD or nowhere
+
+- **Change.** The intake grows to **ten** questions (all "nine" count-claims updated: §1.0a,
+  SKILL.md). **Q10 — does this deploy as a running system?** Default NO, gates nothing. YES
+  opens a new **`prd-template.md` § Production runtime**: path-to-production + staging, how
+  the *running app* loads its own secrets (explicitly not the dev `.env` the floor denies),
+  observability (how you'd know it's down before a user tells you), and deploy rollback
+  (distinct from `RUNBOOK.md`'s agent-mistake recovery). Checklist row added.
+- **Rationale (the bet).** A verified gap from the pre-kickoff review: the kit is exhaustive
+  about the *development session* and silent about the *deployed system* — zero hits for
+  staging/observability/runtime-secrets across the whole kit. That's a legitimate scope line,
+  but an unnamed scope line reads as "you don't need it." Q10 doesn't move the line — it makes
+  the handoff explicit: these concerns live in the PRD **or nowhere**. One question + one
+  template section, no new machinery, honoring "the kit stays scaffolding."
+- **What it replaced.** Silence. Deliberately NOT built: any actual deploy/observability
+  tooling — that's the project's own build, per the scope line above.
+- **Shelf-life/risk class.** **Permanent** — the dev-session/deployed-system boundary is a
+  property of the world, not of any model.
+- **Related ROADMAP item.** None (new class: scope-line handoffs). Kin to item E (the living
+  PRD is where the answers stay honest).
+- **Commit.** *(this change + log entry)*
+- **Signal to watch.** Do kicked-off production projects actually fill the section, or stub
+  it? If it's stubbed, the fix is asking Q10's four sub-questions in the intake conversation
+  itself, not more template.
+- **Retrospect.** *(open — revisit at the next maintenance moment.)*
+
+---
+
 ## 2026-07-07 — The wiki maintenance engine ships as code (fable-review improvement #4)
 
 - **Change.** The wiki guide's §4 engine — until now a prose spec the kickoff session had to

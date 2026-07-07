@@ -157,7 +157,7 @@ numbers. Below that volume the per-slice rates are noise; don't build the ledger
 posture tiers are the right model.
 
 ### 1.0a Intake — gather these once, up front
-Nine answers shape several setup steps; collecting them in one short exchange beats
+Ten answers shape several setup steps; collecting them in one short exchange beats
 stopping to ask three or four separate times mid-ritual. Two of them (Q8–Q9) are the
 load-bearing **safety** questions — each **defaults to the locked-down choice, so skipping is
 safe**. Ask, then execute uninterrupted:
@@ -170,6 +170,7 @@ safe**. Ask, then execute uninterrupted:
 7. **Go-live boundary** — do you ship by `git commit` (push/merge), or by something else (tar/rsync, copying files, a deploy step, an auto-merge)? (drives *where* the doc-freshness check lives — wiki guide §4: a commit-time check can't guard a release that never goes through a commit.)
 8. **Does THIS project's own code read its `.env` at runtime?** **Default NO** — the floor already denies secret reads (§1.3), and that stands. Answer **YES** only if a script genuinely loads it — then carve the scoped exception exactly as §1.3's "real floor" note prescribes (drop that one path from `deny`; never add an `allow`; machine creds stay denied). Skipping leaves the file denied — the safe state.
 9. **Will this project ever hold a real credential or token** (an API key, an OAuth token, a deploy secret — anything live)? **Default NO.** If **YES**, it gates the §1.3a secret-hardening add-ons (enumerated there). Shared-repo hardening is already gated by Q6 — don't re-answer it here.
+10. **Does this deploy as a running system** (a server, service, or site — rather than a local tool or library)? **Default NO; nothing gates on it.** If **YES**, it opens the PRD's *Production runtime* section (path to production + staging, how the *running app* loads its own secrets — not the dev `.env` this floor denies — observability, and deploy rollback). The kit hardens the *development session*; the deployed system's operational needs live in the PRD **or nowhere** — this question exists so "the kit didn't flag it" never reads as "you don't need it."
 
 The sections below still explain *why* each answer matters at its point of use — this just
 front-loads the asking so setup doesn't stall on four separate questions. Don't defer the
@@ -1291,7 +1292,22 @@ single context.
 ### 1.7 Confirm and hand off
 Tell the user setup is done, remind them to **enter auto mode (`Shift+Tab` cycles the
 permission mode) and restart so the sandbox initializes** (the sandbox comes from settings, not
-from `Shift+Tab`), then ask for the spec. **When the spec arrives, run Principle 6's
+from `Shift+Tab`), then ask for the spec.
+
+**Close with an HTML kickoff report — quiz included (Standard+; skip for a throwaway).**
+Before asking for the spec, emit a small, self-contained **HTML report** of what was just
+installed: each artifact created, each gate wired **with its bite-test result** (the command
+attempted → blocked/prompted, verbatim), and what the tier skipped and why. This is
+Principle 2's format-follows-reader rule aimed at the one document the user most needs to
+*actually read* — a green checklist in scrollback doesn't get re-read; a report does. **End
+it with a ~5-question comprehension quiz** (Shihipar's post-implementation practice): which
+layer is the hard floor and why, what the sandbox does and doesn't cover, what a `//` in
+`settings.json` does, who reviews against which source of truth, where a new durable fact
+goes. The harness's weakest link is a human who doesn't know what their own gates do —
+verifying the *person* understood is the cheapest check in the whole kit, and this is its
+first instance. The report is an **ephemeral review surface, not documentation** — leave it
+uncommitted (or under a gitignored `reports/`); the durable truth is `kit-conformance.sh`
+plus the files themselves. **When the spec arrives, run Principle 6's
 interview-before-plan on it** — one question at a time, prioritized by which answers would
 change the architecture — before anything gets built. The spec is a map, and the moment it
 lands is the cheapest point in the whole project to find its holes.
@@ -1871,6 +1887,7 @@ don't have.
 - [ ] (optional — once the harness has several moving parts) `HARNESS_MANIFEST.md` seeded at repo root — one row per part, columned by *assumes × last-verified × re-verify trigger* (assumptions + freshness — **not** presence, which is conformance, nor history, which is the log); its depreciating rows name the **Claude Code upgrade → re-run §1.4** trigger (§1.6a, items W + J)
 - [ ] (if a 2nd committer — Q6) secret-only `hooks/pre-commit` installed + `core.hooksPath` set + verified by a real blocked commit (§1.3b); `bash scripts/audit.sh` wired into CI
 - [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`; kept as a **living** doc (item E) — `reconcile-code` anchor filled, at repo root, updated in the same commit as any deliberate behavior change (§1.5c, §1.7)
+- [ ] (if it deploys as a running system — Q10) the PRD's **Production runtime** section filled or explicitly dated: path-to-prod + staging, runtime secrets (not the dev `.env`), observability, deploy rollback — these live in the PRD or nowhere (§1.0a)
 - [ ] routing rule applied: guardrail → `CLAUDE.md`, machine-check → audit, intended behavior → spec/PRD, full story (code-why/dead-ends/history) → wiki (Principle 2)
 - [ ] `CLAUDE.md` carries the **Knowledge & memory** directive: read-the-wiki-first + project-knowledge-in-the-repo-NOT-`~/.claude` (§1.5)
 - [ ] `CLAUDE.md` carries a `## Review` block: reviewer named + the source(s) of truth they verify against (audit / spec / wiki, **not "looks right"**) + small-batch discipline (§1.5)
@@ -1884,6 +1901,7 @@ don't have.
 - [ ] (evolving a live system) baseline pinned before a calc refactor; data migration → backup + branch + two-part rollback (Principle 10)
 - [ ] (if the project has out-of-git state — DB / hosted config / deploy / external backend) before an agent-assisted change to it: **snapshot + documented way back + a recovery owner** (item S / Principle 10); a pure library needs none
 - [ ] (if a live system an agent could damage) `RUNBOOK.md` seeded at root — the forward contain → revoke/rotate → identify → undo-or-notify → safeguard procedure, kept where a stressed human finds it fast (item U, §1.3a)
+- [ ] (Standard+) **HTML kickoff report** emitted — artifacts + gates with verbatim bite-test results + tier skips — ending in the ~5-question comprehension quiz; left uncommitted (ephemeral surface, not documentation) (§1.7)
 - [ ] user reminded to enter auto mode (`Shift+Tab`) **and restart so the sandbox initializes** (sandbox is from settings, not `Shift+Tab`)
 - [ ] noted the maturity trigger: it **adds conditional hardening above the always-on floor** (Q9 secret add-ons · Q6 server-side + CODEOWNERS) — *not* a switch to a more restrictive mode (the managed hard floor is **Part 0**, done once per machine)
 - [ ] principles internalized; ready for the spec

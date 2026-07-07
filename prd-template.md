@@ -55,6 +55,20 @@ derived (API layer, not client — Principle 1). Omit for non-data projects.>
 <How you know it works: the critical-path integration test, key endpoints answer, expected
 output counts. This becomes the Definition of Done (Part 3.7).>
 
+## Production runtime (if this deploys as a running system)
+<The kit hardens the *development session*; the deployed system's own operational needs live
+HERE or nowhere (intake Q10). Omit the whole section for a local tool or library. Four
+questions, each with an answer or an explicit "decide by <date>":
+- **Path to production** — how a change reaches users (pipeline/steps), and whether a
+  staging/preview step exists between merge and prod.
+- **Runtime secrets** — how the *running app* loads its credentials (platform env/secret
+  manager/injected at deploy) — NOT the dev `.env` the settings floor denies; include who can
+  rotate them.
+- **Observability** — how you'd know it's down or erroring before a user tells you (logs
+  that persist, an uptime check, error tracking), and where those signals land.
+- **Deploy rollback** — how a bad deploy is undone (previous artifact/revision), distinct
+  from `RUNBOOK.md`'s agent-mistake recovery.>
+
 ## Open decisions
 | Decision | Options | Leaning / resolved |
 |---|---|---|

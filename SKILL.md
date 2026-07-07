@@ -27,7 +27,7 @@ plus building philosophy. The kit's documents live in this same directory.
 ## How to run a kickoff (new project)
 
 1. Read `claude-project-kickoff.md` — the driver. It contains the one-time machine
-   hardening (Part 0), the per-project setup ritual with its nine-question intake
+   hardening (Part 0), the per-project setup ritual with its ten-question intake
    (Part 1), the building principles (Part 2), and the autonomous/multi-agent playbook
    (Part 3).
 2. Execute Part 1 for *this* project, adapting every example to the user's actual stack —
