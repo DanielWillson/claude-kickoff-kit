@@ -86,8 +86,11 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
     including the mid-position `docker run * --privileged*` form. Documented honestly as a **best-effort backstop,
     not a boundary** (docker is in `excludedCommands` → runs unsandboxed; Bash arg-matching is evadable).
   - **§9.3.1 HARNESS_LOG placeholder check.** `claude-audit-base.sh` DOCUMENTATION section WARNs if a project's
-    `HARNESS_LOG.md` still carries the unfilled version stamp (`<YYYY-MM-DD>`/`<kit-version>`/`<commit-sha>`) —
-    item **Y** has nothing to diff against until it's real. Filled → PASS; absent → optional `·`.
+    `HARNESS_LOG.md` still carries the unfilled version stamp. Keys on **`<kit-version>`/`<commit-sha>` only** —
+    NOT `<YYYY-MM-DD>`, which also lives in the shipped "copy me" comment block projects are told to keep (a
+    first-pass whole-file match on the date token false-WARNed on every compliant repo; caught in review, refixtured
+    against the real shipped template). Item **Y** has nothing to diff against until it's real. Filled → PASS;
+    absent → optional `·`.
   - **§9.3.2 prompts/ hygiene.** Gitignored `prompts/` as local build scaffolding (untracked, one-time sources
     — the kit's own "outputs persist, sources don't" rule). Non-destructive; delete/track remain maintainer
     options. Durable per-item content already lives in the ROADMAP write-ups.

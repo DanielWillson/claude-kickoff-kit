@@ -726,13 +726,14 @@ a gap between what the kit teaches and what it ships.
   unenforced TODO — **Y** silently has nothing to diff against and nothing in the kit would ever
   flag it. **Fix:** a one-line check (in the audit or conformance script) that WARNs if the anchor
   entry's header still contains literal `<` characters.
-  **✅ Fixed 2026-07-06 — proven on fixtures.** `claude-audit-base.sh`'s DOCUMENTATION section WARNs when a
-  project's `HARNESS_LOG.md` still carries an unfilled stamp — matching the precise placeholder tokens
-  (`<YYYY-MM-DD>` / `<kit-version>` / `<commit-sha>`) rather than any literal `<`, so a legitimately-angle-
-  bracketed entry body won't false-positive. Filled → PASS ("item Y can compute the delta"); absent → optional
-  `·` (the log stays tier-optional). This is a *new roster row*, orthogonal to the GIT-HYGIENE "don't commit
-  sources" clause the file is excluded from — no conflict with that design note. Proven: placeholder→WARN,
-  filled→PASS, absent→`·` via a seeded `scripts/audit.sh`.
+  **✅ Fixed 2026-07-06 — proven on a *representative* fixture.** `claude-audit-base.sh`'s DOCUMENTATION section
+  WARNs when a project's `HARNESS_LOG.md` still carries an unfilled stamp. It keys on **`<kit-version>` /
+  `<commit-sha>` only** — deliberately *not* `<YYYY-MM-DD>`, which also appears in the shipped "copy me for your
+  next entry" comment block the template tells projects to keep; matching the date token would false-WARN on
+  every compliant project (a first-pass version did — caught in review, fixture B had been an unrepresentative
+  hand-written file). Filled → PASS; absent → optional `·`. A *new roster row*, orthogonal to the GIT-HYGIENE
+  "don't commit sources" clause the file is excluded from. Proven against the **actual shipped template**: verbatim
+  (unfilled stamp + copy-block) → WARN; stamp filled with the copy-block *retained* → PASS; absent → `·`.
 - **The `prompts/` directory (the build specs behind items O/R/V/X) is untracked, unreferenced,
   and already stale.** `git status` shows it untracked; README/ROADMAP/glossary/wiki have zero
   references to `prompts/` anywhere; two of its files (`build-R`, `build-V`, both dated
