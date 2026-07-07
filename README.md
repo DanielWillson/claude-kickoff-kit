@@ -182,6 +182,12 @@ Each file is labeled with what it does, and why it earns a place.
   short README defining the fixture format and the two grade types, plus two example `.eval.md`
   cases (one golden, one rubric). Like the audit base, it ships mostly empty on purpose — grow
   it to roughly 8–15 representative cases over time.
+- **`claude-wiki-base.py`** — the starter **wiki maintenance engine**, copied into the
+  project as `wiki/wiki.py`. The wiki's entire defense against rotting into confident lies
+  is mechanical — lint, reconcile-against-code, staleness clocks, coverage, gap markers —
+  so it ships as runnable, selftested code rather than as a spec the kickoff session must
+  reimplement. (Its FAIL paths are proven by `claude-wiki-base.selftest.sh`, run in the
+  kit's own CI.)
 - **`scripts/harness-metrics.sh`** — a starter **harness ROI scorecard**, copied into the project
   as `scripts/harness-metrics.sh`. It prints a handful of cheap numbers — the `CLAUDE.md` line
   count, the audit's check count — and appends them to a trend log, so a project can *prove* its

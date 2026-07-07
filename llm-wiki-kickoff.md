@@ -353,8 +353,13 @@ every time it touches the wiki. Keep it in sync with what the linter enforces.
 
 ## 4. The maintenance engine (how it self-improves)
 
-Build a small **stdlib-only** script (no third-party deps, so it runs anywhere the
-project runs — mind the target runtime's language version). Subcommands that earned
+**The kit ships this engine as runnable code — seed it like the audit.** Copy
+`claude-wiki-base.py` to `wiki/wiki.py`, adapt its CONFIG block (page types, thresholds),
+and gitignore `wiki/.last-reconcile`. It is **stdlib-only** (no third-party deps, so it runs
+anywhere the project runs), and its FAIL paths are proven by a regression selftest
+(`claude-wiki-base.selftest.sh`) run in the kit's own CI — you inherit a verifier that has
+already been caught working, not a spec to reimplement. Building from scratch (below) is
+the fallback for a stack with no Python 3, not the default. Subcommands that earned
 their place:
 
 - **`lint`** — frontmatter valid; every `[[link]]` resolves; no orphan pages; every
@@ -458,7 +463,7 @@ never hide behind a passing check.
    depth (wiki) vs. user-level pref (memory). Choose the safety model (§2.8). Write
    both in SCHEMA.md.
 3. **Scaffold:** `wiki/` dirs, `SCHEMA.md`, `index.md`, `log.md`, the maintenance
-   script. Add the **read-and-write mandate** to the contract: *"before working on a
+   script (seeded from the kit's `claude-wiki-base.py` — §4). Add the **read-and-write mandate** to the contract: *"before working on a
    subsystem, read `wiki/index.md` + the relevant page; project knowledge goes in the repo
    (wiki + contract), never in machine-local `~/.claude` memory."* Both halves are
    load-bearing — without the read half the wiki is a write-only sink; without the
@@ -692,7 +697,7 @@ because the artifact appears at two stages. Safeguarded in the audit.
 - [ ] Chose the safety model (LLM-only vs human-reviewed) and the three memory boundaries; wrote both in SCHEMA.md
 - [ ] Defined page types + lean frontmatter (incl. the `code:` reconcile field) + the GAP/UNVERIFIED/CONFLICT markers
 - [ ] For no-`code:` pages: a `verified:` date + a `stale` age-check (§2.1a); a `tensions.md` register for contradictions the agent can't adjudicate (§2.10)
-- [ ] Scaffolded `wiki/` + `SCHEMA.md` + `index.md` + `log.md` (parseable `## [date] op` headers) + maintenance script
+- [ ] Scaffolded `wiki/` + `SCHEMA.md` + `index.md` + `log.md` (parseable `## [date] op` headers) + maintenance script seeded from `claude-wiki-base.py` (→ `wiki/wiki.py`; `.last-reconcile` gitignored)
 - [ ] Maintenance script: lint, index, reconcile (committed **+ `git diff HEAD` uncommitted**, `--diff`), stale, coverage, gaps, metrics
 - [ ] Added the read mandate to the contract; kept invariants there, moved depth to the wiki, migrated project knowledge out of machine-local memory
 - [ ] Migrated by *moving* (not rewriting); fixed every old-path reference across **all** file types; re-grepped to zero

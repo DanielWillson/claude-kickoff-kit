@@ -57,6 +57,51 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-07 — The wiki maintenance engine ships as code (fable-review improvement #4)
+
+- **Change.** The wiki guide's §4 engine — until now a prose spec the kickoff session had to
+  reimplement per project — ships as **`claude-wiki-base.py`** (stdlib-only Python, seeded like
+  the audit: copy to `wiki/wiki.py`, the path the audit's `WIKI_LINT_CMD` example already
+  names). Implements the full §4 surface: `lint` (frontmatter/enum/date validity, wikilink
+  resolution with code-spans stripped, code:-path existence, orphan floor, oversize advisory,
+  aged-`[open]`-tension warn), `index` (regenerates only its marked block; curated intro
+  survives), `reconcile [range] [--diff]` (committed-since-marker ∪ `git diff HEAD`
+  uncommitted, per the §4 boxed note; linked-but-unflagged neighbour surfacing per §2.9;
+  graceful fallback on an unreachable marker SHA), `stale` (updated-vs-last-commit, uncommitted
+  code: edits, and the §2.1a `verified:` clock for no-code pages — including the
+  missing-`verified:` "invisible to the freshness engine" case), `coverage` (advisory,
+  git-ls-files-based), `gaps` (GAP/UNVERIFIED/CONFLICT, code fences stripped), `metrics`
+  (snapshot + defensive log.md cadence). Fail-loud per §4: any check that cannot run reports
+  `UNCHECKED` (an error), never a silent pass. **Proven, not asserted:** an 18-case regression
+  selftest (`claude-wiki-base.selftest.sh`) exercises every check's FAIL path on deliberately
+  broken fixtures plus the clean path, wired into the kit's CI alongside a new `py_compile`
+  sweep. Wired in all the places the evals precedent demands: kickoff §1.5b + Quick Checklist,
+  wiki guide §4/§5.3/§9, SKILL.md step 3, README inventory, and the audit's `tracked_kit`
+  guard (new stems, `.py` extension — verified it flags the sources but not the renamed
+  `wiki/wiki.py` output).
+- **Rationale (the bet).** The fable review's improvement #4, verbatim: the engine is the
+  wiki's *entire* defense against becoming confident lies, every sibling verifier ships
+  runnable, and the likeliest kickoff outcome of a prose-only spec was "wrote SCHEMA.md and two
+  pages, never built reconcile" — precisely the worse-than-no-wiki state §1 warns about. A
+  shipped, selftested engine turns the wiki's weakest link into an inherited artifact.
+- **What it replaced.** The per-project build-from-scratch instruction, now demoted to the
+  fallback for a no-Python-3 stack.
+- **Shelf-life/risk class.** **Appreciating** (reconcile-against-truth gains value with model
+  capability — README taxonomy) with one **depreciating** watch-item: if a native, project-scoped,
+  reconciled memory ships in the harness (the §106 synthesis's "most likely half-wrong in two
+  years" call), this engine becomes configuration, and the criterion — inspectable, versioned,
+  reconciled — is what survives.
+- **Related ROADMAP item.** Fable-review (b)#4; kin to items A (selftested verifier precedent)
+  and H (anchored safeguards).
+- **Commit.** *(this change + log entry)*
+- **Signal to watch.** Does a kicked-off project actually run `reconcile` on a cadence, or does
+  the engine sit unexecuted (the audit's `WIKI_LINT_CMD` wiring is the tell)? Does the
+  hand-rolled frontmatter parser hit real-world YAML it can't read (the lint UNCHECKED path
+  will say so loudly)? First real adoption should fill this in.
+- **Retrospect.** *(open — revisit at the next maintenance moment.)*
+
+---
+
 ## 2026-07-07 — Pre-kickoff hardening: context-discipline header + settings.local audit check + two map hooks
 
 - **Change.** Four follow-ons from the same review, at the maintainer's prompting. **(1)** A

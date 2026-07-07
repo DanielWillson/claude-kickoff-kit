@@ -55,3 +55,17 @@ jobs:
       - name: Eval-runner regression self-test (§9.1 item A guard)
         shell: bash
         run: bash evals-template/eval-runner.selftest.sh
+
+      - name: Python syntax — py_compile over every kit .py
+        shell: bash
+        run: |
+          set -uo pipefail
+          rc=0
+          while IFS= read -r f; do
+            if python3 -m py_compile "$f"; then echo "  ok    $f"; else echo "  FAIL  $f"; rc=1; fi
+          done < <(find . -name '*.py' -not -path './.git/*')
+          exit $rc
+
+      - name: Wiki-engine regression self-test (claude-wiki-base.py FAIL paths)
+        shell: bash
+        run: bash claude-wiki-base.selftest.sh

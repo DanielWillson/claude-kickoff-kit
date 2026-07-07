@@ -952,8 +952,10 @@ wiki does. It's the home for knowledge that fits neither the contract nor a comm
   nothing else captures and which stops agents (and you) re-walking dead ends.
 
 Read the companion guide for the full pattern. At kickoff, do the lightweight version:
-scaffold `wiki/` + its `SCHEMA.md` + a stdlib maintenance script (lint / reconcile /
-coverage / gaps), and **seed 2–3 real incident/decision pages from actual history** so the
+scaffold `wiki/` + its `SCHEMA.md` + the maintenance engine — copy the kit's
+**`claude-wiki-base.py`** to `wiki/wiki.py` (lint / index / reconcile / stale / coverage /
+gaps / metrics, stdlib-only, FAIL paths already selftested; gitignore
+`wiki/.last-reconcile`) — and **seed 2–3 real incident/decision pages from actual history** so the
 pattern is visible. The CLAUDE.md skeleton (§1.5) already carries the load-bearing
 directive — *read the wiki first; project knowledge goes in the repo, never in machine-local
 memory* — **keep it**: an unread wiki is a write-only sink, and without the anti-memory line
@@ -1873,7 +1875,7 @@ don't have.
 - [ ] `CLAUDE.md` carries the **Knowledge & memory** directive: read-the-wiki-first + project-knowledge-in-the-repo-NOT-`~/.claude` (§1.5)
 - [ ] `CLAUDE.md` carries a `## Review` block: reviewer named + the source(s) of truth they verify against (audit / spec / wiki, **not "looks right"**) + small-batch discipline (§1.5)
 - [ ] human-facing `README.md` created from `readme-template.md`; `reconcile-code` anchor filled with its real source paths so the audit can flag drift (§1.5c)
-- [ ] (if non-throwaway) knowledge wiki scaffolded + seeded with 2–3 real incident/decision pages; **both** maintenance triggers wired (`/wiki` + the unattended reconcile pass); `WIKI_LINT_CMD` wired into the audit (see `llm-wiki-kickoff.md`)
+- [ ] (if non-throwaway) knowledge wiki scaffolded + seeded with 2–3 real incident/decision pages; engine seeded from `claude-wiki-base.py` → `wiki/wiki.py` (`.last-reconcile` gitignored); **both** maintenance triggers wired (`/wiki` + the unattended reconcile pass); `WIKI_LINT_CMD=python3 wiki/wiki.py lint` wired into the audit (see `llm-wiki-kickoff.md`)
 - [ ] (if non-throwaway) behavioral evals seeded — `evals-template/` → `evals/` + `claude-eval-base.sh` → `scripts/eval.sh`, one golden + one rubric case; re-run at a model upgrade / big `CLAUDE.md` edit / new skill (§1.6b)
 - [ ] `scripts/kit-conformance.sh` seeded; `bash scripts/kit-conformance.sh` reports **zero FAIL** after setup — the *adoption* verifier (is the harness installed? — not code health, that's the audit): FAILs only the irreducible floor, WARNs what a lean project may skip; **fan out per area for a big adoption** (§1.6c, item O)
 - [ ] (if UI) design tokens + a starter primitive seeded before the second screen (Principle 5)

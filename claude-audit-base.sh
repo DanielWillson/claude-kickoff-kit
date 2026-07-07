@@ -402,7 +402,7 @@ if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     #       harness-metrics.sh ships pre-placed in scripts/ so ROOT resolves and it runs in place; that
     #       naming asymmetry is intentional — don't "fix" any of these into the alternation.
     #   (The styleguide is excluded — it may legitimately live in the repo as a design ref.)
-    tracked_kit=$(git -C "$ROOT" ls-files | grep -iE '(^|/)(claude-project-kickoff|claude-project-adoption|llm-wiki-kickoff|claude-audit-base|claude-eval-base|securing-claude-sessions|prd-template|readme-template)\.(md|sh)$|(^|/)evals-template/' || true)
+    tracked_kit=$(git -C "$ROOT" ls-files | grep -iE '(^|/)(claude-project-kickoff|claude-project-adoption|llm-wiki-kickoff|claude-audit-base|claude-eval-base|claude-wiki-base(\.selftest)?|securing-claude-sessions|prd-template|readme-template)\.(md|sh|py)$|(^|/)evals-template/' || true)
     [ -n "$tracked_kit" ] && { warn "Harness Kit scaffolding committed — it's one-time; keep sources out of the repo (outputs persist, sources don't)"; echo "$tracked_kit" | sed 's/^/       /'; } \
                           || pass "no Harness Kit scaffolding committed"
     # Secret pre-commit hook actually enabled? (kickoff §1.3b) A tracked hooks/ dir only
