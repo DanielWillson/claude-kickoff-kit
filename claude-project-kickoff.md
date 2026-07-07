@@ -785,7 +785,7 @@ the *same set* you put in `denyWrite` §1.3; they belong in both places).
 - **When stuck, instrument — don't loop** — after ~2 failed tries at one idea, find the real cause, then change approach.
 - **Dependency restraint** — stdlib/existing first; pin versions; verify any API against the *installed* version, not memory.
 - **Evolving live code is its own risk** — pin a golden-output test before refactoring a calc; a data migration isn't `git revert`-able (back up first).
-- **Routing:** guardrail → this file · machine-check → the audit · full story (why/dead-ends/history) → the wiki.
+- **Routing:** guardrail → this file · machine-check → the audit · intended behavior (what & the product intent) → the spec/PRD · full story (why the *code* is this way / dead-ends / history) → the wiki.
 
 ## Stack
 <language/runtime versions, framework, key dependencies>
@@ -935,9 +935,13 @@ return to does.
 it, for a capable reader who may not be a software engineer. Copy `readme-template.md` to
 `README.md` and fill it in — plain language, the reader's outcome first, kept short.
 
-Keep the three from overlapping (the routing rule, Principle 2): **README** = human overview;
-**`CLAUDE.md`** = invariants/guardrails for the agent; the **wiki** = subsystem depth +
-history. Don't restate internals in the README, and never paste a secret into it.
+Keep them from overlapping (the routing rule, Principle 2): **README** = human overview;
+**`CLAUDE.md`** = invariants/guardrails for the agent; the **spec/PRD** = intended behavior +
+the product intent behind it (the living source of truth for *what the system should do*); the
+**wiki** = *why the code is the way it is* + subsystem depth + history. The spec and the wiki
+both hold "why," but different whys — the spec's is *why the product does this*, the wiki's is
+*why the implementation chose that*; keep them apart or you get the conflicting-docs tax
+(Principle 2). Don't restate internals in the README, and never paste a secret into it.
 
 **Keep it self-improving:** fill the template's one-line `<!-- reconcile-code: … -->`
 anchor with the files whose change would make the README wrong (entry points, run script,
@@ -945,6 +949,16 @@ dependency manifest, main API). The audit (§1.6) then warns when those files ou
 README, and the wiki reconcile pass / `/wiki` treats it as a first-class target. Satisfy
 the check the same way as `CLAUDE.md`: update the README in the *same commit* as the change
 that makes it stale.
+
+**The same anchor makes the spec/PRD a *living* doc (item E).** The `reconcile-code` anchor is
+the *opt-in*, not a README-only feature: the audit checks **any root-level doc that carries it**.
+So the filled-in spec (§1.7) gets one too, pointed at the core files that *implement its intent*
+(the API/router, the domain logic, the data model). Then a purposeful behavior change trips the
+same freshness WARN — a nudge to **reconcile in whichever direction is right**: either intent
+changed and the spec is stale, or the code drifted from still-correct intent. That is what turns
+the spec from a fill-once artifact into the durable, living home of *intended behavior*. Keep the
+spec at the repo **root** so the check finds it (a `docs/` subdir is not scanned — root-only, to
+stay out of `node_modules`), and update it in the **same commit** as any deliberate behavior change.
 
 ### 1.6 Seed a code-health audit script
 Copy the companion **`claude-audit-base.sh`** to `<repo>/scripts/audit.sh`. It's a
@@ -1238,10 +1252,11 @@ as whether it exists.
   restate what the code already says.
 
 **The routing rule, in one line:** the *one-line guardrail* → `CLAUDE.md`; the
-*machine-check* → the audit (§1.6); the *full story* (root cause, the dead ends that didn't
-work, the why) → the **wiki**. One fact often spawns all three — a fixed bug leaves a
-guardrail line, a regression grep, and an incident page — but only the terse guardrail earns
-a place in always-loaded context. When in doubt about depth (architecture, rationale,
+*machine-check* → the audit (§1.6); the *intended behavior* — what the system should do and the
+product intent behind it → the **spec/PRD**; the *full story* (root cause, the dead ends that
+didn't work, why the *code* ended up this way) → the **wiki**. One fact often spawns all three —
+a fixed bug leaves a guardrail line, a regression grep, and an incident page — but only the terse
+guardrail earns a place in always-loaded context. When in doubt about depth (architecture, rationale,
 history), it goes in the wiki, **not** `CLAUDE.md`. And a *contradiction the agent can't
 adjudicate* — two sources of equal standing that disagree — goes to the wiki's conflicts
 register (`llm-wiki-kickoff.md` §2.10), **surfaced, not silently resolved.**
@@ -1664,8 +1679,8 @@ don't have.
 - [ ] (if non-throwaway) `scripts/harness-metrics.sh` (ROI gauge) seeded + `HARNESS_LOG.md` seeded at repo root (fixed name); start with the free-to-compute numbers (§1.6a)
 - [ ] (optional — once the harness has several moving parts) `HARNESS_MANIFEST.md` seeded at repo root — one row per part, columned by *assumes × last-verified × re-verify trigger* (assumptions + freshness — **not** presence, which is conformance, nor history, which is the log); its depreciating rows name the **Claude Code upgrade → re-run §1.4** trigger (§1.6a, items W + J)
 - [ ] (if a 2nd committer — Q6) secret-only `hooks/pre-commit` installed + `core.hooksPath` set + verified by a real blocked commit (§1.3b); `bash scripts/audit.sh` wired into CI
-- [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`
-- [ ] routing rule applied: guardrail → `CLAUDE.md`, machine-check → audit, full story (why/dead-ends/history) → wiki (Principle 2)
+- [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`; kept as a **living** doc (item E) — `reconcile-code` anchor filled, at repo root, updated in the same commit as any deliberate behavior change (§1.5c, §1.7)
+- [ ] routing rule applied: guardrail → `CLAUDE.md`, machine-check → audit, intended behavior → spec/PRD, full story (code-why/dead-ends/history) → wiki (Principle 2)
 - [ ] `CLAUDE.md` carries the **Knowledge & memory** directive: read-the-wiki-first + project-knowledge-in-the-repo-NOT-`~/.claude` (§1.5)
 - [ ] `CLAUDE.md` carries a `## Review` block: reviewer named + the source(s) of truth they verify against (audit / spec / wiki, **not "looks right"**) + small-batch discipline (§1.5)
 - [ ] human-facing `README.md` created from `readme-template.md`; `reconcile-code` anchor filled with its real source paths so the audit can flag drift (§1.5c)

@@ -665,26 +665,36 @@ section "DOCUMENTATION"
                       || warn "no CLAUDE.md or AGENTS.md — future sessions lack project context"
 [ -f "$ROOT/README.md" ] && pass "README.md present" || warn "README.md missing — the human front door (kickoff §1.5c)"
 
-# README freshness (self-improving — keeps the human README from silently drifting). If the
-# README carries a one-line  <!-- reconcile-code: path1 path2 -->  anchor (kickoff readme-
-# template.md), WARN when any of those paths has a commit NEWER than the README's last commit.
-# Git-based, not mtime (a synced volume rewrites mtime). The discipline that keeps it quiet:
-# update README.md in the SAME commit as the code it describes.
-if [ -f "$ROOT/README.md" ] && git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
-    anchor=$(grep 'reconcile-code:' "$ROOT/README.md" 2>/dev/null | head -1 \
-             | sed -E 's/.*reconcile-code:[[:space:]]*//; s/[[:space:]]*-->.*//')
-    readme_epoch=$(git -C "$ROOT" log -1 --format=%ct -- README.md 2>/dev/null || echo 0)
-    # only meaningful once the README is committed and the anchor holds real (existing) paths
-    if [ -n "$anchor" ] && [ "${readme_epoch:-0}" -gt 0 ]; then
-        stale=""
+# Doc freshness (self-improving — keeps human-facing docs from silently drifting from the code).
+# ANY root-level doc that carries a one-line  <!-- reconcile-code: path1 path2 -->  anchor opts into
+# this check — the README (kickoff readme-template.md) AND a living spec/PRD (prd-template.md, item E),
+# whatever it's named: WARN when any listed path has a commit NEWER than the doc's own last commit.
+# Git-based, not mtime (a synced volume rewrites mtime). The anchor is the opt-in, so the SPEC becomes
+# a living doc the same way the README is — its intent reconciled against the code that implements it.
+# ROOT-ONLY on purpose: a recursive scan would drag in node_modules/**/README.md and vendored docs, so
+# keep your reconcile-code docs at the repo root. The discipline that keeps it quiet: update the doc in
+# the SAME commit as the code it describes.
+if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    for doc in "$ROOT"/*.md; do
+        [ -f "$doc" ] || continue                        # literal glob when no .md files exist
+        grep -q 'reconcile-code:' "$doc" 2>/dev/null || continue
+        base=$(basename "$doc")
+        anchor=$(grep 'reconcile-code:' "$doc" | head -1 \
+                 | sed -E 's/.*reconcile-code:[[:space:]]*//; s/[[:space:]]*-->.*//')
+        doc_epoch=$(git -C "$ROOT" log -1 --format=%ct -- "$doc" 2>/dev/null || echo 0)
+        # only meaningful once the doc is committed and the anchor holds real (existing) paths
+        [ -n "$anchor" ] && [ "${doc_epoch:-0}" -gt 0 ] || continue
+        stale=""; checked=0
         for p in $anchor; do
-            [ -e "$ROOT/$p" ] || continue   # skip un-filled placeholders / moved paths
+            [ -e "$ROOT/$p" ] || continue                # skip un-filled placeholders / moved paths
+            checked=1
             pe=$(git -C "$ROOT" log -1 --format=%ct -- "$p" 2>/dev/null || echo 0)
-            [ "${pe:-0}" -gt "${readme_epoch:-0}" ] && stale="$stale $p"
+            [ "${pe:-0}" -gt "${doc_epoch:-0}" ] && stale="$stale $p"
         done
-        [ -n "$stale" ] && warn "README may be stale — newer commits to:$stale — refresh README.md (+ its reconcile-code anchor)" \
-                        || pass "README not behind its reconcile-code paths"
-    fi
+        [ "$checked" -eq 0 ] && continue                 # anchor is all placeholder / moved paths → nothing real to check; stay silent
+        [ -n "$stale" ] && warn "$base may be behind its reconcile-code paths — newer commits to:$stale — reconcile: update $base to match, or confirm the code should change; keep it current in the SAME commit as the code it describes" \
+                        || pass "$base not behind its reconcile-code paths"
+    done
 fi
 
 # HARNESS_LOG.md version stamp (§9.3). Item Y (kit-update proposals) diffs the current kit against

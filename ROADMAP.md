@@ -138,6 +138,20 @@ Make the spec a *living* file like the wiki, not a fill-in-once doc.
 - **Build (few lines):** add a "reconcile against code" freshness anchor to the spec template;
   add a safety-net line ("when behavior changes on purpose, update the spec in the same commit");
   point CLAUDE.md's knowledge-routing at the spec as the home of *intent*.
+- **Built 2026-07-06.** All three, plus the piece that makes them *bite*. (1) `prd-template.md` gains the
+  `<!-- reconcile-code: … -->` anchor (mirroring `readme-template.md`) + a living-doc banner: it's the source
+  of truth for *intended behavior*, kept current in the **same commit** as any deliberate behavior change, at
+  the repo **root** so the check finds it. (2) **The freshness check was generalized, not duplicated:** the
+  audit's README-only block now loops over **any root-level doc carrying the anchor** — the anchor is the
+  *opt-in*, so the spec (whatever it's named) is checked exactly like the README. **Root-only glob on purpose**
+  (a recursive scan would drag in `node_modules/**/README.md`); a placeholder-only anchor stays **silent** (no
+  false PASS/WARN). Proven on fixtures: current→PASS, code-moved-ahead→WARN (forced commit dates, since `%ct`
+  is second-granular), per-doc independence (reconciling the spec clears only its WARN), no-`.md`→safe. (3)
+  Routing updated at all four sites (CLAUDE.md skeleton, the three-doc separation, the one-line rule, the
+  checklist) — **the collision resolved, not deepened:** spec = *what the system should do + product intent*;
+  wiki = *why the code ended up this way + history*. Both hold "why," but different whys, stated apart so it
+  doesn't reintroduce the conflicting-docs tax. **No kit-self spec instance** — the kit is a meta-repo with no
+  product spec to fill (unlike W's manifest); `prd-template.md` is the template and that's the whole artifact.
 
 ### F. Untrusted-content rule
 Architecture already handles it (contain, not detect). Add one line to §1.3a naming the untrusted-
@@ -523,8 +537,10 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
    trigger + §1.4/README doctrine) — done 2026-07-06, motivated by this session's CC-2.1.201 finding.
    ✅ **M** (date-stamp version-specific facts + the re-verification habit) — done 2026-07-06 on W's
    dated-home mechanism: `CHEATSHEET.md` header + red-team stat + the README shelf-life mention
-   (README/LESSONS were already dated).
-   **Remaining hygiene/frontier tail:** S, T, U, C, D, E, I, F, and K/L/N (the other three consistency fixes).
+   (README/LESSONS were already dated). ✅ **E** (spec-as-source) — done 2026-07-06: `prd-template.md`
+   `reconcile-code` anchor + living-doc note, the audit's freshness check generalized to any anchored root
+   doc, and intent routed to the spec (kept distinct from the wiki's code-history).
+   **Remaining hygiene/frontier tail:** S, T, U, C, D, I, F, and K/L/N (the other three consistency fixes).
 
 ---
 

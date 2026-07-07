@@ -126,6 +126,7 @@ Shipped into the kit; each points to where it lives.
 | Y | **Kit-update proposals** | Re-review a repo against a *newer* kit: re-run the adoption guide's evaluate→propose over the delta since the version stamp, propose fit-appropriate retrofits, the human decides, then append a reviewed-through entry that **advances the baseline** so already-declined items aren't re-raised. Docs-only, on-prompt, propose-never-apply. | [`claude-project-adoption.md`](claude-project-adoption.md) §6 + kickoff §1.6a (fill the version stamp) |
 | W | **Harness manifest** | A tier-optional root registry of the harness's own parts, tracking the one axis its siblings don't — *what each part assumes × when last verified × the event that makes it stale* — grouped by shelf-life class. Not presence (that's conformance) nor history (that's the log). | [`HARNESS_MANIFEST.md`](HARNESS_MANIFEST.md) (template) + kickoff §1.6a + [`wiki/harness-manifest.md`](wiki/harness-manifest.md) (kit's own) |
 | J | **Post-upgrade re-verify** | Treat a Claude Code *tool* upgrade like a model upgrade — a scheduled maintenance event: re-run §1.4's "prove it bites" checks, because an upgrade can silently drop a setting (CC 2.1.201, verified 2026-07-06, discards a whole settings.json on a `//` comment). Realized as the manifest's re-verify trigger. | kickoff §1.4 + §1.6a + README shelf-life doctrine + the [`HARNESS_MANIFEST.md`](HARNESS_MANIFEST.md) trigger column |
+| E | **Spec-as-source** | The spec/PRD as a *living* doc, not fill-once: it carries the same `reconcile-code` freshness anchor as the README (any root doc with the anchor is audit-checked), holds *intended behavior + product intent* in the routing (distinct from the wiki's *why the code is this way*), and is updated in the same commit as any deliberate behavior change. | [`prd-template.md`](prd-template.md) (anchor + living-doc note) + [`claude-audit-base.sh`](claude-audit-base.sh) (generalized doc-freshness check) + kickoff §1.5c/§1.7 routing |
 
 ## Roadmap items — planned
 
@@ -136,7 +137,6 @@ Names locked; definitions use the vocabulary above. Build state and detail live 
 |---|---|---|
 | C | **Flight recorder** | A durable record of what an agent did during a run, so you can inspect *why* it went wrong or got expensive. |
 | S | **Non-git rollback** | Snapshot-and-recover rituals for state git doesn't cover (databases, hosted configs, deploys, external backends). |
-| E | **Spec-as-source** | Treating the spec as a living, reconciled source of intent — not a fill-in-once doc. |
 | D | **Cross-project memory** | A queryable knowledge layer for when per-project markdown files stop scaling across many projects. |
 | T | **Tool inventory** | A list of every tool/connector the agent has — scopes, where its credential lives, how to disable it. |
 | U | **Incident runbook** | The forward "when an agent does damage" procedure: contain → revoke → identify what was touched → undo → add a safeguard. |

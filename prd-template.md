@@ -7,7 +7,23 @@
 > **How it feeds the build:** the kickoff's §1.6 audit and `CLAUDE.md` extract this doc's
 > **load-bearing invariants** (the ones an agent could silently violate) into greps +
 > contract lines; the **Open decisions** table is what you resolve before fan-out
-> (Part 3's `BRIEF.md`). Keep this lean — it states *what & why*, not *how*.
+> (Part 3's `BRIEF.md`). Keep this lean — it states **what the system should do and the
+> product intent behind it**, not *how* it's built (that's the code) and not *why the code
+> came to be the way it is* (that's the wiki's decision/history pages).
+>
+> **This is a *living* doc — the home of intent, not a fill-once artifact.** It is the source
+> of truth for *intended* behavior, so keep it current the way you keep `CLAUDE.md` and the
+> `README` current: **when you change behavior on purpose, update this spec in the SAME commit**
+> as the change. Keep it at the repo **root** (or wherever your `reconcile-code` docs live) so
+> the audit's freshness check finds it.
+
+<!-- reconcile-code: PUT-PATHS-HERE -->
+<!-- ^ Keep the line above on ONE line. List the core files that *implement this spec's intent* —
+     the modules behind its capabilities/invariants (the API/router, the domain logic, the data
+     model). The audit (kickoff §1.6) WARNs when any of them has a commit NEWER than this spec:
+     a signal to **reconcile in whichever direction is right** — either intent changed and the
+     spec is stale, or the code drifted from still-correct intent. It does NOT mean "the spec is
+     wrong." Keep the list short + real; an unfilled `PUT-PATHS-HERE` placeholder is simply skipped. -->
 
 ## Problem & goal
 <The one job this exists to do, in 1–3 sentences. What's broken/missing today.>

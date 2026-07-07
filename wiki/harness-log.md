@@ -57,6 +57,45 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Spec-as-source: the spec becomes a living, reconciled doc (item E)
+
+- **Change.** Built ROADMAP item **E** — the spec/PRD is now a *living* doc, not fill-once. Three moves plus
+  the piece that makes them bite: (1) `prd-template.md` gains the `<!-- reconcile-code: … -->` freshness anchor
+  (mirroring `readme-template.md`) + a living-doc banner (source of truth for *intended behavior*; update in the
+  **same commit** as any deliberate behavior change; keep at repo **root**). (2) The audit's README-only
+  freshness block was **generalized** to loop over **any root-level doc carrying the anchor** — the anchor is
+  the opt-in, so the spec (any filename) is checked exactly like the README. (3) Routing updated at all four
+  sites to add *intended behavior → the spec/PRD*.
+- **Rationale (the bet).** A spec written once and abandoned silently diverges from what the system actually
+  does — the exact rot the kit fights everywhere else. Giving the spec the README's reconcile-against-code
+  mechanism turns "is the spec still true?" into a check the audit runs, not a thing you hope someone
+  remembers. The bet: the *anchor as opt-in* generalizes cleanly — one mechanism now serves README, spec, and
+  any future doc, with zero new machinery.
+- **Two design calls that carried the item.** (a) **Root-only glob, not recursive** — a `find -maxdepth` scan
+  would drag in `node_modules/**/README.md` and vendored docs (thousands of files); the cost is that a spec in
+  `docs/` isn't auto-found, paid by a "keep it at root" line in the template. (b) **The why-collision, resolved
+  not deepened** — the spec and the wiki both hold "why," so routing now states *different* whys: spec = *why
+  the product does this* (intended behavior + product intent, forward-looking); wiki = *why the code ended up
+  this way* (decisions, dead-ends, history, backward-looking). Shipping "what & why → spec" verbatim next to
+  "why → wiki" would have reintroduced the conflicting-docs tax (Principle 2) the whole routing rule exists to
+  kill.
+- **What it replaced.** The README-only freshness `if`-block → a generic per-doc loop (README behavior
+  identical; a placeholder-only anchor now stays **silent** — no false PASS, tightened during fixture testing).
+  The 3-doc routing (`README`/`CLAUDE.md`/wiki) → 4-doc (adds the spec as the intent home).
+- **Shelf-life/risk class.** **Permanent** — reconcile-against-code is a permanent-class practice (docs rot no
+  matter who reads them); this just extends it to the spec. Low blast radius: the audit change strictly *adds*
+  coverage and fails safe (silent when nothing to check).
+- **Related ROADMAP item.** **E**. No kit-self spec instance — the kit is a meta-repo with no product spec to
+  fill (unlike W's manifest dogfood); `prd-template.md` is the template and is the whole artifact.
+- **Commit.** *(uncommitted at time of writing — on branch `feat/E-spec-as-source`; stamp on merge.)*
+- **Signal to watch.** (1) A project's spec freshness WARN read as "the spec is wrong" and blindly "fixed" by
+  editing the spec, when the *code* was the drift → the "reconcile in whichever direction" framing isn't
+  landing. (2) A spec kept in `docs/` and silently never checked → the root-only limitation biting; consider a
+  configurable doc-root if it recurs.
+- **Retrospect.** *(pending — revisit once a project has actually caught a spec/code drift via this check.)*
+
+---
+
 ## 2026-07-06 — Date-stamp version-pinned facts + the re-verification habit (item M)
 
 - **Change.** Closed ROADMAP item **M** (docs-only). Version-specific facts in durable docs (`2.1.x`,
