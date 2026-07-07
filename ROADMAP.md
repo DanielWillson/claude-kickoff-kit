@@ -571,6 +571,18 @@ skips the routing/budget/reviewer checks gated on `CLAUDE.md`'s presence. ROADMA
 over time, not less. **Fix:** resolve either filename (checking for a symlink or direct file)
 before gating the downstream checks on its presence.
 
+**✅ Fixed 2026-07-06.** `kit-conformance.sh` now resolves the contract file *before* gating —
+prefer `CLAUDE.md` (a real file **or** a symlink; `[ -f ]` follows symlinks, so the adoption
+guide's symlink pattern keeps working), else fall back to `AGENTS.md`, else FAIL naming *both*.
+`$CLAUDE_MD` inherits the resolution, so every downstream row (routing / budget / reviewer /
+action-risk) runs against the resolved file for free. Proven on fixtures: AGENTS.md-only (the
+repro) → exit 0 with routing+reviewer detected; both present → CLAUDE.md wins; symlink → resolves;
+neither → FAIL/exit 1. **The sibling verifier was fixed the same way:** `claude-audit-base.sh` had
+the identical hardcoding at `:284` (action-risk join) and `:651` (DOCUMENTATION presence) — both now
+read a `CONTRACT_MD` resolved once at the top (CLAUDE.md-or-AGENTS.md), so the two kit verifiers stay
+concordant. Proven on an AGENTS.md-only fixture: the audit's action-risk join and docs row both
+resolve AGENTS.md (`action-risk gates wired`, `AGENTS.md present`).
+
 **R (certified by O) — the action-risk tag's prescribed JSON syntax is invalid JSON.**
 The mechanism requires an inline trailing `//` comment on a live `.claude/settings.json` array
 element (`templates/project.settings.json:20-25, 38-40`; the fenced example at

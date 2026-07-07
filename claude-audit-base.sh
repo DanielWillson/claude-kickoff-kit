@@ -24,6 +24,19 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TMP="${TMPDIR:-/tmp}"            # $TMPDIR is sandbox-writable; /tmp may not be
+
+# Resolve the always-loaded contract file: CLAUDE.md OR AGENTS.md. Kit policy is "Claude reads
+# either" (kickoff §1.5 "On names", :733-734), and a project may keep AGENTS.md as the sole
+# physical file with CLAUDE.md merely symlinked to it (adoption :116-118). Prefer CLAUDE.md — a
+# real file OR a symlink, since [ -f ] follows symlinks — else fall back to AGENTS.md. Keeps this
+# audit concordant with scripts/kit-conformance.sh, which resolves the same pair (§9.1 item O).
+if [ -f "$ROOT/CLAUDE.md" ]; then
+    CONTRACT_MD="$ROOT/CLAUDE.md"; CONTRACT_NAME="CLAUDE.md"
+elif [ -f "$ROOT/AGENTS.md" ]; then
+    CONTRACT_MD="$ROOT/AGENTS.md"; CONTRACT_NAME="AGENTS.md"
+else
+    CONTRACT_MD="$ROOT/CLAUDE.md"; CONTRACT_NAME="CLAUDE.md"   # absent → the checks below WARN/skip
+fi
 SRC="$ROOT/src"                  # TODO: point at your source dir(s), e.g.
                                  #   "$ROOT/backend/app"  or  "$ROOT/frontend/src"
 UI=""                            # TODO (UI projects): component/style source, e.g.
@@ -281,7 +294,7 @@ section "ACTION-RISK GATES (deterministic enforcement — kickoff §1.3c)"
 # (grep-limits, ~line 122): this proves the named rule EXISTS in settings, not that it is semantically the
 # right gate for the class — that is a read/judgment pass.
 # ═══════════════════════════════════════════════════════════════════════════
-ar_claude="$ROOT/CLAUDE.md"
+ar_claude="$CONTRACT_MD"          # CLAUDE.md or AGENTS.md, resolved at top (§9.1 item O)
 ar_settings="$ROOT/.claude/settings.json"
 if [ -f "$ar_settings" ] && command -v python3 >/dev/null 2>&1; then
     if python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$ar_settings" 2>/dev/null; then
@@ -648,8 +661,8 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════
 section "DOCUMENTATION"
 # ═══════════════════════════════════════════════════════════════════════════
-[ -f "$ROOT/CLAUDE.md" ] && pass "CLAUDE.md present ($(wc -l < "$ROOT/CLAUDE.md" | tr -d ' ') lines)" \
-                         || warn "CLAUDE.md missing — future sessions lack project context"
+[ -f "$CONTRACT_MD" ] && pass "$CONTRACT_NAME present ($(wc -l < "$CONTRACT_MD" | tr -d ' ') lines)" \
+                      || warn "no CLAUDE.md or AGENTS.md — future sessions lack project context"
 [ -f "$ROOT/README.md" ] && pass "README.md present" || warn "README.md missing — the human front door (kickoff §1.5c)"
 
 # README freshness (self-improving — keeps the human README from silently drifting). If the
