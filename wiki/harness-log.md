@@ -96,6 +96,53 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Harness-metrics: de-inflate the audit-check count + add the free eval-fixture count (defect §9.1 item B)
+
+- **Change.** Fixed the §9.1-item-B defect in `scripts/harness-metrics.sh` (the run-it-monthly harness scorecard).
+  **Bug:** the audit-check count `grep -oE '(pass|warn|fail)[[:space:]]+"'` matched the *shape* of a check call
+  anywhere on a line regardless of a leading `#`, so **comment-only lines counted as checks**. Measured against
+  `claude-audit-base.sh`: **18 of 77 matches (23%) sat inside comment lines** (the INVARIANTS section's worked
+  `# pass "…"` examples), which never execute — and that contamination *grows* as a real audit accretes
+  illustrative commentary, the exact opposite of what a trend gauge should do. Fixed by stripping full-line
+  comments (`grep -vE '^[[:space:]]*#'`) **before** the existing grep: **77 → 59** on the base audit (−18, the
+  whole contamination), and the remaining 59 spot-check to real call sites. Trailing-`#` comments on a code line
+  are deliberately **left in** (a naive strip would corrupt a legitimate `grep '#foo'` arg; it's a rare edge —
+  documented in a one-line comment, keeping this an honest growth gauge, not an exact census).
+  **Also added** a third free metric — an **eval-fixture count** (`find "$ROOT/evals" -name '*.eval.md' | wc -l`),
+  mirroring the number `claude-audit-base.sh` already computes for itself — wired into the snapshot, the trend-log
+  line + header, and a `delta`. It degrades to a clean **skip** when `evals/` is absent (the kit ships
+  `evals-template/`, not `evals/`, so the kit's own run exercises that path).
+- **Rationale (the bet).** A trend metric that drifts with documentation volume misreports direction — it can
+  show a "growing safety net" when all that grew was the comments. The bet: strip the dominant, mechanical
+  contamination (full-line comments) cheaply and honestly, name the rarer edge rather than over-engineer a
+  string-safe trailing-comment stripper, and spend the same "free number" budget on eval fixtures — a second
+  verifier whose growth actually matters. The defect was **measured first** (18/77), then the fix **proven to
+  drop the count by exactly that** (77→59), then the new metric proven on a 3-fixture dir and on the absent-`evals/`
+  skip path.
+- **What it replaced.** The single-stage audit grep (now a comment-strip → grep pipe); the "two free numbers"
+  framing in three comment sites (header caveat, snapshot banner, reminder) is now "three"; the trend-log schema
+  gained an `eval_fixtures=` field. The `delta` guard, the malformed-line tolerance, and the never-fabricate-a-zero
+  rule are untouched — a prior log line that predates the new field reads back as `eval_fixtures=n/a` and the delta
+  stays honest (`n/a — needs two numeric readings`), proven directly.
+- **Shelf-life/risk class.** **Permanent.** Leading-`#`-comment lines never execute in bash — a language property,
+  not a model fact. The un-stripped trailing-comment edge is a bounded, disclosed approximation, consistent with
+  the script's stated "growth gauge, not exact census" ethos.
+- **Related ROADMAP item.** §9.1 item **B**. A fix to shipped "Built" work, not a new lettered item — same defect
+  class as items A and O (a gap between what the kit teaches and what it ships).
+- **Commit.** *(uncommitted at time of writing — the fix and this entry are left for review per the fix-B prompt;
+  stamp the hash here when it lands.)*
+- **Design choices worth pointing at.**
+  - **Strip full-line comments, name the trailing edge.** The 18/77 contamination is entirely full-line `#`
+    comments (the INVARIANTS worked examples); a `grep -v '^[[:space:]]*#'` removes all of it in one cheap stage.
+    A trailing-`#` stripper would have to avoid corrupting a `#` *inside a string* (`grep '#foo'`) — real work for
+    a rare case — so it's a documented non-goal, not a silent gap.
+  - **Reused the audit's own eval count.** Not a new invention — the exact `find … -name '*.eval.md'` the base
+    audit already runs, so the scorecard and the audit agree on the number by construction.
+  - **New field is append-only and back-compatible.** Old trend-log lines lack `eval_fixtures=`; the sed read-back
+    yields empty → `n/a`, and the `delta` guard rejects it — no crash, no fabricated zero.
+
+---
+
 ## 2026-07-06 — The kit's first CI: run its own self-tests (eats its own "wire your verifier into CI" cooking)
 
 - **Change.** Added `.github/workflows/selftest.yml` — the kit's **first** CI (there was no `.github/` at
