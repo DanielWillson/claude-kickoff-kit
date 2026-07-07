@@ -615,6 +615,10 @@ paths=$(grep -rnE '/Users/|/home/[a-z]|/volume[0-9]|C:\\\\Users' "$SRC" 2>/dev/n
 # ═══════════════════════════════════════════════════════════════════════════
 section "REGRESSION GUARDS"
 # Add ONE check here every time you fix a bug, so the same mistake cannot return.
+# TWO sources feed this section: (1) a fixed code bug; (2) a bad or expensive agent RUN — one that
+# looped, wandered, produced slop, or cost far too much, with no code bug at all. For (2), read the
+# run's transcript, ask "what check would have caught this?", and add it here (or a CLAUDE.md line, a
+# wiki incident page, or a behavioral eval) — same guard, different trigger.
 # Name the bug + date; FAIL if the old pattern reappears. ANCHOR the guard to the file the fix
 # lives in (kickoff §1.6) — a regression guard is exactly an "absent from that file" check, the
 # rot-prone shape: rename the file and it passes green forever, protecting nothing. Example:

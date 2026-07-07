@@ -1001,6 +1001,26 @@ checks. The valuable part grows over time:
   stale," the durable fix isn't a fourth patch — it's **one** guard that kills the class (a
   broader grep, a `CLAUDE.md` clarification, a reconcile rule). Propose it; never auto-apply.
   Same safety net, aimed at the *pattern* instead of the *instance*.
+- **The safety net has a *second feed*: bad or expensive *runs*, not just fixed bugs (item C).**
+  Everything above grows the net from *code bugs*. But an agent run can go wrong with no bug in
+  sight — it loops for an hour, takes a path you didn't want, produces slop, or simply costs 5× what
+  it should. That is signal too, and today most of it evaporates when the session closes. Two moves
+  capture it. **(1) Keep the run legible.** Retain the **run record** — your tool's session
+  transcript, the black box of what the agent actually *did* (distinct from `HARNESS_LOG.md`, whose
+  "flight recorder" logs the changes you *chose*; this is raw observation, that is authored history)
+  — and have the app log to a file the agent can *read*, so a post-mortem works from evidence, not
+  memory. **(2) Post-mortem the bad or expensive ones.** Read the record and ask *"what directive or
+  check would've caught this?"* — then add that artifact. The output feeds the *whole* net, not just
+  the audit: a regression grep, a one-line `CLAUDE.md` guardrail, a wiki incident page (the same
+  retrospective shape a live incident produces), or — sharpest, when the failure was a *judgment*
+  error rather than a code one — a **behavioral eval case** (§1.6b). This is the *routine* cousin of
+  the incident **runbook** (`RUNBOOK.md`, §1.3a): the runbook is the *acute* emergency drill for a
+  live-system mistake; this is the everyday habit of learning from any run that went badly, most of
+  which are not emergencies. The *expensive* half also lands in the scorecard (§1.6a — tokens/$ per
+  merged change) and the run-cost levers of an unattended build (Part 3.10). **Graduation:** saved
+  transcripts + markdown notes, eyeballed on a cadence, are plenty for one project; when run volume
+  outgrows what you can read by hand, graduate to a GenAI-tracing service (Langfuse, LangSmith,
+  OpenTelemetry GenAI traces) — keep the same *post-mortem-into-a-check* loop, just at scale.
 - **Security & dependency depth ships wired, tier-scaled.** Beyond the generic hygiene
   checks, the `SECURITY` and `DEPENDENCY VULNERABILITIES` sections now carry two extra safeguards.
   A **known-vulnerability scan** detects the ecosystem from its *lockfile* and shells out to that
@@ -1054,9 +1074,10 @@ Seed two files, the same way you seeded the audit:
   against to find what the kit has added since you adopted.
 
 **The two files are different and complementary.** The script is the *quantitative* gauge —
-numbers, auto-appended to its own trend log. `HARNESS_LOG.md` is the *qualitative* flight recorder —
-a **human** writes, in prose, *what changed in the harness and why*, one append-only entry per
-change. **The script never writes `HARNESS_LOG.md`.** The numbers tell you *that* something moved;
+numbers, auto-appended to its own trend log. `HARNESS_LOG.md` is the *qualitative* flight recorder of
+harness *changes* — a **human** writes, in prose, *what changed in the harness and why*, one
+append-only entry per change (distinct from a *run record*, item C, which captures what an agent
+*did* during a run). **The script never writes `HARNESS_LOG.md`.** The numbers tell you *that* something moved;
 the log tells you *why* you moved it.
 
 **Don't over-instrument — a few numbers looked at monthly beat forty ignored.** Start with only the
@@ -1284,8 +1305,8 @@ as whether it exists.
 *machine-check* → the audit (§1.6); the *intended behavior* — what the system should do and the
 product intent behind it → the **spec/PRD**; the *full story* (root cause, the dead ends that
 didn't work, why the *code* ended up this way) → the **wiki**. One fact often spawns all three —
-a fixed bug leaves a guardrail line, a regression grep, and an incident page — but only the terse
-guardrail earns a place in always-loaded context. When in doubt about depth (architecture, rationale,
+a fixed bug (or a post-mortemed bad run, item C) leaves a guardrail line, a regression grep, and an
+incident page — but only the terse guardrail earns a place in always-loaded context. When in doubt about depth (architecture, rationale,
 history), it goes in the wiki, **not** `CLAUDE.md`. And a *contradiction the agent can't
 adjudicate* — two sources of equal standing that disagree — goes to the wiki's conflicts
 register (`llm-wiki-kickoff.md` §2.10), **surfaced, not silently resolved.**
@@ -1723,6 +1744,7 @@ don't have.
 - [ ] `CLAUDE.md` created: stack, deploy target + quirks, sensitive paths, daily commands
 - [ ] `scripts/audit.sh` seeded from `claude-audit-base.sh`; TOOLING section wired; git-hygiene secret gate active
 - [ ] safeguards anchored — each absence-in-a-file guard wrapped in `guarded "<what>" "<anchor>" "<symbol>" && { … }` so a renamed anchor **WARNs (rotted), never passes green**; the SAFEGUARD SELF-CHECK rolls them up (structural rot only — semantic drift is a human read) (§1.6, item H)
+- [ ] safety net fed from **both** sources — a guard per fixed bug **and** a post-mortem of any bad/expensive *run* (keep the run's transcript + app logs the agent can read; ask "what check would've caught this?" → a grep / `CLAUDE.md` line / wiki page / eval case) (§1.6, item C)
 - [ ] (if the project has dependencies) known-vulnerability scan active in `scripts/audit.sh` — detects the lockfile's ecosystem + runs its scanner (`npm audit`/`pip-audit`/`cargo audit`/…), WARNs on high/critical, and reports a visible `SKIPPED` (never green) when it can't run; the `SECURITY` entropy pass complements the `key=` secret grep (§1.6)
 - [ ] (if non-throwaway) `scripts/harness-metrics.sh` (ROI gauge) seeded + `HARNESS_LOG.md` seeded at repo root (fixed name); start with the free-to-compute numbers (§1.6a)
 - [ ] (optional — once the harness has several moving parts) `HARNESS_MANIFEST.md` seeded at repo root — one row per part, columned by *assumes × last-verified × re-verify trigger* (assumptions + freshness — **not** presence, which is conformance, nor history, which is the log); its depreciating rows name the **Claude Code upgrade → re-run §1.4** trigger (§1.6a, items W + J)

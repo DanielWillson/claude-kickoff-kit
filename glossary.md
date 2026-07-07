@@ -21,8 +21,8 @@ there's a clear home.
   acts (the audit, tests, a second agent reviewing). *— [`README.md`](README.md) "How the pieces fit together"*
 - **The safety net · safeguards · safeguarding** — The practice where every fixed mistake becomes a
   permanent check, so the harness only ever gets stronger. Each check is a **safeguard**; the
-  growing set of them is **the safety net** (you add a strand per fix and never cut one); the habit
-  itself is **safeguarding**. *— [`README.md`](README.md), [`LESSONS.md`](LESSONS.md); the mechanics in
+  growing set of them is **the safety net** (you add a strand per fix — a fixed bug, *or* a
+  post-mortemed bad/expensive run (item C) — and never cut one); the habit itself is **safeguarding**. *— [`README.md`](README.md), [`LESSONS.md`](LESSONS.md); the mechanics in
   [`claude-project-kickoff.md`](claude-project-kickoff.md) §1.6 + the audit's `REGRESSION GUARDS` section*
 - **Builder & judge** — Separate the agent that produces the work from a fresh-context agent that
   grades it — because an agent grading its own work tends to praise it. The judge is independent on
@@ -131,6 +131,7 @@ Shipped into the kit; each points to where it lives.
 | S | **Non-git rollback** | Before an agent-assisted change to state git doesn't cover (DB, hosted config, deploy, external backend): a *snapshot* + a *documented way back* + a *recovery owner*. Generalizes Principle 10's migration case to all out-of-git state; the *before* half of recovery (the runbook's undo step is the *after*). Teaching-only — no new file. | kickoff Principle 10 + Quick Checklist |
 | T | **Tool inventory** | A tier-optional root registry of every tool the agent can reach *outside* the repo (MCP/connectors/APIs): scope · reads · writes · **credential location** · **how to disable**. Distinct axis from the manifest (access-scope, not freshness). Where you look when something has too much access. | [`TOOL_INVENTORY.md`](TOOL_INVENTORY.md) + kickoff §1.3a |
 | U | **Incident runbook** | A tier-optional root `RUNBOOK.md`: the forward, terse when-prevention-fails procedure — contain → revoke/rotate (→T) → identify what was touched → undo/notify (restore from S's snapshot) → safeguard (+ hand off to a retrospective wiki incident page). Self-contained; root-level so a stressed human finds it fast. | [`RUNBOOK.md`](RUNBOOK.md) + kickoff §1.3a |
+| C | **Flight recorder** | The safety net's *second feed*: post-mortem a bad or **expensive** *run* (via the **run record** — the session transcript of what the agent did, distinct from `HARNESS_LOG.md`'s change-journal use of "flight recorder") into a safety-net artifact — a regression grep, a `CLAUDE.md` line, a wiki incident page, or a behavioral eval case. Teaching-only; the routine cousin of the acute incident runbook (U). Graduates to Langfuse/LangSmith/OTel at scale. | kickoff §1.6 (the safety net's two feeds) |
 
 ## Roadmap items — planned
 
@@ -139,7 +140,6 @@ Names locked; definitions use the vocabulary above. Build state and detail live 
 
 | Item | Name | One-line definition |
 |---|---|---|
-| C | **Flight recorder** | A durable record of what an agent did during a run, so you can inspect *why* it went wrong or got expensive. |
 | D | **Cross-project memory** | A queryable knowledge layer for when per-project markdown files stop scaling across many projects. |
 | I | **Baseline for fuzzy output** | The tolerance/rubric version of the baseline check, for output that isn't exactly reproducible. |
 | F | **Untrusted-content rule** | Fetched/tool content is *data, not instruction* (the sandbox limits damage, not the hijack). |

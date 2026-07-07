@@ -57,6 +57,49 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Flight recorder (C): the safety net's second feed
+
+- **Change.** Built item **C** (teaching-only, like S — no new file). C **reframes the safety-net doctrine
+  that already lives in §1.6** rather than adding a verifier: its existing bullets grow the net from **fixed
+  code bugs (feed one)**; C adds **feed two — bad or *expensive* runs** (looped an hour, wandered, produced
+  slop, cost 5×, with no code bug at all). Two moves: keep the run legible (retain the **run record** — the
+  session transcript — + app logs the agent can read) and post-mortem the bad/expensive ones into an
+  artifact that feeds the *whole* net: a regression grep, a `CLAUDE.md` line, a wiki incident page, or —
+  sharpest, for a *judgment* failure — a **behavioral eval case** (item A). A repo-side two-source note went
+  into the audit's `REGRESSION GUARDS` comment; a Quick-Checklist line; a graduation pointer
+  (Langfuse/LangSmith/OTel GenAI traces — a maturity trigger, not a build, same humility as D).
+- **Rationale (the bet).** The safety net had one input — fixed code bugs. But the most expensive agent
+  failures often aren't bugs (a run that looped, took a bad path, or ran up a bill), and that signal
+  evaporated when the session closed. C makes those runs legible and turns them into checks — the same
+  learning loop, aimed at *runs* instead of *code*. The frontier beat: a bad *judgment* run becomes a
+  behavioral eval, landing C's output in the evals artifact, not just a grep.
+- **Terminology collision (resolved, not deepened).** "Flight recorder" was already entrenched for
+  `HARNESS_LOG.md` (the *harness-change* journal — see this file's own header). Shipping a second "flight
+  recorder" for agent runs would have re-created the exact self-contradiction class this session kept closing.
+  Fix: the **item keeps the "Flight recorder" label** (ROADMAP/glossary), but the **kickoff prose leads with
+  "run record"** (raw observation of what the agent *did*) and disambiguates at *both* entries — the
+  HARNESS_LOG line now says "flight recorder **of harness changes**… distinct from a run record (item C)."
+- **C vs U — kept distinct.** They share an input (the transcript) and outputs (a wiki incident page, a
+  guard), so precision mattered: **U (`RUNBOOK.md`) is the *acute* live-incident drill; C is the *routine*
+  learn-from-any-bad-run habit** (most bad runs aren't emergencies). C reuses the wiki incident-page shape —
+  ships no post-mortem template.
+- **Doctrine-twin sweep (the recurring blind spot, guarded).** C reframes "the safety net grows from fixed
+  bugs" into two feeds — the same class as E's routing sweep. Swept `safety net`/`every bug`/`fixed bug
+  leaves` across the kit and added a one-clause "…or a post-mortemed bad run" where a statement implied
+  bugs-only: the glossary *safeguard* definition, the README's "strand per fix," and Principle 2's bug-trail.
+- **What it replaced.** Net-additive doctrine. The §1.6 safety-net bullets are now explicitly *feed one*, with
+  C as *feed two* (not replaced — reframed).
+- **Shelf-life/risk class.** **Appreciating** — as agents run longer-horizon and more autonomously, the value
+  of turning bad/expensive runs into checks grows. Docs-only; zero blast radius.
+- **Related ROADMAP item.** **C**. Frontier partner of **U** (the transcript is what U reads mid-incident);
+  feeds **A** (a bad judgment run → an eval); the *expensive* half ties to **B**'s scorecard (tokens/$).
+- **Commit.** *(uncommitted at time of writing — on branch `feat/C-flight-recorder`; stamp on merge.)*
+- **Signal to watch.** A project keeping transcripts but never post-morteming them → the second feed is
+  "available but unused" (item D's rotting-artifact failure mode); the habit, not the record, is the value.
+- **Retrospect.** *(pending — revisit once a project has turned a real bad run into a check.)*
+
+---
+
 ## 2026-07-06 — The recovery layer: non-git rollback (S) + tool inventory (T) + incident runbook (U)
 
 - **Change.** Built S, T, U together as one **recovery layer** — the kit's answer to "what happens when
