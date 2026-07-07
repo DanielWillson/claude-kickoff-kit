@@ -687,6 +687,25 @@ if [ -f "$ROOT/README.md" ] && git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&
     fi
 fi
 
+# HARNESS_LOG.md version stamp (§9.3). Item Y (kit-update proposals) diffs the current kit against
+# the adopted version recorded in this file's FIRST entry. If that stamp is left as the seeded
+# placeholder, Y has nothing to diff against and silently no-ops — a plausible outcome for an
+# unenforced TODO, which is why it's checked here. WARN while the placeholders survive; go quiet once
+# filled. Tier-aware: no HARNESS_LOG yet → a `·` (the log is optional, and is excluded from the
+# scaffolding rosters BY DESIGN — see GIT HYGIENE above). Structural only, like the README anchor.
+if [ -f "$ROOT/HARNESS_LOG.md" ]; then
+    # Match ONLY <kit-version>/<commit-sha>: these live solely in the version-stamp entry, whereas
+    # <YYYY-MM-DD> ALSO appears in the shipped "copy me for your next entry" comment block the template
+    # tells you to keep — so keying on the date token would false-WARN on every compliant project.
+    if grep -qE '<(kit-version|commit-sha)>' "$ROOT/HARNESS_LOG.md" 2>/dev/null; then
+        warn "HARNESS_LOG.md still has an UNFILLED version stamp (<kit-version>/<commit-sha>) — item Y has nothing to diff against until you replace them with the adopted kit's version/commit (kickoff §1.6a)"
+    else
+        pass "HARNESS_LOG.md version stamp filled — item Y can compute the kit delta"
+    fi
+else
+    echo "  ·  no HARNESS_LOG.md — the harness change-log + version stamp is optional (seed it from the kit for cross-repo learning + kit-update proposals; kickoff §1.6a)"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════
 section "BEHAVIORAL EVALS (the judgment verifier — see kickoff §1.6b)"
 # Behavioral evals are saved tests for the agent's JUDGMENT (not the code): a task prompt +

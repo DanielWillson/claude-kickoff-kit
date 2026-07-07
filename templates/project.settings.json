@@ -11,10 +11,12 @@
     ],
     "deny": [
       "Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)",
+      "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(~/.npmrc)", "Read(**/*.pem)", "Read(**/*.token)",
       "Write(./.env)", "Write(./.env.*)", "Write(./secrets/**)",
       "Edit(./.env)", "Edit(./.env.*)", "Edit(./secrets/**)",
       "Edit(.claude/settings.json)", "Write(.claude/settings.json)",
-      "Edit(hooks/**)", "Write(hooks/**)"
+      "Edit(hooks/**)", "Write(hooks/**)",
+      "mcp__*"
     ]
   },
   "sandbox": {

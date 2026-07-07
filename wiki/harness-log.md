@@ -57,6 +57,69 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Close the §9.2 security-template gaps + §9.3 process gaps (Fable review tail)
+
+- **Change.** Closed all seven remaining items from the 2026-07-06 Fable multi-lens review — the five §9.2
+  security-template gaps and the two §9.3 process gaps — plus corrected the stale ROADMAP §1 table (marked
+  **R/V/G** built, which they already were in the glossary). Seven fixes, one batch:
+  - **§9.2.1 verify-floor.** `scripts/kit-conformance.sh` now *reads the managed floor's content* when the file
+    is readable (it is typically world-readable) instead of an unconditional SKIP: strict-JSON-loads it, then
+    confirms three critical keys present (`disableBypassPermissionsMode` + a machine-credential `Read(...)` deny
+    + `sandbox`). Content-present is evidence; **absence still SKIPs** (SKIPPED ≠ PASS holds — the PASS comes
+    from reading keys, not inferring from a missing file). Added a `CONFORMANCE_MANAGED_FILE` test seam (mirrors
+    the audit's `AUDIT_SKIP_*`) so the four outcomes are provable without root.
+  - **§9.2.2 machine-cred denies.** Backported `Read(~/.ssh/**)`, `Read(~/.aws/**)`, `Read(~/.npmrc)`,
+    `Read(**/*.pem)`, `Read(**/*.token)` into `templates/project.settings.json` — belt-and-suspenders with the
+    managed floor, so a machine that never installed the floor still can't read them (the kit's own
+    `.claude/settings.json` already carried these; the shipped template didn't).
+  - **§9.2.3 MCP + web gating.** Added `mcp__*` to the template `deny` (the documented "deny every MCP tool"
+    form — verified against the live permissions doc). Web gating + the MCP *re-enable* mechanism are taught in
+    `templates/README.md` — critically, that a `deny` is **absolute** (can't be re-enabled with an `allow`; you
+    remove the deny), and that `WebFetch` is **allowlisted by domain**, not bare-denied.
+  - **§9.2.4 CI audit workflow.** New `templates/ci-audit.yml` starter → copy to `.github/workflows/audit.yml`.
+    Runs `scripts/audit.sh`; gates on `RESULT: FAIL` only (WARNs surfaced, not fatal — a lean repo isn't red on
+    day one; flip to strict = bare `bash scripts/audit.sh`); least-privilege `contents: read`; `actions/checkout`
+    **SHA-pinned** to `34e114876b0b11c390a56381ad16ebd13914f8d5` (v4.3.1, dereferenced via `gh api`, not trusted
+    from prose). Also catches a crashed audit (no RESULT line → fail).
+  - **§9.2.5 docker escalation guard.** `templates/managed-settings.template.json` `ask`-gates
+    `docker run --privileged` and docker-socket bind-mounts (`-v`/`--volume`/`--mount` of `/var/run/docker.sock`),
+    including the mid-position `docker run * --privileged*` form. Documented honestly as a **best-effort backstop,
+    not a boundary** (docker is in `excludedCommands` → runs unsandboxed; Bash arg-matching is evadable).
+  - **§9.3.1 HARNESS_LOG placeholder check.** `claude-audit-base.sh` DOCUMENTATION section WARNs if a project's
+    `HARNESS_LOG.md` still carries the unfilled version stamp. Keys on **`<kit-version>`/`<commit-sha>` only** —
+    NOT `<YYYY-MM-DD>`, which also lives in the shipped "copy me" comment block projects are told to keep (a
+    first-pass whole-file match on the date token false-WARNed on every compliant repo; caught in review, refixtured
+    against the real shipped template). Item **Y** has nothing to diff against until it's real. Filled → PASS;
+    absent → optional `·`.
+  - **§9.3.2 prompts/ hygiene.** Gitignored `prompts/` as local build scaffolding (untracked, one-time sources
+    — the kit's own "outputs persist, sources don't" rule). Non-destructive; delete/track remain maintainer
+    options. Durable per-item content already lives in the ROADMAP write-ups.
+- **Rationale (the bet).** Every one of these was the same defect class the review kept finding: *the kit
+  teaching X while shipping not-X* (a managed floor with no verification, a settings template weaker than the
+  kit's own, MCP/web named as Bash-risk but ungated, CI argued-for but never shipped). Closing the gap between
+  the teaching and the artifact is what makes the kit's "prove it bites" promise true of the kit itself.
+- **What it replaced.** An unconditional managed-floor SKIP; a template deny-list missing machine creds + MCP;
+  no CI template; no docker escalation gate; no version-stamp enforcement. All net-additive except the verify-
+  floor block (SKIP → content check) and the ROADMAP table markers.
+- **Shelf-life/risk class.** **Permanent** for the credential/verification hardening (their force is a property
+  of the trust model, not the model's ability); **depreciating** only the MCP-deny + docker rules, which track
+  Claude Code's evolving surface (JSONC #17968, docker sandbox semantics) — re-audit at CC upgrades (item J/Y).
+- **Related ROADMAP item.** §9.2 (all five) + §9.3 (both) + the §1 table fix for R/V/G. Verifiers touched:
+  `kit-conformance.sh`, `claude-audit-base.sh`. Templates touched: `project.settings.json`,
+  `managed-settings.template.json`, new `ci-audit.yml`, `README.md`.
+- **Commit.** *(uncommitted at time of writing — on branch `fix/9.2-9.3-security-and-hygiene`; stamp on merge.)*
+- **Signal to watch.** (1) A floored machine reporting the managed-floor row as SKIP when `/status` shows the
+  source resolves to managed → the OS path list or readability guard missed it. (2) Any adopter surprised that
+  MCP is off by default → the README re-enable teaching wasn't found. (3) `ci-audit.yml` going red on a healthy
+  repo → the FAIL-only gate regressed to gating on WARN.
+- **Verification.** verify-floor: four fixtures (complete→PASS, missing-keys→WARN, `//`-comment→WARN,
+  absent→SKIP) via the test seam. HARNESS_LOG check: three fixtures (placeholder→WARN, filled→PASS, absent→`·`)
+  through a seeded `scripts/audit.sh`. Both settings templates + `ci-audit.yml` parse (strict `json.load` /
+  `yaml.safe_load`). Kit selftest green (bash -n sweep clean; eval-runner 9/9 PASS).
+- **Retrospect.** *(pending — revisit after the first project adopts the hardened templates + runs the CI gate.)*
+
+---
+
 ## 2026-07-06 — kit-conformance: resolve CLAUDE.md **or** AGENTS.md before gating (defect §9.1 item O)
 
 - **Change.** Fixed the §9.1-item-O defect in `scripts/kit-conformance.sh` (the adoption verifier). **Bug:**

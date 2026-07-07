@@ -18,7 +18,10 @@
       "Bash(git push --force*)", "Bash(git push -f*)", "Bash(git push * --force*)", "Bash(git push * -f*)",
       "Bash(git push --force-with-lease*)", "Bash(git push * --force-with-lease*)",
       "Bash(git push * --delete*)", "Bash(git branch -D*)",
-      "Bash(terraform apply*)", "Bash(terraform destroy*)", "Bash(gcloud * delete*)", "Bash(gcloud * remove*)"
+      "Bash(terraform apply*)", "Bash(terraform destroy*)", "Bash(gcloud * delete*)", "Bash(gcloud * remove*)",
+      "Bash(docker run --privileged*)", "Bash(docker run * --privileged*)",
+      "Bash(docker run * -v /var/run/docker.sock*)", "Bash(docker run * --volume /var/run/docker.sock*)",
+      "Bash(docker run * --mount*/var/run/docker.sock*)"
     ]
   },
   "sandbox": {

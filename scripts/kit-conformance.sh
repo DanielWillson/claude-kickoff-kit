@@ -209,13 +209,39 @@ else
     fail "no .claude/settings.json at target — the per-repo floor (secret-read denies, push gate, Stop hook) is unadopted (kickoff §1.3)"
 fi
 
-# Managed floor: a root-owned OS file OUTSIDE the repo — not portably readable. Loud SKIP, always
-# (SKIPPED ≠ PASS — item G). A trivial best-effort peek at the macOS path, but SKIP either way.
-MANAGED_MACOS="/Library/Application Support/ClaudeCode/managed-settings.json"
-if [ -f "$MANAGED_MACOS" ]; then
-    skip "managed floor: found the macOS file (best-effort) — still CONFIRM it RESOLVES via '/status' (source = \"managed\") + 'claude doctor' (Part 0)"
+# Managed floor: a root-owned OS file OUTSIDE the repo. The kit's ONLY source of hard guarantees
+# (Part 0), and installing it is a manual, un-nagged step — so if nothing ever reads it, a machine
+# that SKIPPED the install looks identical to one that did it. The file is typically world-readable
+# (mode 0644), so WHEN WE CAN READ IT we verify its CONTENT: checking that critical keys are PRESENT
+# is different from inferring the floor from a file's absence, so a content PASS here does NOT violate
+# SKIPPED ≠ PASS (§9.2). Can't read/find it → loud SKIP, as before.
+MANAGED_FILE=""
+if [ -n "${CONFORMANCE_MANAGED_FILE:-}" ]; then
+    MANAGED_FILE="$CONFORMANCE_MANAGED_FILE"   # test seam (mirrors the audit's AUDIT_SKIP_*): aim the check at a fixture, no root needed
 else
-    skip "managed floor: not verifiable from the repo — confirm with '/status' (source resolves to \"managed\") + 'claude doctor' (Part 0). SKIPPED ≠ PASS"
+    for m in "/Library/Application Support/ClaudeCode/managed-settings.json" \
+             "/etc/claude-code/managed-settings.json"; do
+        [ -f "$m" ] && { MANAGED_FILE="$m"; break; }
+    done
+fi
+if [ -n "$MANAGED_FILE" ] && [ -r "$MANAGED_FILE" ]; then
+    settings_loadable "$MANAGED_FILE"; ml=$?
+    if [ "$ml" -eq 1 ]; then
+        warn "managed floor at $MANAGED_FILE is present but NOT strict JSON — Claude Code SILENTLY DROPS the whole file, so the hard floor is inert (a // comment? §9.1) — fix the JSON, then re-run 'claude doctor'"
+    else
+        # A real floor carries all three: bypass disabled, a machine-credential READ deny, the OS sandbox.
+        mf_missing=""
+        grep -q '"disableBypassPermissionsMode"' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing bypass-disable"
+        grep -qE '"Read\((~/\.ssh|~/\.aws|\*\*/\.env)' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing credential-read-deny"
+        grep -q '"sandbox"' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing sandbox"
+        if [ -z "$mf_missing" ]; then
+            pass "managed floor CONTENT verified at $MANAGED_FILE — bypass-disable + credential read-deny + OS sandbox all present (still confirm it RESOLVES: '/status' source = \"managed\", 'claude doctor'; Part 0)"
+        else
+            warn "managed floor file found at $MANAGED_FILE but MISSING critical key(s):${mf_missing} — the hard floor may be incomplete; diff it against templates/managed-settings.template.json (Part 0)"
+        fi
+    fi
+else
+    skip "managed floor: not readable from here — confirm with '/status' (source resolves to \"managed\") + 'claude doctor' (Part 0). SKIPPED ≠ PASS"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════

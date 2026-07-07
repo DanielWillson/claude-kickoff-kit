@@ -31,9 +31,9 @@ ours) vs *Hygiene/Catch-up* (the field already knows this; do it because it's lo
 | **O** | Self-verifying **adoption check + fan-out verifier** | **Highest** | Frontier/Unique · ✅ **Built (2026-07-06)** |
 | **A** | **Behavioral evals** as a first-class `evals/` artifact (incl. non-code workflows) | **Highest** | Frontier/Unique |
 | **B** | **Harness scorecard** (generalize the wiki `metrics` shape) | **High** | Frontier/Unique |
-| **R** | **Action-risk tiers** — gate agent actions by reversibility × reach | **High** | Frontier/Unique · *new* |
-| **V** | **Name the reviewer** — make the human review/steer dimension explicit | **High** | Frontier/Unique · *new* |
-| **G** | **Dependency-vulnerability scan** + stronger secret scan in `audit.sh` | **High** | Hygiene |
+| **R** | **Action-risk tiers** — gate agent actions by reversibility × reach | **High** | Frontier/Unique · *new* · ✅ **Built (2026-07-04)** |
+| **V** | **Name the reviewer** — make the human review/steer dimension explicit | **High** | Frontier/Unique · *new* · ✅ **Built (2026-07-06)** |
+| **G** | **Dependency-vulnerability scan** + stronger secret scan in `audit.sh` | **High** | Hygiene · ✅ **Built (2026-07-06)** |
 | **C** | **Flight recorder** → feed the safety net from bad transcripts | Med–High | Frontier-ish |
 | **S** | **Rollback/recovery for non-git state** (DB, hosted config, deploy, external backend) | Med–High | Hygiene · *new* |
 | **E** | **Spec-as-source** (living spec) | Medium | Frontier |
@@ -463,8 +463,11 @@ each reproduced then fixed, guarded by a committed `evals-template/eval-runner.s
 kit's first CI (`.github/workflows/selftest.yml`, ubuntu + macOS) — (details in §9.1 and `wiki/harness-log.md`). **Metrics inflation (§9.1 B) — ✅ closed 2026-07-06:** the audit-check count dropped 77 → 59 on
 `claude-audit-base.sh` by stripping full-line comments before the grep, plus a new free eval-fixture metric
 (details in §9.1 and `wiki/harness-log.md`). **`AGENTS.md` fallback (§9.1 O #4) — ✅ closed 2026-07-06:**
-the kit verifiers resolve `CLAUDE.md` OR `AGENTS.md` before gating (merged as #13). **Still open:**
-the §9.2 security-template gaps and the §9.3 process gaps.
+the kit verifiers resolve `CLAUDE.md` OR `AGENTS.md` before gating (merged as #13). **§9.2 security-template
+gaps (all five) + §9.3 process gaps (both) — ✅ closed 2026-07-06:** verify-floor content check, machine-cred
+denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-escalation `ask` guard, the
+`HARNESS_LOG.md` version-stamp check, and `prompts/` gitignored (details in §9.2/§9.3 and `wiki/harness-log.md`).
+**The full 2026-07-06 defect sweep (§9.1 + §9.2 + §9.3) is now closed.**
 
 1. ✅ **Fowler fix + README citations** (Q, P) — done in README (2026-07-03); Q propagated across
    the rest of the kit (2026-07-06).
@@ -662,6 +665,13 @@ a gap between what the kit teaches and what it ships.
   happen. **Fix:** a small `verify-floor` check that reads the (typically world-readable) managed
   file's *content* and confirms its critical keys are present — checking content is different from
   inferring from absence, so this doesn't violate `SKIPPED ≠ PASS`.
+  **✅ Fixed 2026-07-06 — proven on fixtures.** `scripts/kit-conformance.sh`'s managed-floor row now reads the
+  file when it's readable (macOS **and** `/etc/claude-code` paths): strict-JSON-loads it (a `//` comment → WARN
+  "silently dropped", not a false pass), then confirms three critical keys present — `disableBypassPermissionsMode`,
+  a machine-credential `Read(...)` deny, and `sandbox`. **PASS comes from reading keys, never from a file's
+  absence**, so `SKIPPED ≠ PASS` holds: complete→PASS, missing-keys→WARN (names the gaps), unloadable→WARN,
+  absent/unreadable→loud SKIP — all four proven via a new `CONFORMANCE_MANAGED_FILE` test seam (mirrors
+  `AUDIT_SKIP_*`, so it's testable without root).
 - **`templates/project.settings.json` ships weaker credential protection than the kit's own
   dogfooded settings.** The template's deny list covers only in-project paths with the comment
   "machine creds are already denied in the managed floor" (lines 28-31) — but the kit's own
@@ -670,19 +680,41 @@ a gap between what the kit teaches and what it ships.
   belt-and-suspenders duplication the guide argues for elsewhere. **Fix:** backport those lines
   into the template — two lines, materially shrinks the blast radius of the point above for anyone
   who never installs the managed floor.
+  **✅ Fixed 2026-07-06.** `templates/project.settings.json`'s `deny` now carries `Read(~/.ssh/**)`,
+  `Read(~/.aws/**)`, `Read(~/.npmrc)`, `Read(**/*.pem)`, `Read(**/*.token)` — the same machine-credential reads
+  the kit's own dogfooded settings deny. Strict-JSON validity re-proven (`json.load`) after the edit.
 - **No template gates MCP servers or `WebFetch` domains by default**, despite three separate kit
   docs correctly naming MCP and the native web tools as unsandboxed, un-audited surfaces
   equivalent in risk to Bash (`claude-project-kickoff.md:502-506`). **Fix:** a repo-neutral
   "deny `mcp__*` by default, allowlist per trusted server" line in `templates/project.settings.json`.
+  **✅ Fixed 2026-07-06 — syntax verified against the live permissions doc.** `templates/project.settings.json`
+  `deny` now includes `mcp__*` (confirmed the *exact* documented "denies every MCP tool" form at
+  code.claude.com/docs/en/permissions — not guessed). The re-enable + web mechanics are taught in
+  `templates/README.md`, and the teaching is **mechanically correct**: a `deny` is absolute (outranks `allow` at
+  every scope, no exceptions), so a server is re-enabled by *removing* the deny, **not** by adding an allow;
+  `WebFetch` is gated by domain-**allowlist** (`WebFetch(domain:…)`), since a bare `WebFetch` deny removes the
+  tool and can't carry per-domain exceptions — with managed `sandbox.network.allowManagedDomainsOnly` named as
+  the hard web lock.
 - **No CI workflow template**, despite `claude-audit-base.sh`'s own comment (lines 304-307) arguing
   CI enforcement of the audit is strictly superior to the client-side pre-commit hook the kit *does*
   ship wiring for. **Fix:** a minimal `.github/workflows/audit.yml`-equivalent starter, least-
   privilege token + SHA-pinned actions per the kit's own §1.3b guidance.
+  **✅ Fixed 2026-07-06 — YAML-validated.** New `templates/ci-audit.yml` (copy → `.github/workflows/audit.yml`)
+  runs `scripts/audit.sh` on push/PR. `permissions: contents: read`; `actions/checkout` pinned to full SHA
+  `34e114876b0b11c390a56381ad16ebd13914f8d5` (v4.3.1, dereferenced via `gh api` — not trusted from a prose
+  summary, per Lesson 7). Gates on `RESULT: FAIL` only (WARNs surfaced, not fatal — a lean adopter isn't red on
+  day one; documented one-line flip to strict), and treats a crashed audit (no RESULT line) as failure.
+  Shipped as a *template*, not placed in the kit's own `.github/workflows/` (which has no `scripts/audit.sh`).
 - **`managed-settings.template.json`'s `docker *` sandbox exclusion has no companion guard against
   privilege-escalating flags** — a `docker run --privileged` or a docker-socket bind-mount is a
   well-known one-command host-root escape, and Anthropic's own sandboxing docs flag this exact risk.
   **Fix:** an `ask` rule on `docker run --privileged*` / `-v /var/run/docker.sock*` alongside the
   existing exclusion.
+  **✅ Fixed 2026-07-06.** `templates/managed-settings.template.json` `ask` now covers `docker run --privileged`
+  (leading and mid-position forms) and docker-socket mounts (`-v` / `--volume` / `--mount` of
+  `/var/run/docker.sock`). Framed honestly in `templates/README.md` as a **best-effort backstop, not a boundary**
+  — `docker *` is in `excludedCommands` (runs unsandboxed), so the `ask` is the only gate and Bash arg-matching
+  is evadable; the real boundary is not running untrusted `docker`. Strict-JSON re-validated after the edit.
 
 ### 9.3 Process / hygiene gaps
 
@@ -694,6 +726,14 @@ a gap between what the kit teaches and what it ships.
   unenforced TODO — **Y** silently has nothing to diff against and nothing in the kit would ever
   flag it. **Fix:** a one-line check (in the audit or conformance script) that WARNs if the anchor
   entry's header still contains literal `<` characters.
+  **✅ Fixed 2026-07-06 — proven on a *representative* fixture.** `claude-audit-base.sh`'s DOCUMENTATION section
+  WARNs when a project's `HARNESS_LOG.md` still carries an unfilled stamp. It keys on **`<kit-version>` /
+  `<commit-sha>` only** — deliberately *not* `<YYYY-MM-DD>`, which also appears in the shipped "copy me for your
+  next entry" comment block the template tells projects to keep; matching the date token would false-WARN on
+  every compliant project (a first-pass version did — caught in review, fixture B had been an unrepresentative
+  hand-written file). Filled → PASS; absent → optional `·`. A *new roster row*, orthogonal to the GIT-HYGIENE
+  "don't commit sources" clause the file is excluded from. Proven against the **actual shipped template**: verbatim
+  (unfilled stamp + copy-block) → WARN; stamp filled with the copy-block *retained* → PASS; absent → `·`.
 - **The `prompts/` directory (the build specs behind items O/R/V/X) is untracked, unreferenced,
   and already stale.** `git status` shows it untracked; README/ROADMAP/glossary/wiki have zero
   references to `prompts/` anywhere; two of its files (`build-R`, `build-V`, both dated
@@ -703,3 +743,10 @@ a gap between what the kit teaches and what it ships.
   analogous to item **H**, applied to itself. **Fix:** either track it with a short index +
   the same anchor-check discipline as **H**, or fold each prompt's durable content into this
   ROADMAP's item write-ups and delete the directory — undecided; the maintainer's call.
+  **✅ Resolved 2026-07-06 — gitignored (a third, non-destructive option).** `prompts/` is now in `.gitignore`
+  as **local maintainer build scaffolding**: one-time *sources*, not shipped artifacts, kept on disk but out of
+  the repo — consistent with the kit's own "outputs persist, sources don't" rule (the `claude-audit-base.sh`
+  GIT-HYGIENE clause that WARNs when kit sources are committed). This removes the untracked-noise + no-rot-check
+  problem without deleting files the kit didn't author (each item's durable content already lives in this
+  ROADMAP's write-ups). **Reversible maintainer call:** delete outright, or track-with-index + item-H anchor
+  discipline, remain available if preferred.

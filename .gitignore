@@ -9,3 +9,9 @@
 
 # Claude Code per-machine local settings (never commit)
 .claude/settings.local.json
+
+# Maintainer build scaffolding for the kit's own items (build-*/fix-* specs). One-time
+# sources, not shipped artifacts — kept locally, out of the repo, per the kit's own
+# "outputs persist, sources don't" rule (claude-audit-base.sh GIT HYGIENE). Durable
+# per-item content lives in ROADMAP.md; see §9.3. (Delete or track instead if preferred.)
+prompts/
