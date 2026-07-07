@@ -98,7 +98,10 @@ for f in "$EVAL_DIR"/*.eval.md; do
         if [ "$candidate" = "$expected" ]; then
             epass "$name  [golden]"
         else
-            efail "$name  [golden]  expected «$expected»  got «$candidate»"
+            # brace ${expected}/${candidate}: unbraced, bash's identifier scanner consumes the
+            # `»` lead byte (0xC2) into the var name, so under `set -u` a FAILING golden aborts
+            # the whole run with `unbound variable` instead of printing FAIL (defect §9.1).
+            efail "$name  [golden]  expected «${expected}»  got «${candidate}»"
             [ -s "$errlog" ] && sed 's/^/           stderr: /' "$errlog" | tail -5
         fi
         ;;
@@ -109,8 +112,14 @@ for f in "$EVAL_DIR"/*.eval.md; do
         # clobbered when the judge invocation opens its log for writing.
         candidate=$(printf '%s' "$input" | $EVAL_CMD 2>"$errlog")
         judgelog="$TMP/eval_${name}.judge.err"
-        judge_prompt=$(printf 'You are grading an answer against a checklist. Reply with ONE word on the first line: PASS if the answer satisfies EVERY item, otherwise FAIL. Then optionally one short reason.\n\n--- CHECKLIST ---\n%s\n\n--- ANSWER ---\n%s\n' "$rubric" "$candidate")
-        verdict=$(printf '%s' "$judge_prompt" | $EVAL_JUDGE_CMD 2>"$judgelog" | grep -m1 -oE 'PASS|FAIL' | head -1)
+        # Force a fixed delimiter the judge emits LAST — the prompt string and the extraction
+        # below are one contract, changed together. A free-form judge that reasons before
+        # concluding ("...tempting to PASS..." / "...why it did NOT FAIL...") otherwise flips
+        # the verdict EITHER direction; anchoring to a trailing VERDICT: line removes that.
+        judge_prompt=$(printf 'You are grading an answer against a checklist. You may reason briefly first, but you MUST end your reply with a single line of exactly this form and nothing after it: write "VERDICT: PASS" if the answer satisfies EVERY item, otherwise "VERDICT: FAIL".\n\n--- CHECKLIST ---\n%s\n\n--- ANSWER ---\n%s\n' "$rubric" "$candidate")
+        # take the LAST `VERDICT: PASS|FAIL` line (the delimiter above is emitted last), not the
+        # first PASS|FAIL anywhere in the output. No VERDICT: line → empty → conservative FAIL.
+        verdict=$(printf '%s' "$judge_prompt" | $EVAL_JUDGE_CMD 2>"$judgelog" | grep -oE 'VERDICT:[[:space:]]*(PASS|FAIL)' | tail -1 | grep -oE 'PASS|FAIL')
         if [ "$verdict" = "PASS" ]; then
             epass "$name  [rubric]"
         else

@@ -97,6 +97,14 @@ The `claude -p` default is the kit's first headless-Claude call — **verify it 
 installed Claude Code version** before trusting it (Principle 8). The stub proves the grading
 harness; only a real run proves the invocation.
 
+**Regression self-test (kit-maintainer).** The kit ships `evals-template/eval-runner.selftest.sh`
+— it drives the runner through the `EVAL_*` stub seam above (**no live model**) and asserts the
+runner's *failure* paths behave: a failing golden reports `FAIL` and the suite **continues** instead
+of aborting, and a rubric verdict is read from the judge's trailing `VERDICT:` line so a judge that
+reasons before concluding can't flip it either way. The kit maintains it against its own
+`claude-eval-base.sh` and runs it after any edit to the runner (`bash evals-template/eval-runner.selftest.sh`);
+if you keep an adapted copy in `scripts/eval.sh`, point the same harness at it.
+
 ## The two examples here
 
 - **`cite-changed-file.eval.md`** — *golden.* Shown a diff, does the agent name the exact

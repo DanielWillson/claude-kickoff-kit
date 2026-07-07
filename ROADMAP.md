@@ -457,9 +457,11 @@ rubber-stamped it — the Lesson-7 failure in the wild.
 self-report, prove it bites" promise those items make to every project that adopts them.
 **Settings-validity cluster (§9.1 O#3 + #5) — ✅ closed 2026-07-06:** strict-JSON loadability gates in
 **both** verifiers, comment-free settings templates, and a comment-free command-pattern action-risk join
-(details in §9.1 and `wiki/harness-log.md`). **Still open:** the eval-runner crash + rubric-verdict flip
-(**A**), the metrics inflation (**B**), the `AGENTS.md` fallback (**O #4**), the §9.2 security-template
-gaps, and the §9.3 process gaps.
+(details in §9.1 and `wiki/harness-log.md`). **Eval-runner defects (§9.1 A, both) — ✅ closed 2026-07-06:**
+the golden-fail crash (braced interpolation) and the rubric verdict-flip (trailing-`VERDICT:` extraction),
+each reproduced then fixed, guarded by a committed `evals-template/eval-runner.selftest.sh` — now run in the
+kit's first CI (`.github/workflows/selftest.yml`, ubuntu + macOS) — (details in §9.1 and `wiki/harness-log.md`). **Still open:** the metrics inflation (**B**), the `AGENTS.md` fallback
+(**O #4**), the §9.2 security-template gaps, and the §9.3 process gaps.
 
 1. ✅ **Fowler fix + README citations** (Q, P) — done in README (2026-07-03); Q propagated across
    the rest of the kit (2026-07-06).
@@ -506,6 +508,16 @@ cascades: a golden failure on fixture #1 silently prevents fixtures #2+ from eve
 and the untested path is exactly where the bug lives. **Fix:** quote/brace the interpolation
 (`"${expected}"`) or drop the guillemets; add a fixture that deliberately fails and assert the
 runner reports `FAIL` + continues, before trusting this script again.
+**✅ Fixed 2026-07-06 — reproduced, fixed, proven on fixtures (the annotation this entry said was
+missing).** Braced **both** interpolations to `${expected}` / `${candidate}` (keeping the guillemets),
+making the variable boundary explicit so bash stops folding the `»` lead byte into the name; a scan
+confirmed line 101 was the *only* unbraced-var-before-multibyte site, so this closes the class, not just
+the instance. **Repro→fix:** with `LANG=en_US.UTF-8` and a stub `EVAL_CMD`
+returning a value ≠ `expected`, the pre-fix runner aborted with `expected�: unbound variable` and printed
+no `FAIL`; post-fix the same run prints `✗ FAIL … expected «config/timeout.conf» got «MATCH»` **and
+continues to the next fixture** (a two-fixture suite whose #1 fails now still runs #2 → `✓ PASS`). The
+committed regression guard `evals-template/eval-runner.selftest.sh` encodes exactly that assertion
+(deliberate golden failure → `FAIL` + continuation) and was itself proven to fail if the braces are reverted.
 
 **A — the rubric judge's verdict extraction can flip a correct verdict either direction.**
 Line 113 — `` grep -m1 -oE 'PASS|FAIL' | head -1 `` — scans the **judge's entire output** for the
@@ -518,6 +530,18 @@ verdict: PASS`. This is additive noise on top of the disclosed ~6pp LLM-judge in
 taught honestly elsewhere in the kit) — but this specific failure mode is a harness bug, not
 model noise, and is currently undisclosed. **Fix:** anchor extraction to line 1 of the judge's
 output, or require a fixed delimiter (e.g. `VERDICT: PASS`) the judge must emit last.
+**✅ Fixed 2026-07-06 — reproduced both directions, fixed, proven on fixtures.** Took the delimiter form
+(more robust than a line-1 anchor, which still mis-reads a judge that reasons *before* concluding — the
+exact failure mode). The judge **prompt and the extraction changed as one contract**: the prompt now
+requires a trailing line `VERDICT: PASS`/`VERDICT: FAIL` and nothing after it, and extraction reads the
+**last** such line — `grep -oE 'VERDICT:[[:space:]]*(PASS|FAIL)' | tail -1 | grep -oE 'PASS|FAIL'`. A
+missing delimiter → empty verdict → **conservative FAIL** (`judge verdict: <none>`) — fails safe, never a
+silent pass; a "fall back to scanning the whole output" branch was deliberately *not* added (it would
+reintroduce the bug). **Repro→fix:** stub judges that reason with the opposite keyword before concluding
+graded a bad answer `PASS` and a good answer `FAIL` under the old first-match `grep`; under the new
+extraction (new-protocol stubs emitting `VERDICT:` last) both return the correct verdict. Guarded by
+`evals-template/eval-runner.selftest.sh` (both directions + the safe default), proven to fail if the
+extraction reverts to first-match.
 
 **O — `scripts/kit-conformance.sh` gives a false PASS on a malformed settings floor.**
 The script never validates that `.claude/settings.json` is syntactically loadable JSON — it only

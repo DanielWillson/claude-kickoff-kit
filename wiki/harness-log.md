@@ -57,6 +57,107 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — The kit's first CI: run its own self-tests (eats its own "wire your verifier into CI" cooking)
+
+- **Change.** Added `.github/workflows/selftest.yml` — the kit's **first** CI (there was no `.github/` at
+  all). Matrix `[ubuntu-latest, macos-latest]`, two gates: **(1)** a `bash -n` sweep over every kit shell
+  script; **(2)** the eval-runner regression self-test (`evals-template/eval-runner.selftest.sh`, the §9.1-A
+  guard). This **wires in the document-only guard** the A-fix entry (below) shipped with and flagged for a
+  reviewer to host. No live model — the self-test drives the runner through its stub seam, so CI is
+  deterministic and free.
+- **Rationale (the bet).** Two reasons, both on-doctrine. First, the kit *tells every adopting project* to
+  "wire `scripts/audit.sh` into CI" (`claude-project-kickoff.md` checklist) yet ran **zero** CI on itself — a
+  preach/practice gap; this closes it (the kit "eating its own cooking," same phrase this log uses for the
+  wiki). Second, a regression guard that depends on a human remembering to run it is exactly the *self-report*
+  the kit's §1.4 distrusts; CI makes it *bite* automatically, at PR time, where a re-introduced defect would land.
+- **What it replaced.** Nothing removed — net-new. It supersedes the "run it by hand after editing the runner"
+  status the A guard shipped with (that README nudge stays as the local-edit path; CI is the PR path).
+- **Shelf-life/risk class.** **Appreciating** — a standing self-test grows more valuable as the kit's scripts
+  multiply and as more concurrent sessions touch them — over a **permanent** core (a verifier the maintainer
+  must run belongs in CI, precisely as the kit prescribes to projects). One **depreciating** rationale to flag:
+  the `macos-latest` leg is *load-bearing today* because Bug 1 is unverified on Linux/glibc — if it's ever
+  confirmed to reproduce on Linux too, that leg becomes belt-and-suspenders (keep it regardless).
+- **Related ROADMAP item.** §9.1 item **A** (the guard it runs). Also closes the kit's own "preaches CI, runs
+  none" gap — a §9.3-flavored process fix.
+- **Commit.** *(uncommitted — same review batch as the A fix; stamp the hash when it lands.)*
+- **Design choices worth pointing at.**
+  - **The `macos-latest` leg is not redundant — it's the point.** Bug 1's crash reproduced on macOS bash but is
+    *unverified on Linux/glibc*; on a Linux-only runner the crash may not fire even on reverted code, so the
+    Bug-1 half of the guard would silently no-op. macOS is where a revert bites. (Bug 2 is locale-independent —
+    it guards on any runner.) `fail-fast: false` so both OS signals always show.
+  - **Minimal on purpose.** Two gates only. `bash scripts/kit-conformance.sh` (the kit against itself) is the
+    obvious next gate — left as a documented TODO in the workflow header, not added blind.
+  - **Simple triggers, no path filters (yet).** `push: [main]` + `pull_request`. The auto-commit Stop hook
+    commits WIP *locally* (doesn't push), so GitHub main-push CI fires only on PR merges — not per snapshot —
+    so no filter is needed to keep it quiet. Add `paths:` filters if macOS minutes (10×-metered) ever bite.
+  - **Validated before shipping.** YAML parsed; both CI steps run locally on macOS (sweep → all 5 scripts ok;
+    self-test → 9/9). The ubuntu leg is validated by construction — the *fixed* runner is locale-independent.
+- **Signal to watch.** The first real PR run: does the ubuntu leg pass green (expected) and — the actual test —
+  would the macOS leg *fail* on a Bug-1 revert? Is `kit-conformance.sh`-on-itself worth adding as gate 3? Do
+  macOS Actions minutes become a cost worth a `paths:` filter?
+- **Retrospect.** *(open — revisit after the first few PR runs, or if CI cost/scope needs tuning.)*
+
+---
+
+## 2026-07-06 — Eval-runner fail-paths: braced guillemet diff + trailing-VERDICT judge extraction (defect §9.1 item A)
+
+- **Change.** Fixed the two §9.1-item-A defects in `claude-eval-base.sh` (the behavioral-eval runner) — both
+  living in the runner's *failure* paths, which a happy-path smoke never exercises. **Bug 1:** on line 101 the
+  golden-fail diff message interpolated `«$expected»` / `«$candidate»` unbraced, directly against the `»`
+  guillemet (UTF-8 lead byte `0xC2`); bash's identifier scanner swallowed that byte into the variable name, so
+  under `set -u` a golden that **FAILED** aborted the whole run with `unbound variable` instead of printing
+  `FAIL` — and it cascaded (a failure on fixture #1 silently prevented #2..N from ever running). Fixed by
+  **bracing** `${expected}` / `${candidate}` (keeps the guillemets; a scan confirmed line 101 was the *only*
+  unbraced-var-before-multibyte site, so this closes the class). **Bug 2:** the rubric verdict extraction
+  `grep -m1 -oE 'PASS|FAIL' | head -1` scanned the judge's **entire** output for the first keyword, so a judge
+  that reasons before concluding flipped the verdict **either direction** ("...tempting to PASS..." → wrong
+  PASS on a bad answer; "...why it did NOT FAIL..." → wrong FAIL on a good one). Fixed by changing the judge
+  **prompt and the extraction together**: the prompt now requires a trailing `VERDICT: PASS|FAIL` line, and
+  extraction takes the **last** `VERDICT:` line (no line → empty → conservative FAIL). Left behind a committed
+  **regression self-test** (`evals-template/eval-runner.selftest.sh`) that drives the runner through its own
+  `EVAL_CMD`/`EVAL_JUDGE_CMD` stub seam — **no live model** — and asserts both fail-paths behave.
+- **Rationale (the bet).** This is the kit's own §1.4 discipline turned on a shipped verifier: *prove it bites*.
+  The runner failed at the exact job it exists to do — report a regression — and the ROADMAP's own tell was that
+  A never carried a "proven on fixtures" annotation (H/O/X did), because the golden **FAIL** path was, by all
+  evidence, never run before shipping. The bet: fix both, and leave a self-test that *deliberately fails a golden
+  and drives a reasoning-first judge*, so the untested path is now the tested path and neither bug can silently
+  return. Both bugs were **reproduced first** (crash + both flip directions), then the fixes proven, then the
+  self-test proven to **fail on a revert** of either fix — not merely pass on green.
+- **What it replaced.** The unbraced interpolation; the first-match `grep -m1 … | head -1` extraction; and the
+  judge's old "reply with ONE word on the first line" contract (a free-form judge silently violated it). Nothing
+  else in the runner changed — the `epass`/`efail` helpers, builder/judge split, and per-stream `2>` logging are
+  untouched.
+- **Shelf-life/risk class.** **Permanent** on Bug 1 (bash's identifier scan × `set -u` × UTF-8 is a language
+  property, not a model fact) and largely permanent on Bug 2 (a fixed delimiter emitted last is robust to *any*
+  judge model; the failure mode it removes is a harness bug, distinct from the honestly-disclosed ~6pp LLM-judge
+  noise). Mild **depreciating** edge: as judge models get better at following "emit VERDICT: last," the
+  conservative-FAIL-on-missing-delimiter path fires less — but the delimiter is strictly safer, so keep it.
+- **Related ROADMAP item.** §9.1 item **A** (both "A —" entries). A fix to shipped "Built" work, not a new
+  lettered item. Same defect class as the settings fix below (a gap between what the kit teaches and what it ships).
+- **Commit.** *(uncommitted at time of writing — the fix, the self-test, and this entry are left for review per
+  the fix-A prompt; stamp the hash here when it lands.)*
+- **Design choices worth pointing at.**
+  - **Braced, didn't drop the guillemets.** Smallest change that makes the variable boundary explicit on *both*
+    vars while preserving the file's `«…»` aesthetic (the advisor's steer).
+  - **Delimiter form over a line-1 anchor.** Anchoring to line 1 still mis-reads a judge that reasons *before*
+    concluding — the exact failure mode. A trailing `VERDICT:` + last-match is robust to reasoning on either
+    side. Prompt and extraction are **one contract**; a "fall back to scanning the whole output" branch was
+    deliberately *not* added — it would reintroduce the bug.
+  - **Fails safe, never silent-pass.** A judge that ignores the protocol yields an empty verdict → `FAIL` with
+    `judge verdict: <none>`, proven in the self-test.
+  - **The guard is document-only for now.** It exits 0/1 (trivially CI-wireable) and the README says to run it
+    after touching the runner — but nothing runs it automatically: `kit-conformance.sh` is roster-only *by
+    contract* ("NEVER executed here") and `claude-audit-base.sh` is a per-project template, so neither is the
+    right host. Flagged for the reviewer to optionally wire into a future kit CI.
+- **Signal to watch.** (1) Does the self-test actually get *run* on runner edits, given it's document-only?
+  (2) Do real judge models reliably emit the trailing `VERDICT:` line, or do some ignore it and hit the
+  conservative FAIL (a false-FAIL risk to watch when the judge model changes — extends item J's "re-verify after
+  a judge change")? (3) Bug 1 is verified on macOS bash 3.2.57 + Homebrew 5.3.15 under `LANG=en_US.UTF-8`, *not*
+  on Linux/glibc — the fix is correct everywhere, but the crash's reach is unconfirmed there.
+- **Retrospect.** *(open — revisit when the runner is next edited, or at a judge-model change.)*
+
+---
+
 ## 2026-07-06 — Settings are strict JSON: comment-free templates + command-pattern action-risk join (defect §9.1)
 
 - **Change.** Fixed a kit-wide, *silent* security defect (ROADMAP §9.1 #5, expanded far beyond how the

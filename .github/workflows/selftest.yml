@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# The kit's OWN CI. It finally runs on itself the rule it prescribes to every
+# adopting project — "wire your verifier into CI" (claude-project-kickoff.md
+# checklist) — which the kit had never done for its own scripts. Two gates:
+#   1. a `bash -n` sweep over every kit shell script (a syntax break fails the build);
+#   2. the eval-runner regression self-test — the standing guard for the two
+#      §9.1-item-A defects (evals-template/eval-runner.selftest.sh). No live model:
+#      it drives the runner through its EVAL_CMD/EVAL_JUDGE_CMD stub seam, so it is
+#      deterministic and free.
+#
+# WHY THE macos-latest LEG IS LOAD-BEARING, not redundant with ubuntu: item A's Bug 1
+# (a FAILING golden aborting under `set -u` because the `»` guillemet's 0xC2 lead byte
+# folds into an unbraced var name) reproduced on macOS bash but is UNVERIFIED on
+# Linux/glibc. On a Linux-only runner the crash may not fire even on reverted code, so
+# the Bug-1 half of the guard would silently no-op — macOS is where a revert actually
+# bites. (Bug 2, the verdict-flip, is locale-independent and guards on any runner.)
+#
+# Room to grow: add `bash scripts/kit-conformance.sh` (the kit checked against itself)
+# as a third gate when that's wanted.
+# ─────────────────────────────────────────────────────────────────────────────
+name: kit-selftest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: self-test
+    strategy:
+      fail-fast: false          # if one OS fails, still run the other — we want both signals
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash version (recorded for context)
+        run: bash --version | head -1
+
+      - name: Syntax sweep — bash -n over every kit shell script
+        shell: bash
+        run: |
+          set -uo pipefail
+          rc=0
+          while IFS= read -r f; do
+            if bash -n "$f"; then echo "  ok    $f"; else echo "  FAIL  $f"; rc=1; fi
+          done < <(find . -name '*.sh' -not -path './.git/*')
+          exit $rc
+
+      - name: Eval-runner regression self-test (§9.1 item A guard)
+        shell: bash
+        run: bash evals-template/eval-runner.selftest.sh
