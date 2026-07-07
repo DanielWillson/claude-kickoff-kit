@@ -779,7 +779,7 @@ the *same set* you put in `denyWrite` §1.3; they belong in both places).
 
 ## How we build here (the short version — distilled from the Harness Kit)
 - **Simple over easy** — un-braid concepts, make each decision in one place, name the trade-offs.
-- **Small, logical commits; branch first, never commit straight to `main`** — push is a separate, explicit gate.
+- **Small, logical commits; branch first once anyone else shares the repo — committing to `main` solo (with the auto-commit net) is fine** — push is a separate, explicit gate.
 - **Derive computed values in the API/service layer, not the client** — computed once, consistent everywhere.
 - **Tokenize the UI** — named tokens + composed primitives; no raw colours/spacing in markup.
 - **When stuck, instrument — don't loop** — after ~2 failed tries at one idea, find the real cause, then change approach.
@@ -871,7 +871,12 @@ near ~100 lines as a "table of contents." (The viral "keep it under 50 lines" ru
 primary source — ignore it.) The budget that actually binds is *discrete instructions*, not
 lines: the one measured result (IFScale, arXiv 2507.11538) shows instruction-following
 sagging in the low hundreds even for frontier models, sooner below the frontier — that's
-the mechanism behind the next sentence, not just tidiness. **Depth graduates
+the mechanism behind graduating depth to the wiki (below), not just tidiness. **The starter
+skeleton in this section is deliberately near that ceiling — treat it as a menu, not a mandate:**
+it front-loads
+every section a project *might* need, so **delete the ones yours doesn't** (no UI → cut the
+design-token block; no outward actions → cut the action-risk table; a single module → drop the
+module map) rather than shipping a `CLAUDE.md` that starts over budget. **Depth graduates
 to the wiki** (§1.5b), not into `CLAUDE.md`: how-a-subsystem-works (architecture) pages and
 the why/failure history (decision/incident pages). See **Principle 2** for the one-line
 routing rule. Keep `CLAUDE.md` current — a stale contract is worse than none, because it
@@ -1189,7 +1194,10 @@ persists in the repo are the kit's **outputs**: `CLAUDE.md`, `.claude/settings.j
 `evals/`, `HARNESS_LOG.md`, `wiki/`, `README.md`, and the filled-in PRD.
 Those — plus the principles
 internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in — carry
-everything forward. The source kit lives **outside** the repo (e.g. `~/dev/claude-harness-kit/`)
+everything forward. The §1.5 **"How we build here"** block *is* that digest — the **one
+intended exception** to "never paste the kit": a short, self-contained distillation you keep,
+as opposed to the kit's *prose* (this guide, the wiki guide, the security docs), which is what
+you never paste or `@`-import. The source kit lives **outside** the repo (e.g. `~/dev/claude-harness-kit/`)
 and is handed to a project's kickoff — or its one-time adoption
 (`claude-project-adoption.md`) — never to ongoing work. (The audit warns if any kit source
 file gets committed — see its GIT HYGIENE section.)
@@ -1312,6 +1320,10 @@ Commit history is documentation of intent over time.
   pass. But on a genuinely solo project, "never commit to `main`, even solo" is a rule no
   mechanism here enforces and you won't follow; committing to `main` with the auto-commit
   net is fine — don't build branch-aware machinery to police a rule you've opted out of.
+  **The one carve-out: an *unattended* run is not "solo on `main`."** A background/overnight
+  committer runs in its **own worktree, never your `main` working tree** (Part 3.11) — so it
+  never races or sweeps your half-done work into a commit. Solo-on-`main` is a rule about
+  *attended, interactive* work; hands-off runs get isolation regardless of team size.
 - **Know the honest ceiling of automation.** Mechanisms here *enforce presence* (a doc
   exists; no secret staged) and *detect drift*; none authors a message or supplies
   judgment about when and what to commit. And auto-commit is runtime-coupled (git has no
@@ -1602,7 +1614,10 @@ don't have.
     session. And run any
     *unattended* committer (an overnight build, the scheduled wiki reconcile) in its **own
     worktree, never a shared tree** — running it in the same clone as an interactive session
-    can sweep that session's half-done work into a commit or race the index. The unattended
+    can sweep that session's half-done work into a commit or race the index. (This is the
+    carve-out to Principle 4's *solo-on-`main` is fine*: that rule is about **attended,
+    interactive** work — an *unattended* committer gets its own worktree regardless of team
+    size, so it never touches your `main` working tree.) The unattended
     auto-committer should stage **explicit paths only** (the concern is known there), never
     `git add -u` the whole tree — the generic session-end net keeps `git add -u` only
     because it can't know your paths. **Keep the worktree *in-repo* and gitignored, not at a

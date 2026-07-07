@@ -209,9 +209,22 @@ a row in the harness manifest.)
 ### K–N. Internal-consistency fixes (tensions)
 - **K:** "keep CLAUDE.md short" vs. the starter skeleton that's already fairly long — trim or
   acknowledge it's near budget.
+  **✅ Built 2026-07-06 (acknowledge, not trim).** Trimming the skeleton is subjective and risks losing
+  value, so the fix names the tension instead: a line in the §1.5 line-budget teaching says the starter
+  skeleton is **deliberately near the ~200-line ceiling — a menu, not a mandate** — and to *delete the
+  sections a given project doesn't need* (no UI → the design-token block; no outward actions → the
+  action-risk table; single module → the module map) rather than shipping a `CLAUDE.md` that starts over
+  budget. Landed as guide prose, **not** as more lines inside the seeded skeleton.
 - **L:** "never paste the kit in" vs. the "how we build here" block that *is* a kit digest — add
   one clarifying line (the digest is the intended exception; the kit *prose* is what you don't
   paste).
+  **✅ Built 2026-07-06.** The scaffolding rule (§"the kit is scaffolding") already carried the carve-out
+  ("the principles internalized as a *lean* digest in `CLAUDE.md`, not the full guide pasted in"); rather
+  than add a third statement, that line was **strengthened with an explicit pointer** — the §1.5 "How we
+  build here" block *is* that digest, the **one intended exception** to "never paste the kit," as opposed to
+  the kit's *prose* (the guides), which is what you never paste or `@`-import. Placed as guide prose, not as
+  a bullet inside the seeded digest (where "the exception to never-paste-the-kit" would read as nonsense to a
+  project that has no kit).
 - **M:** version-specific facts ("2.1.x", red-team stats) in a durable doc — date-stamp them +
   the re-verification habit (ties to J/W).
   **✅ Built 2026-07-06 (docs-only, on W's mechanism).** W already gave version-assumptions a *dated home*
@@ -227,6 +240,16 @@ a row in the harness manifest.)
   inherit the stamp rather than repeat it — dating every inline mention would be noise, not signal.
 - **N:** Principle 4 "solo-on-main is fine" vs. Part 3.11 "unattended runs always get a worktree"
   — add a cross-reference.
+  **✅ Built 2026-07-06 — and found a sharper twin.** The stated fix: a **reciprocal cross-reference** — at
+  Principle 4, "the one carve-out: an *unattended* run is not solo-on-`main` — it gets its own worktree (Part
+  3.11)"; at Part 3.11, "this is the carve-out to Principle 4's solo-on-`main`, which is about *attended*
+  work." (Both live in the guide, so guide-internal §/Part refs are correct here.) **The twin:** the shipped
+  `CLAUDE.md` digest bullet flatly said *"branch first, never commit straight to `main`"* — a direct
+  contradiction of Principle 4's "solo-on-`main` is fine," and worse because that bullet is **project-retained**
+  (it lives in the seeded `CLAUDE.md`). Softened to *"branch first once anyone else shares the repo —
+  committing to `main` solo (with the auto-commit net) is fine"* — reconciled **and self-contained** (no
+  `Principle 4`/`§` ref that would dangle once the kit steps away — the same self-containment discipline as the
+  `HARNESS_MANIFEST.md` fix). A kit-wide sweep for other flat "never to `main`" statements came back clean.
 
 ### O. Adoption check + fan-out verifier (the big one)
 The kit is now big enough that one session reading all of it will blow its context and mark things
@@ -539,8 +562,12 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
    dated-home mechanism: `CHEATSHEET.md` header + red-team stat + the README shelf-life mention
    (README/LESSONS were already dated). ✅ **E** (spec-as-source) — done 2026-07-06: `prd-template.md`
    `reconcile-code` anchor + living-doc note, the audit's freshness check generalized to any anchored root
-   doc, and intent routed to the spec (kept distinct from the wiki's code-history).
-   **Remaining hygiene/frontier tail:** S, T, U, C, D, I, F, and K/L/N (the other three consistency fixes).
+   doc, and intent routed to the spec (kept distinct from the wiki's code-history). ✅ **K/L/N** (the last
+   three internal-consistency fixes) — done 2026-07-06: CLAUDE.md-skeleton budget acknowledged (menu, not
+   mandate); the "How we build here" digest named as the intended paste-exception; and the solo-on-`main`
+   rule reconciled across Principle 4, Part 3.11, and the seeded digest (self-contained). **With M + K/L/N
+   done, the entire K–N consistency cluster is closed.**
+   **Remaining hygiene/frontier tail:** S, T, U, C, D, I, F.
 
 ---
 

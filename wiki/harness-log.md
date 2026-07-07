@@ -57,6 +57,43 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Internal-consistency fixes K / L / N (the K–N cluster closes)
+
+- **Change.** Closed the last three **internal-consistency fixes** (docs-only), completing the K–N cluster
+  (M shipped earlier today). **K:** the §1.5 line-budget teaching now acknowledges the starter `CLAUDE.md`
+  skeleton is *deliberately near the ~200-line ceiling — a menu, not a mandate* — and to delete the sections
+  a project doesn't need, rather than trimming the skeleton itself (subjective, value-losing). **L:** the
+  scaffolding rule's existing carve-out ("principles internalized as a lean digest… not the full guide
+  pasted in") was *strengthened with a pointer* — the §1.5 "How we build here" block **is** that digest, the
+  one intended exception to "never paste the kit"; the kit's *prose* is what you never paste. **N:** a
+  reciprocal Principle 4 ↔ Part 3.11 cross-reference (solo-on-`main` is *attended*-only; an unattended
+  committer gets its own worktree), **plus** the sharper twin it surfaced — the seeded `CLAUDE.md` digest
+  bullet flatly said "never commit straight to `main`," contradicting Principle 4; softened to "branch first
+  once anyone else shares the repo — committing to `main` solo is fine."
+- **Rationale (the bet).** These are the conflicting-docs tax (Principle 2) turned on the kit itself: two
+  places stating the same rule differently is exactly what makes an agent burn time adjudicating, or follow
+  the wrong one. Cheap to fix, and load-bearing precisely because the kit's whole pitch is "don't contradict
+  yourself."
+- **The self-containment trap (caught in review, pre-commit).** Two of the N edits touch the **"How we build
+  here" digest — a *project-retained* artifact** (it ships into the project's `CLAUDE.md`). So they had to be
+  self-contained: the softened main-branch bullet carries **no `Principle 4`/`§` reference** that would dangle
+  once the kit steps away — the same lesson as the `HARNESS_MANIFEST.md` template scrub. The guide-side
+  cross-references (Principle 4 ↔ Part 3.11) keep their refs, correctly, because both live in the guide.
+- **What it replaced.** A flat "never commit straight to `main`" digest bullet (→ nuanced, solo-aware); an
+  unqualified "solo-on-`main` is fine" (→ carved out for unattended runs, both directions).
+- **Shelf-life/risk class.** **Permanent** — internal consistency is not a model-dependent property. Zero
+  blast radius (docs only).
+- **Related ROADMAP item.** **K**, **L**, **N** (M closed earlier). Verification here was **not** bash-n/
+  eval-runner (those can't see prose): the checks that mattered were a grep proving the edited digest bullet is
+  self-contained (no `§`/`Principle`/kit refs), and a kit-wide sweep for other flat "never to `main`"
+  statements (came back clean — only the nuanced Principle 4 statement remains).
+- **Commit.** *(uncommitted at time of writing — on branch `feat/KLN-consistency-fixes`; stamp on merge.)*
+- **Signal to watch.** A future edit re-introducing a flat "never to `main`" in one place but not the other →
+  the twin-statement problem recurring; the sweep grep is the guard to re-run.
+- **Retrospect.** *(pending.)*
+
+---
+
 ## 2026-07-06 — Spec-as-source: the spec becomes a living, reconciled doc (item E)
 
 - **Change.** Built ROADMAP item **E** — the spec/PRD is now a *living* doc, not fill-once. Three moves plus
