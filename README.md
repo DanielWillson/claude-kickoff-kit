@@ -105,8 +105,9 @@ The two halves form a loop, and a person closes it by hand. When a verifier keep
 same kind of mistake, the fix isn't to nag the agent — it's to *strengthen a directive* so the
 mistake can't happen again. A bug becomes a permanent check in the health script. A nasty
 surprise becomes a one-line warning in the instruction file. A dead end becomes a written-up
-"we tried this, here's why it failed" page in the wiki. Every mistake leaves behind something
-that stops it from coming back. That safety net only ever grows — you add a strand per fix and
+"we tried this, here's why it failed" page in the wiki. Even a *run* that went wrong or ran up a
+surprise bill — no code bug at all — gets post-mortemed into a new check. Every mistake leaves
+behind something that stops it from coming back. That safety net only ever grows — you add a strand per fix and
 never cut one — and it is the single most valuable thing the kit installs.
 
 It is also why the kit insists that its documents **check themselves against the actual code**,

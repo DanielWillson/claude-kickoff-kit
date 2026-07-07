@@ -123,6 +123,22 @@ A flight recorder for agent runs, so you can see *why* one went wrong or expensi
   post-mortem the transcript → "what directive/check would've stopped this?" → a safety-net artifact.
   Adds a second feed to the safety net (today it's fed only by code bugs). Graduation (if outgrown):
   Langfuse/LangSmith/OTel GenAI traces.
+- **Built 2026-07-06 (teaching-only, like S — no new file).** C *reframes the safety-net doctrine that
+  already lives in §1.6* rather than adding a verifier: those bullets grow the net from **fixed code bugs
+  (feed one)**; C adds **feed two — bad or *expensive* runs** (looped, wandered, produced slop, cost 5×,
+  with no bug at all). Two moves: keep the run legible (retain the **run record** — the session transcript
+  — + app logs the agent can read) and post-mortem the bad/expensive ones into an artifact, feeding the
+  *whole* net: a regression grep, a `CLAUDE.md` line, a wiki incident page, or — sharpest, for a *judgment*
+  failure — a **behavioral eval case** (item A). **Terminology collision resolved:** "flight recorder" was
+  already entrenched for `HARNESS_LOG.md` (the *harness-change* journal); C's teaching leads with **run
+  record** (raw observation of what the agent *did*) and disambiguates at both entries — the item keeps the
+  "Flight recorder" label, the prose does not reuse the term for two things. **C vs U:** U (`RUNBOOK.md`) is
+  the *acute* live-incident drill; C is the *routine* learn-from-any-bad-run habit — C reuses the wiki
+  incident-page shape, ships no post-mortem template. The *expensive* half ties to §1.6a's scorecard
+  (tokens/$) + Part 3.10. **Graduation** is a pointer, not a build (Langfuse/LangSmith/OTel GenAI traces —
+  same humility as D). A **doctrine-twin sweep** updated the safety-net-growth statements (glossary
+  *safeguard* def, README, Principle 2's bug-trail) so none reads as "bugs are the *only* feed"; a
+  self-contained two-source note added to the audit's `REGRESSION GUARDS` comment (the repo-side anchor).
 
 ### D. Cross-project memory
 Markdown works for one project; across many, or for cross-project knowledge, plain files stop
@@ -600,8 +616,10 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
    2026-07-06: **S** generalizes Principle 10 to all out-of-git state + a recovery owner (teaching-only);
    **T** ships `TOOL_INVENTORY.md` (what has access + how to disable it); **U** ships `RUNBOOK.md` (the
    forward when-prevention-fails procedure). The kit was prevention-heavy; this is its recovery complement.
-   **Remaining tail:** C (flight recorder), D (cross-project memory), I (fuzzy-output baseline), F
-   (untrusted-content rule).
+   ✅ **C** (flight recorder) — done 2026-07-06 (teaching-only): the safety net's *second feed* — post-mortem
+   bad/expensive *runs* (via the run record/transcript), not just fixed bugs, into a grep / `CLAUDE.md` line /
+   wiki page / eval case; "flight recorder" term disambiguated from `HARNESS_LOG.md`.
+   **Remaining tail:** D (cross-project memory), I (fuzzy-output baseline), F (untrusted-content rule).
 
 ---
 
