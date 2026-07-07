@@ -40,11 +40,11 @@ ours) vs *Hygiene/Catch-up* (the field already knows this; do it because it's lo
 | **D** | **Cross-project memory** (→ queryable knowledge service) | Medium | Frontier/Unique |
 | **T** | **Tool inventory** | Medium | Hygiene · *new* |
 | **U** | **Incident runbook** for agent mistakes (forward, not retrospective) | Medium | Hygiene/Frontier · *new* |
-| **W** | **Harness manifest** (owner/version/last-verified/risk/sunset) | Medium | Hygiene · *new* |
+| **W** | **Harness manifest** (owner/version/last-verified/risk/sunset) | Medium | Hygiene · *new* · ✅ **Built (2026-07-06)** |
 | **X** | **Harness change log** (`HARNESS_LOG.md`) + vetted **cross-repo learning** | Med–High | Frontier/Unique · *new* |
 | **Y** | **Kit-update proposals** — skill re-reviews repo & proposes upgrades as the kit evolves | Medium | Frontier · ✅ **Built (2026-07-06)** |
 | **H** | **Safeguard-rot check** — safeguards assert their own anchor | Medium | Hygiene |
-| **J** | **Re-verify the harness after a Claude Code upgrade** | Medium | Hygiene |
+| **J** | **Re-verify the harness after a Claude Code upgrade** | Medium | Hygiene · ✅ **Built (2026-07-06)** |
 | **I** | **Baseline for fuzzy output** (tolerance/rubric) | Lower | Frontier (cousin of A) |
 | **K–N** | **4 internal-consistency fixes** | Lower | Hygiene |
 | **F** | **Untrusted-content rule** (name the untrusted-content surface) | Lower | Hygiene |
@@ -180,6 +180,17 @@ You prove safeguards "bite" at setup, but nothing re-checks after the *tool* upd
 silently drop a setting). **Build:** add "re-run §1.4 checks after any Claude Code major upgrade"
 to the checklist + doctrine. Treat a tool upgrade like a model upgrade. (See **W** — this becomes
 a row in the harness manifest.)
+- **Built 2026-07-06 (docs-only, alongside W).** Realized in three coupled places, not one line: (1) a
+  **§1.4 doctrine bullet** — a Claude Code upgrade is a scheduled maintenance event, re-run the "prove it
+  bites" list, because an upgrade can silently drop a setting; (2) the **README shelf-life doctrine** now
+  names a *tool* upgrade as the same kind of event as a *model* upgrade (it previously named only the
+  latter); (3) the **manifest's re-verify-trigger column** (item W) is where J becomes machine-legible —
+  each depreciating row names "Claude Code upgrade → re-run §1.4". Its own justification came from *this
+  session*: the **CC 2.1.201 silent-comment-drop** (verified via CC's `--debug` load log during the §9.1
+  fix) is a live instance of a boundary going quietly inert across a version bump — the exact failure J
+  exists to catch, now cited as the worked example in all three places. Plus a Quick-Checklist line.
+  Absorbs the re-verification half of **M** (the shelf-life/date-stamp habit); M's doc-wide sweep of
+  scattered version facts stays open.
 
 ### K–N. Internal-consistency fixes (tensions)
 - **K:** "keep CLAUDE.md short" vs. the starter skeleton that's already fairly long — trim or
@@ -312,6 +323,22 @@ harness components, each with what it is, owner (solo: you), the tool/model vers
 last-verified date, risk tier, known failure modes, and sunset criteria. Ties directly to the
 shelf-life doctrine (permanent / depreciating / appreciating). Scale honestly: a small project's
 manifest is a short table; skip it if the harness is tiny.
+- **Built 2026-07-06 (docs + template, "not a new machine" — the X-full/Y pattern).** Ships a **tier-optional
+  root `HARNESS_MANIFEST.md`** template + teaching in kickoff **§1.6a** (the third sibling of the harness-self
+  verifiers: metrics = ROI, log = history, manifest = *assumptions + freshness*) + a Quick-Checklist line +
+  glossary move. **The spine, corrected in review:** the manifest was at risk of duplicating what already
+  exists — so it deliberately tracks the **one axis nothing else does: what each part assumes × when last
+  verified × the re-verify trigger**, grouped by shelf-life class — and *not* presence (that's
+  `kit-conformance.sh`) or change-history (that's `HARNESS_LOG.md`). The template states that split in-line so
+  the three verifiers can't drift into rosters that disagree (the same "two verifiers must not disagree" rule
+  enforced in the §9.1 AGENTS.md fix). J is folded in as the trigger column. **Dogfooded:** the kit keeps its
+  own filled instance at `wiki/harness-manifest.md` (parallel to `wiki/harness-log.md`), and the audit's
+  committed-scaffolding comment now lists `HARNESS_MANIFEST.md` among the ships-at-output-name files that must
+  stay out of the alternation. **No conformance/audit check this pass** (the artifact is tier-optional, so
+  "absent" is legitimate → no mandated-presence check; staleness is per-project judgment, not cleanly
+  greppable — a §9.3.1-style placeholder-token WARN is the only clean check and is left as a follow-up). **M:**
+  W gives M its *mechanism* (a dated home for version-assumptions) but does **not** sweep the version facts
+  already scattered across the docs — M stays open.
 
 ### X. Harness change log (`HARNESS_LOG.md`) + cross-repo learning *(new)*
 A journal of harness changes and *why* — and, its bigger purpose, a **portable, machine-legible**
@@ -478,11 +505,13 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
 4. **Dependency-vulnerability scan + safeguard-rot check** (G, H) — security + false-security hygiene.
 5. ✅ **Adoption check + fan-out driver** (O) — done 2026-07-06; the biggest; makes the rest
    stick. Checks for R and V (and A + the floor); `scripts/kit-conformance.sh` + kickoff §1.6c.
-6. Fold in the rest as the safety net pulls them in — non-git rollback (S), tool inventory (T),
-   incident runbook (U), harness manifest (W), plus C, D, E, I, J, K–N, F. Then the cross-repo
-   layer: ✅ **X** (harness-log schema + vetted cross-repo learning) — done 2026-07-06; ✅ **Y**
-   (kit-update proposals) — done 2026-07-06 on X's version stamp. Remaining: the hygiene/frontier
-   tail (S, T, U, W, C, D, E, I, J, K–N, F).
+6. Fold in the rest as the safety net pulls them in. Then the cross-repo layer: ✅ **X** (harness-log
+   schema + vetted cross-repo learning) — done 2026-07-06; ✅ **Y** (kit-update proposals) — done
+   2026-07-06 on X's version stamp. ✅ **W** (harness manifest — `HARNESS_MANIFEST.md` template +
+   §1.6a teaching + kit-self instance) **and ✅ J** (post-upgrade re-verify, realized as the manifest's
+   trigger + §1.4/README doctrine) — done 2026-07-06, motivated by this session's CC-2.1.201 finding.
+   **Remaining hygiene/frontier tail:** S, T, U, C, D, E, I, K–N, F (and **M**, whose mechanism W
+   supplies but whose doc-wide date-stamp sweep is unspent).
 
 ---
 

@@ -34,3 +34,7 @@ release before trusting feature claims.
 - [[harness-log]] — the kit's own append-only harness change log (its instance of the
   root-level `HARNESS_LOG.md` template the kit ships): each harness change recorded as a
   bet + a retrospect.
+- [[harness-manifest]] — the kit's own harness manifest (its instance of the root-level
+  `HARNESS_MANIFEST.md` template, item W): each harness part tagged with what it assumes ×
+  when last verified × the event that makes it stale. Assumptions + freshness, not presence
+  or history.

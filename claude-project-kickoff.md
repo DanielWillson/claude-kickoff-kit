@@ -724,6 +724,14 @@ present — a table row naming a rule that isn't wired (comment-free) into `.cla
   actual attempt tests the wiring (same discipline as proving a blocking git hook fires,
   above).
 - Commit the `.claude/settings.json` with a detailed message.
+- **Re-run these checks after any Claude Code major upgrade — a tool upgrade is a scheduled
+  maintenance event, not a version bump (item J).** You prove the safeguards bite *once*, at setup;
+  nothing re-checks after the *tool* changes underneath them, and an upgrade can **silently drop a
+  setting** — Claude Code silently strips unknown/too-old keys field-by-field, and 2.1.201 discards a
+  whole `settings.json` on a single `//` comment (§9.1). So treat a Claude Code upgrade exactly like a
+  model upgrade (README, *"What scales with the model"*): re-run this §1.4 list — `claude doctor` +
+  `/status` for silently-dropped keys, and the "prove it bites" attempts for the controls you adopted.
+  If you keep a `HARNESS_MANIFEST.md` (§1.6a), its depreciating rows already name this trigger.
 
 ### 1.5 Create a starter CLAUDE.md
 `CLAUDE.md` is loaded into every session automatically. It's the right place for
@@ -1045,6 +1053,29 @@ re-reviewing against the version stamp to catch what the kit has added since you
 have **kit-update proposals** (ROADMAP item Y — see `claude-project-adoption.md`, *Re-review as the
 kit evolves*), the sibling capability the stamp also feeds. **Scale honestly:** a solo project may never open another repo's log; this is a capability
 held in reserve, not a chore.
+
+**The harness manifest — assumptions + freshness (optional; see `HARNESS_MANIFEST.md`).** The scorecard
+tracks *whether the harness pays off*; the log tracks *what changed*; the conformance check (§1.6c)
+tracks *what's present*. A third question none of them answers: **what does each harness part *assume*,
+and is that assumption still fresh?** Every part is a bet against a moving world — a Claude Code version,
+a model generation, an external API — and a bet can go stale *silently* (a tool upgrade that drops a
+settings key; a coaching line the model outgrew). `HARNESS_MANIFEST.md` (seeded at the repo **root**,
+tier-optional) is a small table that makes *which bets are due for a re-check* something you **read**
+instead of remember: one row per part, columned by **what it assumes × when you last verified it × the
+event that makes it stale**, grouped by the README's shelf-life classes (permanent / depreciating /
+appreciating). Keep it from duplicating its siblings — it is *not* a presence roster (that's
+conformance) and *not* a change history (that's the log); assumptions + freshness only. **Scale
+honestly:** a tiny harness (a `CLAUDE.md` + a deny floor) doesn't need one — skip it until the harness
+has several moving parts.
+
+The manifest's load-bearing column is the **re-verify trigger** — the event that expires a row, which
+is where item **J** lives: **treat a Claude Code (tool) upgrade like a model upgrade — a scheduled
+maintenance event, not a version bump.** A model upgrade re-runs the evals (§1.6b) and the per-line
+prose test; a *tool* upgrade **re-runs §1.4's "prove it bites" checks**, because an upgrade can
+silently drop a setting you proved months ago (Claude Code 2.1.201 discards a whole `settings.json` on
+a lone `//` comment — a live example of a boundary going quietly inert across a version). The
+depreciating rows name that trigger explicitly, so the manifest *tells you* what to re-check when the
+tool moves under you.
 
 ### 1.6b Seed the behavioral evals (the judgment verifier — see `claude-eval-base.sh` + `evals-template/`)
 The audit (§1.6) is a verifier for the *code*; a **behavioral eval** is a verifier for the
@@ -1620,7 +1651,7 @@ don't have.
 - [ ] `defaultMode: "auto"` set in **USER `~/.claude/settings.json`** (ignored from project/local) — assume auto mode is the posture
 - [ ] forced up-front intake answered, safe-default: real secret/token present (Q9)? · shared repo / 2nd committer (Q6)? · max-lockdown / shared machine? (skip = the locked-down choice)
 - [ ] (if shared repo — Q6) **server-side** branch protection on `main` (block force-push + deletion, require the CI check) + CODEOWNERS on `.claude/**`/`hooks/**`/`.github/**`/`CLAUDE.md` (note: CODEOWNERS doesn't guard direct pushes) + least-privilege/SHA-pinned CI (§1.3b)
-- [ ] settings validated with `claude doctor` (silently-stripped keys) / `/permissions` / `/status` (active source); security controls **proved to bite** — denied secret read blocked, bypass rejected (only the controls you adopted) (§1.4)
+- [ ] settings validated with `claude doctor` (silently-stripped keys) / `/permissions` / `/status` (active source); security controls **proved to bite** — denied secret read blocked, bypass rejected (only the controls you adopted); **re-run this list after any Claude Code major upgrade — a tool upgrade can silently drop a setting** (§1.4, item J)
 - [ ] (if MCP used) `enabledMcpjsonServers` allowlist — MCP + web tools are unsandboxed (§1.3a)
 - [ ] (if a worktree under `allowUnsandboxedCommands:false`) kept **in-repo + gitignored**, not a sibling path that hard-fails (Part 3.11)
 - [ ] `chmod` deny relaxed if deploy target requires it
@@ -1631,6 +1662,7 @@ don't have.
 - [ ] safeguards anchored — each absence-in-a-file guard wrapped in `guarded "<what>" "<anchor>" "<symbol>" && { … }` so a renamed anchor **WARNs (rotted), never passes green**; the SAFEGUARD SELF-CHECK rolls them up (structural rot only — semantic drift is a human read) (§1.6, item H)
 - [ ] (if the project has dependencies) known-vulnerability scan active in `scripts/audit.sh` — detects the lockfile's ecosystem + runs its scanner (`npm audit`/`pip-audit`/`cargo audit`/…), WARNs on high/critical, and reports a visible `SKIPPED` (never green) when it can't run; the `SECURITY` entropy pass complements the `key=` secret grep (§1.6)
 - [ ] (if non-throwaway) `scripts/harness-metrics.sh` (ROI gauge) seeded + `HARNESS_LOG.md` seeded at repo root (fixed name); start with the free-to-compute numbers (§1.6a)
+- [ ] (optional — once the harness has several moving parts) `HARNESS_MANIFEST.md` seeded at repo root — one row per part, columned by *assumes × last-verified × re-verify trigger* (assumptions + freshness — **not** presence, which is conformance, nor history, which is the log); its depreciating rows name the **Claude Code upgrade → re-run §1.4** trigger (§1.6a, items W + J)
 - [ ] (if a 2nd committer — Q6) secret-only `hooks/pre-commit` installed + `core.hooksPath` set + verified by a real blocked commit (§1.3b); `bash scripts/audit.sh` wired into CI
 - [ ] (if a spec/PRD exists) its load-bearing invariants extracted into the audit INVARIANTS + `CLAUDE.md`
 - [ ] routing rule applied: guardrail → `CLAUDE.md`, machine-check → audit, full story (why/dead-ends/history) → wiki (Principle 2)

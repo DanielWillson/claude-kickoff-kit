@@ -57,6 +57,48 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Harness manifest (item W) + post-upgrade re-verify (item J)
+
+- **Change.** Built ROADMAP items **W** and **J** together (docs + template, "not a new machine"). **W:** a
+  tier-optional root `HARNESS_MANIFEST.md` template + teaching in kickoff §1.6a (the third sibling of the
+  harness-self verifiers — metrics = ROI, `HARNESS_LOG.md` = history, manifest = *assumptions + freshness*),
+  a Quick-Checklist line, glossary move (planned → built), and a **dogfooded kit-self instance** at
+  `wiki/harness-manifest.md` (parallel to this log). **J:** treat a Claude Code *tool* upgrade like a model
+  upgrade — realized as (1) a §1.4 doctrine bullet, (2) an extension of the README shelf-life doctrine to name
+  tool upgrades, and (3) the manifest's **re-verify-trigger column**, where it becomes machine-legible.
+- **Rationale (the bet).** Three existing artifacts answer *is it present?* (conformance), *what changed?*
+  (log), and *does it pay off?* (metrics) — none answers *what does each part assume, and is that bet still
+  fresh?* A harness part silently rots when the world it bet on moves (a tool upgrade dropping a setting; a
+  coaching line the model outgrew). The bet: a small readable registry of assumptions + freshness turns "which
+  bets are due for re-check" from a memory task into a glance — and gives J a concrete home (the trigger
+  column) instead of a floating "remember to re-verify."
+- **The spine, corrected in review (the whole risk of W).** First-pass instinct was a present/absent + risk
+  roster — which duplicates `kit-conformance.sh` (presence) and `HARNESS_LOG.md` (per-change risk) and would
+  rot as dead weight (item D's "605 rotting plan files"). Reframed to the one non-duplicating axis — **assumes
+  × last-verified × re-verify trigger, grouped by shelf-life class** — with the split stated *in the artifact*
+  so the three verifiers can't drift into rosters that disagree (the same rule enforced in the §9.1 AGENTS.md
+  fix). J's own worked example is this session's **CC 2.1.201 silent-comment-drop** (verified via CC's
+  `--debug` load log): a live boundary going quietly inert across a version bump.
+- **What it replaced.** Net-new artifact + doctrine. The README shelf-life section previously framed *only*
+  model upgrades as maintenance events; now names tool upgrades too. The audit's committed-scaffolding comment
+  now lists `HARNESS_MANIFEST.md` among the ships-at-output-name files kept out of the alternation.
+- **Shelf-life/risk class.** **Appreciating** — as the harness accretes parts and the model/tool churn
+  continues, a readable freshness registry earns more, not less. Zero blast radius (docs + a template; no
+  executable path added).
+- **Related ROADMAP item.** **W** + **J** (+ absorbs the re-verification half of **M**; M's doc-wide
+  version-fact sweep stays open). Deliberately **no conformance/audit check this pass** — the artifact is
+  tier-optional (absent is legitimate), and staleness is per-project judgment, not cleanly greppable; a
+  §9.3.1-style placeholder WARN is the only clean check and is noted as a follow-up.
+- **Commit.** *(uncommitted at time of writing — on branch `feat/W-harness-manifest-plus-J`; stamp on merge.)*
+- **Signal to watch.** (1) A project's manifest drifting into a presence checklist or a change log → the
+  in-artifact "how it differs from its siblings" framing wasn't read; tighten it. (2) Manifests going stale and
+  ignored (item D's failure mode) → the tier-optional framing may need a lighter default, or the follow-up
+  placeholder check. (3) Anyone hitting a silently-dropped setting after a CC upgrade *without* having re-run
+  §1.4 → J's trigger isn't landing where people look.
+- **Retrospect.** *(pending — revisit after a project actually keeps a manifest across a real CC/model upgrade.)*
+
+---
+
 ## 2026-07-06 — Close the §9.2 security-template gaps + §9.3 process gaps (Fable review tail)
 
 - **Change.** Closed all seven remaining items from the 2026-07-06 Fable multi-lens review — the five §9.2

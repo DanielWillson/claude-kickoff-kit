@@ -124,6 +124,8 @@ Shipped into the kit; each points to where it lives.
 | H | **Safeguard-rot check** | Each safeguard asserts its own anchor so it WARNs (rotted) instead of silently dying green; a self-check audits the audit's own guards. Structural rot only — semantic drift is a human read. | [`claude-audit-base.sh`](claude-audit-base.sh) (`guarded` helper + `SAFEGUARD SELF-CHECK`) + kickoff §1.6 + Quick Checklist |
 | O | **Adoption check + fan-out verifier** | A roster check that a repo *actually* adopted the kit's artifacts (CLAUDE.md + routing/reviewer blocks, the secret-read floor, a valid audit, evals, ≥3 wiki pages, action-risk gates), rolled into an adoption scorecard; FAILs only the irreducible floor, WARNs what a lean project may skip, and fans out one sub-agent per area so no single context reads the whole kit. | [`scripts/kit-conformance.sh`](scripts/kit-conformance.sh) + kickoff §1.6c (teaching + fan-out playbook) + [`claude-project-adoption.md`](claude-project-adoption.md) DoD + Quick Checklist |
 | Y | **Kit-update proposals** | Re-review a repo against a *newer* kit: re-run the adoption guide's evaluate→propose over the delta since the version stamp, propose fit-appropriate retrofits, the human decides, then append a reviewed-through entry that **advances the baseline** so already-declined items aren't re-raised. Docs-only, on-prompt, propose-never-apply. | [`claude-project-adoption.md`](claude-project-adoption.md) §6 + kickoff §1.6a (fill the version stamp) |
+| W | **Harness manifest** | A tier-optional root registry of the harness's own parts, tracking the one axis its siblings don't — *what each part assumes × when last verified × the event that makes it stale* — grouped by shelf-life class. Not presence (that's conformance) nor history (that's the log). | [`HARNESS_MANIFEST.md`](HARNESS_MANIFEST.md) (template) + kickoff §1.6a + [`wiki/harness-manifest.md`](wiki/harness-manifest.md) (kit's own) |
+| J | **Post-upgrade re-verify** | Treat a Claude Code *tool* upgrade like a model upgrade — a scheduled maintenance event: re-run §1.4's "prove it bites" checks, because an upgrade can silently drop a setting (CC 2.1.201 discards a whole settings.json on a `//` comment). Realized as the manifest's re-verify trigger. | kickoff §1.4 + §1.6a + README shelf-life doctrine + the [`HARNESS_MANIFEST.md`](HARNESS_MANIFEST.md) trigger column |
 
 ## Roadmap items — planned
 
@@ -138,8 +140,6 @@ Names locked; definitions use the vocabulary above. Build state and detail live 
 | D | **Cross-project memory** | A queryable knowledge layer for when per-project markdown files stop scaling across many projects. |
 | T | **Tool inventory** | A list of every tool/connector the agent has — scopes, where its credential lives, how to disable it. |
 | U | **Incident runbook** | The forward "when an agent does damage" procedure: contain → revoke → identify what was touched → undo → add a safeguard. |
-| W | **Harness manifest** | A running list of the harness's own parts, each tagged with what it assumes and when it was last checked. |
 | I | **Baseline for fuzzy output** | The tolerance/rubric version of the baseline check, for output that isn't exactly reproducible. |
-| J | **Post-upgrade re-verify** | Re-running the "prove it still bites" checks after a Claude Code upgrade. |
 | F | **Untrusted-content rule** | Fetched/tool content is *data, not instruction* (the sandbox limits damage, not the hijack). |
 | K–N | **Internal-consistency fixes** | Four small edits reconciling places the kit contradicts itself. |

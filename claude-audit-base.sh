@@ -382,13 +382,13 @@ if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     #       project's own README.md, so they need a PATH-SEGMENT clause instead:
     #       (^|/)evals-template/ — matches the committed SOURCE dir but not the renamed output
     #       dir evals/ (and not near-misses like evals-templates/ or my-evals-template/).
-    #   (3) scripts/harness-metrics.sh and root HARNESS_LOG.md are in NEITHER clause BY DESIGN.
-    #       Unlike claude-audit-base.sh (a root source RENAMED to scripts/audit.sh on copy), the kit
-    #       ships these two AT their output name/path — so a project's copy is byte-identical to a
-    #       legitimate output: there is no distinct source form to catch, and nothing is harmful if
-    #       one is "copied" (it equals what the project keeps anyway). harness-metrics.sh ships
-    #       pre-placed in scripts/ so ROOT resolves and it runs in place; that naming asymmetry is
-    #       intentional — don't "fix" it into the alternation.
+    #   (3) scripts/harness-metrics.sh, root HARNESS_LOG.md, and root HARNESS_MANIFEST.md are in
+    #       NEITHER clause BY DESIGN. Unlike claude-audit-base.sh (a root source RENAMED to
+    #       scripts/audit.sh on copy), the kit ships these AT their output name/path — so a project's
+    #       copy is byte-identical to a legitimate output: there is no distinct source form to catch,
+    #       and nothing is harmful if one is "copied" (it equals what the project keeps anyway).
+    #       harness-metrics.sh ships pre-placed in scripts/ so ROOT resolves and it runs in place; that
+    #       naming asymmetry is intentional — don't "fix" any of these into the alternation.
     #   (The styleguide is excluded — it may legitimately live in the repo as a design ref.)
     tracked_kit=$(git -C "$ROOT" ls-files | grep -iE '(^|/)(claude-project-kickoff|claude-project-adoption|llm-wiki-kickoff|claude-audit-base|claude-eval-base|securing-claude-sessions|prd-template|readme-template)\.(md|sh)$|(^|/)evals-template/' || true)
     [ -n "$tracked_kit" ] && { warn "Harness Kit scaffolding committed — it's one-time; keep sources out of the repo (outputs persist, sources don't)"; echo "$tracked_kit" | sed 's/^/       /'; } \
