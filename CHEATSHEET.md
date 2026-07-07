@@ -1,6 +1,11 @@
 # Claude Code hardening — verified mechanics cheat-sheet
 
-Verified against Claude Code 2.1.x docs (plus noted live checks). The one-line model:
+Verified against Claude Code **2.1.x** docs, with live **spot-checks** against **2.1.201** (the
+settings-load + permission mechanics) — **last verified 2026-07-06**. **These are version-pinned facts, not permanent ones.** A Claude Code upgrade can silently
+change or drop a mechanic here (2.1.201, for one, discards a *whole* `settings.json` on a lone `//`
+comment — no error), so **re-verify this sheet after any major Claude Code upgrade**: a tool upgrade is a
+scheduled maintenance event, not a version bump (kit items **J**/**W** — the harness manifest carries the
+"CC upgrade → re-verify" trigger). The one-line model:
 
 > **The OS sandbox is the boundary. `deny`/`ask` rules are *deterministic* backstops. The auto
 > classifier is a *probabilistic* backstop. `CLAUDE.md` / `autoMode` prose is *not* a control.**
@@ -41,7 +46,7 @@ A `Read`/`Edit` deny binds native file tools AND recognized Bash readers (`cat`/
 
 **The OS sandbox is the only general defense.** Close credential reads with BOTH `permissions.deny Read(...)` (native + `cat`) AND `sandbox.credentials` / `sandbox.filesystem.denyRead` (the code-interpreter path) — and only with the sandbox **on**.
 
-> *Empirical, one machine:* a 44-scenario red-team of a **sandbox-OFF** config found only **5** attacks deterministically blocked — the rest were classifier-only or open. Treat deny-lists as backstops, never as the boundary.
+> *Empirical, one machine (2026-07):* a 44-scenario red-team of a **sandbox-OFF** config found only **5** attacks deterministically blocked — the rest were classifier-only or open. Treat deny-lists as backstops, never as the boundary. *(A version-pinned figure — re-check against the current Claude Code before leaning on the exact number.)*
 
 ## Network egress (macOS)
 - `sandbox.network.allowedDomains` binds **sandboxed Bash egress only** — not `WebFetch`/`WebSearch` (their own `WebFetch(domain:…)` permission) or MCP.

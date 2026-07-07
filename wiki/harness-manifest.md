@@ -29,6 +29,7 @@ _Last full sweep: 2026-07-06._
 | README field citations (METR, Veracode, SWE-Bench, …) | sources current as of the dated verification | depreciating | 2026-07-03 | **Periodic** → re-fetch each URL before reuse (Lesson 7); date-stamped in README §"Field evidence" |
 | CI selftest (`.github/workflows/selftest.yml`) | GitHub Actions; `actions/checkout` pinned to a SHA | permanent | 2026-07-06 | **Action bump** → re-pin the SHA (the *practice* of pinning is permanent) |
 
-**Known gap (item M, still open).** Version-specific facts (`2.1.201`, red-team stats) still live
-scattered across several kit docs. This manifest gives them a *dated home* for harness components, but
-does not itself sweep every inline mention — that doc-wide date-stamping pass is item **M**.
+**Item M (done 2026-07-06).** This manifest gives version-specific facts a *dated home* for harness
+components; the doc-wide companion — date-stamping the scattered prose facts (`2.1.201`, red-team stats)
++ the re-verify pointer — shipped as item **M** (`CHEATSHEET.md` header + red-team stat; README/LESSONS
+were already dated). The kickoff `2.1.201` mentions anchor to §9.1 (dated) and inherit its stamp.

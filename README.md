@@ -332,9 +332,9 @@ lives:
 The habit this section encodes: **a model upgrade is a scheduled maintenance event for the
 harness**, not just a version bump. Re-run the per-line test on `CLAUDE.md` and on the
 kit's own guidance; leave the permanent ones alone. **A Claude Code *tool* upgrade is the same
-kind of event** — it can silently drop a setting a new default no longer accepts (2.1.201, for one,
-discards a whole `settings.json` on a lone `//` comment), so re-run the "prove it bites" checks after
-it, exactly as you would after a model upgrade. Which parts are due, and what triggers each, is what a
+kind of event** — it can silently drop a setting a new default no longer accepts (2.1.201, verified
+2026-07-06, discards a whole `settings.json` on a lone `//` comment), so re-run the "prove it bites"
+checks after it, exactly as you would after a model upgrade. Which parts are due, and what triggers each, is what a
 `HARNESS_MANIFEST.md` makes readable instead of remembered (kit items **W** + **J**).
 
 ## Where these ideas come from

@@ -57,6 +57,38 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-06 — Date-stamp version-pinned facts + the re-verification habit (item M)
+
+- **Change.** Closed ROADMAP item **M** (docs-only). Version-specific facts in durable docs (`2.1.x`,
+  red-team stats) now carry an as-of date + a re-verify pointer. A survey found README (Field-evidence
+  block, URLs verified 2026-07-03) and LESSONS (`v1, claims verified 2026-07-01`) **already dated** — the
+  one durable doc pinned to a Claude Code version with **no** date and **no** re-verify pointer was
+  `CHEATSHEET.md`. Fixes: (1) CHEATSHEET header stamps *2.1.x docs / live checks vs 2.1.201 / last verified
+  2026-07-06* and states the habit — *these are version-pinned facts, not permanent; re-verify after any
+  major Claude Code upgrade (items J/W)*; (2) the standalone red-team figure (sandbox-OFF, 5/44 blocked) is
+  dated *(one machine, 2026-07)* + flagged version-pinned; (3) the README shelf-life `2.1.201` mention gets
+  *verified 2026-07-06*.
+- **Rationale (the bet).** A version-pinned mechanic stated as timeless is a trap: a reader leans on it after
+  the tool has moved. This is the doc-wide companion to W/J — W gave version-assumptions a *dated home* (the
+  manifest), J made a tool upgrade a maintenance event; M ensures the *prose* facts carry the same date +
+  trigger so they can't quietly rot. The bet: one dated banner on the version-pinned reference beats peppering
+  dates on every line (signal, not noise).
+- **What it replaced.** An undated "Verified against Claude Code 2.1.x docs" header and an undated red-team
+  stat. The scattered kickoff `2.1.201` mentions were **left as-is by design** — each already anchors to §9.1
+  (dated 2026-07-06), so it inherits the stamp; re-dating each would be noise.
+- **Shelf-life/risk class.** **Permanent** as a *habit* (dating version-pinned facts never stops being right);
+  the *dates themselves* are depreciating and are exactly what the habit exists to keep honest. Zero blast
+  radius (docs only).
+- **Related ROADMAP item.** **M** (one of the K–N consistency fixes) — completes the doc-wide half W/J left
+  unspent. K, L, N remain.
+- **Commit.** *(uncommitted at time of writing — on branch `feat/M-datestamp-version-facts`; stamp on merge.)*
+- **Signal to watch.** A Claude Code upgrade landing without anyone re-checking the CHEATSHEET → the header's
+  re-verify pointer isn't landing where people look; consider a manifest row for the CHEATSHEET itself.
+- **Retrospect.** *(pending — revisit at the next Claude Code major upgrade: did the dated banner actually
+  prompt a re-verify?)*
+
+---
+
 ## 2026-07-06 — Harness manifest (item W) + post-upgrade re-verify (item J)
 
 - **Change.** Built ROADMAP items **W** and **J** together (docs + template, "not a new machine"). **W:** a

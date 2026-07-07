@@ -200,6 +200,17 @@ a row in the harness manifest.)
   paste).
 - **M:** version-specific facts ("2.1.x", red-team stats) in a durable doc — date-stamp them +
   the re-verification habit (ties to J/W).
+  **✅ Built 2026-07-06 (docs-only, on W's mechanism).** W already gave version-assumptions a *dated home*
+  (the manifest's last-verified column); M closes the *doc-wide* gap. The audit found README (Field-evidence
+  block, URLs verified 2026-07-03) and LESSONS (`v1, claims verified 2026-07-01`) **already dated** — the one
+  durable doc pinned to a Claude Code version with **no** as-of date and **no** re-verify pointer was
+  `CHEATSHEET.md`. Fixed: its header now stamps **"2.1.x docs, live checks vs 2.1.201, last verified
+  2026-07-06"** and states the **re-verification habit** in the kit's own voice — *these are version-pinned
+  facts, not permanent; re-verify after any major Claude Code upgrade (items J/W)* — the tie J/W asked for. The
+  standalone red-team figure (sandbox-OFF, 5/44 blocked) is now dated **(one machine, 2026-07)** and flagged
+  version-pinned; the README shelf-life 2.1.201 mention carries **"verified 2026-07-06"**. The scattered
+  kickoff `2.1.201` mentions were left as-is: each already anchors to **§9.1** (dated 2026-07-06), so they
+  inherit the stamp rather than repeat it — dating every inline mention would be noise, not signal.
 - **N:** Principle 4 "solo-on-main is fine" vs. Part 3.11 "unattended runs always get a worktree"
   — add a cross-reference.
 
@@ -510,8 +521,10 @@ denies + `mcp__*` in the project template, `templates/ci-audit.yml`, the docker-
    2026-07-06 on X's version stamp. ✅ **W** (harness manifest — `HARNESS_MANIFEST.md` template +
    §1.6a teaching + kit-self instance) **and ✅ J** (post-upgrade re-verify, realized as the manifest's
    trigger + §1.4/README doctrine) — done 2026-07-06, motivated by this session's CC-2.1.201 finding.
-   **Remaining hygiene/frontier tail:** S, T, U, C, D, E, I, K–N, F (and **M**, whose mechanism W
-   supplies but whose doc-wide date-stamp sweep is unspent).
+   ✅ **M** (date-stamp version-specific facts + the re-verification habit) — done 2026-07-06 on W's
+   dated-home mechanism: `CHEATSHEET.md` header + red-team stat + the README shelf-life mention
+   (README/LESSONS were already dated).
+   **Remaining hygiene/frontier tail:** S, T, U, C, D, E, I, F, and K/L/N (the other three consistency fixes).
 
 ---
 
