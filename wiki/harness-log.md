@@ -57,6 +57,35 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-08 — Wiki verifier (item O) counts singular decision/incident dirs too
+
+- **Change.** `scripts/kit-conformance.sh`'s KNOWLEDGE WIKI check (~line 283) had its `find`
+  alternation only match the **plural** convention (`wiki/decisions/`, `wiki/incidents/`) plus
+  an `*incident*.md`-in-filename fallback. Added the **singular** forms
+  (`wiki/decision/`, `wiki/incident/`) to the alternation, and extended the comment to say both
+  are matched and neither is more correct. The counted set is now
+  `decision|decisions|incident|incidents`-dir pages ∪ incident-named pages.
+- **Rationale (the bet).** Field evidence: the plug-and-play-solar repo's 2026-07-07 kit-update
+  re-review had **15 real** incident/decision pages under *singular* dirs, and the unpatched
+  check reported `0/3` and WARNed on a genuinely well-stocked wiki. A standing false WARN gets
+  tuned out — a verifier that cries wolf on a passing project is worse than no verifier, because
+  it trains the reader to ignore its next (real) warning. The singular/plural split is a real
+  naming freedom (dev/health's `wiki/SCHEMA.md` documents "singular; mirrors the dir"), so both
+  must count. Re-verified post-fix against that repo: the wiki line now PASSES at **16 pages**.
+- **What it replaced.** The plural-only alternation — a false-negative, not a design choice.
+- **Shelf-life/risk class.** **Depreciating** — this is a hard-coded enumeration of two naming
+  conventions; every new convention (`adr/`, `postmortems/`, `rfcs/`) needs another `-o -path`
+  clause. If a third convention shows up in the field, that's the argument to replace the
+  alternation with a **configurable glob** rather than growing it further.
+- **Related ROADMAP item.** Item O (the conformance verifier) — a bug fix to its wiki check.
+- **Commit.** *(this change + log entry)*
+- **Signal to watch.** Whether other naming conventions (`adr/`, `postmortems/`) hit the same
+  undercount in the field. Two or more sightings flips the call from "extend the alternation"
+  to "make the dir set a configurable glob."
+- **Retrospect.** *(open — revisit when the next adopting wiki uses a third naming convention.)*
+
+---
+
 ## 2026-07-07 — Kickoff closes with an HTML report + comprehension quiz (§1.7)
 
 - **Change.** §1.7 gains a closing step (Standard+): emit a small self-contained **HTML kickoff

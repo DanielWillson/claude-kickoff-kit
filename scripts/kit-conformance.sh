@@ -272,12 +272,15 @@ fi
 section "KNOWLEDGE WIKI (the incident/decision record)"
 # Adoption DoD (adoption §4/§159): "at least three real incident/decision pages (or the project
 # has consciously deferred it)." A small stable project may stop at commit bodies + audit guards
-# (adoption §133) — so WARN, NEVER FAIL. Counts the kit's convention wiki/decisions/*.md, plus
-# incident-shaped pages elsewhere under wiki/.
+# (adoption §133) — so WARN, NEVER FAIL. Counts BOTH the kit-internal convention
+# wiki/decisions/*.md (plural — this kit's own wiki/decisions/ uses it) AND the singular
+# wiki/decision/, wiki/incident/ convention some adopting projects use instead (e.g. dev/health's
+# wiki/SCHEMA.md: "singular; mirrors the dir") — neither is more correct, so both must count,
+# plus incident-shaped pages elsewhere under wiki/.
 # ═══════════════════════════════════════════════════════════════════════════
 n_wiki=0
 if [ -d "$TARGET/wiki" ]; then
-    n_wiki=$(find "$TARGET/wiki" \( -path '*/decisions/*.md' -o -path '*/incidents/*.md' -o -name '*incident*.md' \) 2>/dev/null | wc -l | tr -d ' ')
+    n_wiki=$(find "$TARGET/wiki" \( -path '*/decision/*.md' -o -path '*/decisions/*.md' -o -path '*/incident/*.md' -o -path '*/incidents/*.md' -o -name '*incident*.md' \) 2>/dev/null | wc -l | tr -d ' ')
     [ -n "$n_wiki" ] || n_wiki=0
 fi
 if [ "$n_wiki" -ge "$WIKI_MIN" ]; then
