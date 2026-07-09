@@ -275,6 +275,71 @@ if [ -n "$OFFLINE_ASSETS" ]; then
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
+section "PERMISSION FLOOR (deny-list drift + canaries — kickoff Part 0, templates/README steps 6-7)"
+# A deny rule is a boundary only while it (a) still exists where enforcement reads it and
+# (b) actually fires. Both rot silently: the managed floor is a hand-placed root-owned file
+# that never updates itself when the kit's template improves (drift), and rules can be
+# structurally present yet inert in some execution context (the 2026-07-08 incident: a
+# doubly-covered credential-print command executed inside a subagent). This section checks
+# (a) — PRESENCE and DRIFT — statically. It cannot check (b): a permission rule is evaluated
+# on the agent's TOP-LEVEL command string, so any probe run from inside this script is
+# invisible to enforcement and proves nothing. (b) is the agent-run live-fire protocol —
+# templates/README install steps 6-7: canary probes in main loop + subagent + excluded
+# context, plus the "verify it flows" push canary. Run it at install and after every
+# Claude Code upgrade; record the result in HARNESS_LOG.md.
+#
+# The floor patterns below are the credential-MATERIALIZATION family — commands whose
+# output IS a live credential. Grep is fixed-string on FULL RULE LITERALS on purpose:
+# 'git-credential' is a substring of 'gh auth git-credential', so bare-name greps could
+# let one rule's presence mask another's absence.
+FLOOR_PATTERNS="Bash(gh auth token*|Bash(gh auth git-credential*|Bash(git credential*|Bash(git-credential*|Bash(security find-internet-password*|Bash(kit-canary-denied*"
+CLAUDE_SETTINGS="$ROOT/.claude/settings.json"
+if [ -f "$CLAUDE_SETTINGS" ]; then
+    floor_missing=""
+    old_ifs=$IFS; IFS='|'
+    for p in $FLOOR_PATTERNS; do
+        grep -qF "$p" "$CLAUDE_SETTINGS" 2>/dev/null || floor_missing="$floor_missing '$p'"
+    done
+    IFS=$old_ifs
+    if [ -z "$floor_missing" ]; then
+        pass "per-repo credential-print denies + canary present in .claude/settings.json (templates/project.settings.json)"
+    else
+        warn "credential-print deny/canary rule(s) missing from .claude/settings.json:$floor_missing — reseed from templates/project.settings.json (a credential printed to a transcript can't be un-leaked; 2026-07-08 incident)"
+    fi
+else
+    echo "  ·  no .claude/settings.json — per-repo floor unadopted (kit-conformance FAILs this; not re-scored here)"
+fi
+
+# Managed-floor drift: the template in git improves; the installed root-owned copy doesn't
+# follow. World-readable, so WHEN readable we diff the critical family. Absent (CI, or an
+# unfloored machine) → non-scoring note, mirroring kit-conformance's SKIP ≠ PASS stance.
+MANAGED_FLOOR="${AUDIT_MANAGED_FILE:-}"   # test seam, mirrors CONFORMANCE_MANAGED_FILE
+if [ -z "$MANAGED_FLOOR" ]; then
+    for m in "/Library/Application Support/ClaudeCode/managed-settings.json" \
+             "/etc/claude-code/managed-settings.json"; do
+        [ -f "$m" ] && { MANAGED_FLOOR="$m"; break; }
+    done
+fi
+if [ -n "$MANAGED_FLOOR" ] && [ -r "$MANAGED_FLOOR" ]; then
+    drift_missing=""
+    old_ifs=$IFS; IFS='|'
+    for p in $FLOOR_PATTERNS; do
+        grep -qF "$p" "$MANAGED_FLOOR" 2>/dev/null || drift_missing="$drift_missing '$p'"
+    done
+    IFS=$old_ifs
+    # the excluded-canary needs BOTH halves to mean anything: the deny rule and the exclusion entry
+    grep -qF "Bash(kit-canary-excluded*" "$MANAGED_FLOOR" 2>/dev/null || drift_missing="$drift_missing 'Bash(kit-canary-excluded*'"
+    grep -qF "kit-canary-excluded *" "$MANAGED_FLOOR" 2>/dev/null || drift_missing="$drift_missing 'excludedCommands: kit-canary-excluded *'"
+    if [ -z "$drift_missing" ]; then
+        pass "installed managed floor carries the credential-print deny family + canaries ($MANAGED_FLOOR)"
+    else
+        warn "installed managed floor has DRIFTED — missing:$drift_missing — re-install from templates/managed-settings.template.json (root-owned files don't update themselves; Part 0)"
+    fi
+else
+    echo "  ·  managed floor not readable from here (CI, or machine not floored) — confirm via '/status'; SKIPPED ≠ PASS"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════
 section "ACTION-RISK GATES (deterministic enforcement — kickoff §1.3c)"
 # An action-risk table in CLAUDE.md (§1.5) classifies what the agent can do by reversibility × reach
 # and maps the dangerous classes to ask/deny gates. But that table is PROSE, and prose is not a

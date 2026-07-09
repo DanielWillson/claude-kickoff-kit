@@ -9,7 +9,11 @@
     ],
     "deny": [
       "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(~/.npmrc)",
-      "Read(**/*.pem)", "Read(**/*.token)", "Read(**/.env)", "Read(**/.env.*)"
+      "Read(**/*.pem)", "Read(**/*.token)", "Read(**/.env)", "Read(**/.env.*)",
+      "Bash(gh auth token*)", "Bash(gh auth git-credential*)",
+      "Bash(git credential*)", "Bash(git-credential*)",
+      "Bash(security find-generic-password*)", "Bash(security find-internet-password*)",
+      "Bash(kit-canary-denied*)"
     ]
   }
 }

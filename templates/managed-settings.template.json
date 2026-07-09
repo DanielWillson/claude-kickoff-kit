@@ -12,7 +12,10 @@
       "Edit(~/Library/LaunchAgents/**)", "Write(~/Library/LaunchAgents/**)",
       "Bash(sudo *)", "Bash(rm -rf /*)", "Bash(rm -rf ~*)", "Bash(chmod -R *)",
       "Bash(* | sh)", "Bash(* | bash)",
-      "Bash(gh auth token*)", "Bash(git credential *)", "Bash(security find-generic-password *)"
+      "Bash(gh auth token*)", "Bash(gh auth git-credential*)", "Bash(gh auth status*)", "Bash(gh config*)",
+      "Bash(git credential*)", "Bash(git-credential*)",
+      "Bash(security find-generic-password*)", "Bash(security find-internet-password*)", "Bash(security dump-keychain*)",
+      "Bash(kit-canary-denied*)", "Bash(kit-canary-excluded*)"
     ],
     "ask": [
       "Bash(git push --force*)", "Bash(git push -f*)", "Bash(git push * --force*)", "Bash(git push * -f*)",
@@ -28,8 +31,11 @@
     "enabled": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": ["gh *", "gcloud *", "terraform *", "docker *", "brew *"],
-    "filesystem": { "allowWrite": ["~/.cache/uv", "~/.cache/pip", "~/.local/share/uv", "~/.npm"] },
+    "excludedCommands": ["gh *", "gcloud *", "terraform *", "docker *", "brew *", "kit-canary-excluded *"],
+    "filesystem": {
+      "allowWrite": ["~/.cache/uv", "~/.cache/pip", "~/.local/share/uv", "~/.npm"],
+      "denyRead": ["~/.claude/projects"]
+    },
     "credentials": { "files": [
       {"path": "~/.ssh", "mode": "deny"}, {"path": "~/.aws", "mode": "deny"},
       {"path": "~/.config/gh", "mode": "deny"}, {"path": "~/.config/gcloud", "mode": "deny"},

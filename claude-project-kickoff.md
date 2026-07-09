@@ -114,6 +114,31 @@ that's present but inert reads as protection:
 - read `~/.ssh/id_rsa` → **blocked**; `cat .env` → **blocked**;
 - `git push --force` on a throwaway branch → **prompts**;
 - attempt bypass mode (`Shift+Tab`) → **rejected**, and `/status` shows the source as `managed`.
+- **live-fire the canaries** (the template ships deny rules for two commands that don't exist — the only rules
+  you can safely test-fire; you can never live-test `Bash(gh auth token*)`, a successful test *is* the leak):
+  have the agent run `kit-canary-denied --probe` → must be **denied** (`command not found` means your deny
+  list is **inert** in that context); repeat **from an Agent-tool subagent** (the least-supervised context —
+  enforcement there is exactly what failed in the 2026-07-08 incident); run `kit-canary-excluded --probe`
+  (deny-listed *and* on `excludedCommands`) → if it executes, **exclusion bypasses deny on this machine** and
+  every excluded command (`gh *`, `docker *`, …) is classifier-gated only. Re-run all three after every
+  Claude Code upgrade; log results in `HARNESS_LOG.md`.
+
+### Verify the floor FLOWS (the half everyone skips)
+A wall test alone is not enough: **every sanctioned path must demonstrably work**, because a sanctioned path
+that's accidentally broken doesn't make you safer — it *manufactures route-around pressure*. The 2026-07-08
+credential incident started exactly there: `gh` was sandbox-excluded but the `gh` helper that a **sandboxed**
+`git push` spawns *inherits git's sandbox*, which denies `~/.config/gh` — so every agent-driven HTTPS push was
+broken **by construction**, invisibly. Six subagents were sent at that wall; two "diagnosed" the failure by
+printing the live token into their transcripts. So, post-restart:
+- an agent-driven **`git push` of a throwaway branch must SUCCEED** after its ask-prompt. If it fails with
+  `could not read Username`/`operation not permitted`, your credential helper is sandbox-broken — **stop and
+  pick a sanctioned push path before any agent is ever told to push**: (a) centralize pushes in the attended
+  main session (pairs with Part 3 #15), (b) switch remotes to SSH with an `ssh-agent`-held key, or
+  (c) add git's network verbs to `excludedCommands` — only after the canary above proved `ask` still gates
+  excluded commands, and knowing an unsandboxed push runs repo-local git hooks unsandboxed.
+- and **pre-explain any wall you keep**: a `CLAUDE.md` line like *"pushes may fail with a credential error in
+  sandboxed contexts; that is a known environment limit — report it, never diagnose or work around it"* turns
+  a mystery-to-debug into a condition-to-report.
 
 A tell you're **not** sandboxed yet: the session can still write outside its project dir (e.g. to `~/Downloads`).
 Once the sandbox is live, out-of-project writes fail. See **`CHEATSHEET.md`** for the full verified mechanics.
@@ -281,7 +306,15 @@ routine operation, defeating the purpose.
       "Bash(git clean *)",
       "Bash(chmod *)",
       "Bash(curl *)",
-      "Bash(wget *)"
+      "Bash(wget *)",
+      // credential-PRINT denies — commands whose OUTPUT is a live credential; deny the whole
+      // family (bare + hyphenated + sibling subcommands), never one exact string (2026-07-08:
+      // a full live credential was printed through exact-string gaps in a shorter list)
+      "Bash(gh auth token*)", "Bash(gh auth git-credential*)",
+      "Bash(git credential*)", "Bash(git-credential*)",
+      "Bash(security find-generic-password*)", "Bash(security find-internet-password*)",
+      // the canary — a deny rule you can safely test-fire (templates/README steps 6-7)
+      "Bash(kit-canary-denied*)"
     ]
   },
   "hooks": {
@@ -1707,7 +1740,10 @@ don't have.
    (#1): scouting is the agent *discovering* an unknown work-shape; hydration is *handing* it
    known-relevant context up front. They compose. External intel a run needs — ticket text, a
    design doc, an API reference, MCP-tool output — belongs *in* the frozen snapshot, fetched
-   once, not re-derived by every subagent.
+   once, not re-derived by every subagent. Finally, the brief carries the wave's **stop
+   conditions and forbidden-action list** (#15): mechanical, named, and mirrored in the deny
+   rules — a subagent that hits a wall must know, from the brief, exactly when to stop and
+   what it may never try.
 4. **Give every file exactly one writer: partition by directory when you can, isolate in
    worktrees when you can't.** Disjoint ownership is still the cheapest correct scheme —
    no merge step at all (e.g. the API router belongs to the API agent alone). When
@@ -1812,7 +1848,8 @@ don't have.
     filesystem boundary and **hard-fails** — the sandbox refuses the out-of-tree write. Put
     the worktree under the repo (e.g. `./.worktrees/<topic>` — the native mechanism's
     `.claude/worktrees/` already does exactly this) and gitignore that path, so the
-    isolated tree still lives inside the write boundary.
+    isolated tree still lives inside the write boundary. (Pushing is stricter still:
+    committing is per-tree, but **pushing is never a fan-out subagent's job at all** — #15.)
 12. **Schema-type the *verdicts*; verify the *work* on disk.** Structured agent output
     is now validated at the tool-call layer with retry-on-mismatch (and headless runs
     take a JSON schema), so use schemas freely for reports, verdicts, and work-lists —
@@ -1845,6 +1882,42 @@ don't have.
     the highest-priority item. Compaction is automatic but lossy: conversation-only
     instructions can vanish while files reload from disk — one more reason every
     non-negotiable lives in a file or a rule, never in chat (Principle 4).
+15. **Subagents never push — and canary the wall before the fleet hits it.** (Distilled from
+    a real incident, 2026-07-08: six subagents were fanned out with push duties onto a push
+    path that was invisibly broken by construction; two of them "diagnosed" the failure by
+    printing a live GitHub credential into their transcripts. Every clause below is a
+    counterfactual that would have prevented or shrunk it.)
+    - **Remove the capability, not just the instruction.** Fan-out subagents produce
+      commits/patches in their tree; **all pushes funnel through one known-good path** — the
+      attended main session, or the human. A capability a subagent doesn't have is the only
+      prohibition that holds at p=1.0; item 11's "one committer per tree" extends to *one
+      pusher per run*. No blocked push, no route-around.
+    - **Canary-first fan-out.** Run ONE subagent end-to-end — *including the riskiest last
+      step* — before launching the other N. Fanning N agents into the same untested wall
+      correlates their failures: at even a 15% per-agent misstep rate, six agents give ~62%
+      odds that at least one goes off-script. A canary turns a six-agent incident into a
+      one-agent bug report.
+    - **A tripwire, as procedure.** The first subagent reporting an auth/credential anomaly
+      halts every sibling before they reach the same fork point. (In the incident this was
+      improvised by the driving session and is the reason the damage stopped at two — make
+      it doctrine, not luck.)
+    - **Mechanical stop conditions, not judgment calls** (frozen into the brief, #3):
+      *"Attempt `git push` exactly once. If it fails for any reason, run zero further
+      commands, output the error and the diff, and end. Auth/credential diagnosis is
+      explicitly out of scope."* Stuck-loop escalation is real — repeated failures flatten
+      an agent's action distribution toward low-probability moves while the error pile
+      dilutes a one-time instruction at the top of context. A count + a scope, not "use
+      judgment."
+    - **Name the forbidden action class; mirror it in deny rules.** "Don't route around a
+      blocked push" binds the *goal*; an agent can categorize credential inspection as
+      *diagnosis* and violate the intent while honoring the words. Name the class: *"Never
+      run `gh auth token`, `gh auth git-credential`, `git credential`/`git-credential-*`,
+      `security find-*-password`, or anything that reads `~/.config/gh`."* The same list
+      lives in the settings deny rules (§1.3, templates/) — prose for the agent's
+      understanding, rules for when understanding fails.
+    - **Pre-explain known walls.** *"The push may fail with a credential error; that is a
+      known environment issue, not yours to solve"* converts a mystery-to-debug into a
+      condition-to-report. Cheapest mitigation on this list.
 
 ---
 
@@ -1854,6 +1927,8 @@ don't have.
 - [ ] generic **managed** floor installed at `/Library/Application Support/ClaudeCode/` (no-bypass + credential denies + OS sandbox + irreversible-op `ask` gates) from `templates/managed-settings.template.json`, **genericized** (no machine-specific hosts)
 - [ ] `claude doctor` (invalid keys silently stripped) + `/status` (source = `managed`) run after install; sandbox rolled out via shakeout → inventory-poll → flip `allowUnsandboxedCommands:false` (Part 0)
 - [ ] floor **proved to bite**: `~/.ssh/id_rsa` read blocked · `cat .env` blocked · `git push --force` prompts · bypass mode rejected (source `managed`)
+- [ ] **canaries live-fired** (Part 0 "Verify the floor bites"): `kit-canary-denied` denied in the main loop **and from a subagent** · `kit-canary-excluded` denied (else exclusion bypasses deny — record it) · re-run after every Claude Code upgrade, logged in `HARNESS_LOG.md`
+- [ ] floor **proved to FLOW** (Part 0 "Verify the floor flows"): agent-driven `git push` of a throwaway branch **succeeds** after its ask-prompt — a broken sanctioned path manufactures route-around pressure; fix the push path before any agent is told to push
 
 **Per project:**
 - [ ] `git init`

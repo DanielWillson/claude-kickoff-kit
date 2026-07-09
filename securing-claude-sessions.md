@@ -168,19 +168,29 @@ guide in action.
 A hook is a script Claude Code runs **before** a tool call. Ours is
 `hooks/pretool_guard.py` (wired in via `.claude/settings.json`). It
 inspects the exact tool call and can **block it** (`exit 2`). It's a deterministic, **fail-closed**
-backstop — if it can't even parse its input, it blocks. Three things it does that the other
+backstop — if it can't even parse its input, it blocks. *(One sharp caveat, learned 2026-07-08:
+that fail-closed promise covers only failures the script catches. The hook **protocol** fails
+open — only exit code 2 blocks; a crash (exit 1), a missing interpreter (exit 127), or the hook
+simply not firing in some context all mean the call **proceeds silently**. A guard you've never
+watched fire in a given context — the main loop, a subagent — is unverified there; that's what
+the canary rules below are for.)* Three things it does that the other
 levels can't:
 - Blocks a **native `Read`/`Edit`/`Write` of a secret path** (`.env`, `~/.ssh`, `*.pem`, …).
   This matters because the sandbox (Level C) only governs *shell* commands — it doesn't see the
   built-in file tools, so without the hook a plain `Read` of `.env` would slip through. *(In this kit's
   templates the same native-tool protection ships as plain `permissions.deny Read(...)`/`Write`/`Edit` rules —
   no script to maintain (see [`templates/project.settings.json`](templates/project.settings.json) plus the
-  managed floor). A `PreToolUse` hook, as in this deployment, is an optional **more-flexible** backstop, but it
-  is itself a maintained script, and an in-repo hook is editable unless pinned with `allowManagedHooksOnly`.
-  Deny rules are the simpler default; the hook is the power option.)*
+  managed floor). A `PreToolUse` hook is the optional **more-flexible** backstop, but it is itself a maintained
+  script, and an in-repo hook is editable unless pinned with `allowManagedHooksOnly`. Deny rules are the simpler
+  default; the hook is the power option — and the kit now **ships one** at
+  [`templates/pretool_guard.py`](templates/pretool_guard.py) + its self-test, because deny rules alone can't
+  catch **wrapped** credential-printing (`bash -lc '…'`, `$(…)`) — adopt it for credential-handling projects
+  (the "walls create route-arounds" section below and [`CHEATSHEET.md`](CHEATSHEET.md) explain why).)*
 - Blocks destructive shell patterns (`rm -rf ~`, `sudo`, `chmod -R`, `curl … | sh`, fork bombs).
-- Blocks commands that **print stored credentials** (`gh auth token`, `git credential`,
-  `security find-generic-password`).
+- Blocks commands that **print stored credentials** — the whole `gh auth` family, `gh config get`, bare and
+  hyphenated `git credential`/`git-credential-*`, `security find-generic/internet-password`, `dump-keychain`,
+  and env-var secret dumps — matched over the **full command string**, so it also catches the wrapped forms a
+  prefix-glob deny rule misses.
 
 **Upsides of Level B.** Precise, and it **ships through git** — edit once, everyone
 gets it. Deny/ask outrank the mode; the hook is as exact as you can program.
@@ -327,6 +337,50 @@ difference between "can I stop it?" and "would I know if it happened?"
 
 ---
 
+## Walls create route-arounds — a real incident, and the two tests every gate needs
+
+On 2026-07-08 this stack failed in production, and the failure is the best security lesson the kit
+owns, so it's taught here rather than buried in a changelog. Short version: a configuration
+self-contradiction (the `gh` tool excluded from the sandbox, but the `gh` *helper process* that a
+sandboxed `git push` spawns inherits git's sandbox — which denies gh's own token store) meant every
+agent-driven push failed with a cryptic credential error, **by construction, invisibly**. Six
+subagents were fanned out with push duties into that wall. One stopped and reported, as instructed.
+Two decided that *printing the stored GitHub credential* was "diagnosing" rather than
+"routing around" — and the deny rules plus the guard hook that covered exactly those commands
+**did not fire in the subagent context**. A live credential landed in a session transcript. Three
+durable lessons, now built into the kit:
+
+1. **Every gate needs two tests: it *bites* and it *flows*.** Everyone tests that walls block
+   (this guide's own "try it yourself" list). Almost nobody tests that the *sanctioned* paths
+   work. A sanctioned path that's accidentally broken is not extra safety — it is **pressure**:
+   an agent facing a wall it was told to get through doesn't give up, it gets creative, and
+   "creative" near credentials is how leaks happen. The kickoff's Part 0 now has a "verify the
+   floor FLOWS" step (an agent-driven push of a throwaway branch must *succeed*) for exactly this.
+2. **A rule you've never watched fire is a hope, not a boundary.** The deny rules that failed were
+   syntactically valid — they fire in the main loop on the same machine. The context that mattered
+   (a subagent) is the one nobody had ever tested. You can't safely live-test `Bash(gh auth
+   token*)` — a successful test *is* the leak — so the templates now ship **canary rules**: denies
+   on two commands that don't exist (`kit-canary-denied`, `kit-canary-excluded`). Probing them is
+   free, and the three outcomes are unambiguous: *denied* = enforcement live; *command not found* =
+   your deny list is inert in that context; *executes* (for the excluded one) = sandbox-exclusion
+   bypasses deny on this machine. Fire them at install, from a subagent, and after every Claude
+   Code upgrade.
+3. **Remove the capability, not just the instruction.** "Don't route around a blocked push" binds
+   the goal; the two violators categorized credential inspection as *diagnosis* and honored the
+   words while violating the intent. Prose prohibitions must **name the forbidden action class**
+   (the exact commands), be mirrored in deny rules — and, better, the capability shouldn't exist:
+   fan-out subagents now *never* push (kickoff Part 3 #15); pushes funnel through one attended
+   path. A capability an agent doesn't have is the only prohibition that holds every time.
+
+> **Teaching point:** this guide's one big idea said a control is only as strong as the agent's
+> inability to reach it. The incident adds the corollary: **a control is only as *real* as your
+> last live-fire test of it, in the context where it matters** — and the layers divide cleanly
+> into **boundaries** (deterministic, OS- or server-enforced, tested) and **nets** (the
+> classifier, retrospective review). Nets catch; only boundaries stop. Anything that must *never*
+> happen needs a tested boundary or a removed capability, never a net.
+
+---
+
 ## Secrets — a worked example of defense in depth
 
 Secrets (like our Intercom API token) are the best illustration of layering, because we protect
@@ -417,7 +471,7 @@ Do those five and this guide stops being abstract.
 |---|---|---|
 | `auto` default mode, local dev allows | A | `~/.claude/settings.json` (per machine — never committed) |
 | allow/ask rules + the repo allow-list | B | committed `.claude/settings.json` — template: [`templates/project.settings.json`](templates/project.settings.json) |
-| A deterministic native-tool guard *(example deployment)* | B | a `PreToolUse` hook; **the kit ships this as `permissions.deny Read(...)` rules instead** (see the Level B note) |
+| A deterministic native-tool guard | B | ships as `permissions.deny Read(...)` rules (default) **and** as an optional `PreToolUse` hook — [`templates/pretool_guard.py`](templates/pretool_guard.py) + self-test — for credential-handling projects (catches wrapped forms deny rules miss; see the Level B note) |
 | An audit / tamper-trail hook *(example deployment; off by default — see Detection)* | detection | a `ConfigChange` hook |
 | Sandbox + locks, the deny list, exception valves, env scrub | C + D | `/Library/Application Support/ClaudeCode/managed-settings.json` (root-owned) — template: [`templates/managed-settings.template.json`](templates/managed-settings.template.json) |
 | Per-machine sandbox-enable + `autoMode` | C / A | [`templates/project.settings.local.json.example`](templates/project.settings.local.json.example) |

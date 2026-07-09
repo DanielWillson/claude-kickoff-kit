@@ -41,10 +41,13 @@ Each row names the **event** that makes it stale, not a calendar reminder:
   not regressed; re-run the per-line test on any *depreciating* prose (would a fresh session get it
   wrong *without* the line? if not, cut it).
 - **Claude Code (tool) upgrade** — re-run your security **"prove it bites"** checks (attempt a denied
-  secret read → confirm it's blocked; if you set it, try bypass mode → confirm it's rejected). A tool
-  upgrade can **silently drop a setting**: Claude Code 2.1.201, for one, discards a *whole*
-  `settings.json` on a single `//` comment, voiding every deny rule with no error. Treat a tool upgrade
-  like a model upgrade — **a scheduled maintenance event, not a version bump**.
+  secret read → confirm it's blocked; if you set it, try bypass mode → confirm it's rejected) **AND
+  "prove it flows"** (an agent-driven push of a throwaway branch → confirm it *succeeds*). Include the
+  **canary live-fire in every context** — main loop, an Agent-tool subagent, and an excluded command —
+  because enforcement can differ by context (a deny-covered command executed inside a subagent on
+  2026-07-08). A tool upgrade can **silently drop a setting**: Claude Code 2.1.201, for one, discards a
+  *whole* `settings.json` on a single `//` comment, voiding every deny rule with no error. Treat a tool
+  upgrade like a model upgrade — **a scheduled maintenance event, not a version bump**.
 - **Never (permanent)** — the part's force is a property of the world, not the model's judgment (the
   security floor, reconcile-against-code, independent verification); leave it alone.
 
@@ -56,7 +59,7 @@ is pinned to; `Last verified` is the date you actually re-checked it (not the da
 | Component | Assumes (version / dependency) | Shelf-life | Last verified | Re-verify trigger |
 |---|---|---|---|---|
 | `.claude/settings.json` + managed floor | Claude Code `<cc-version>` settings schema (strict JSON, no JSONC) | depreciating | `<YYYY-MM-DD>` | **Claude Code upgrade** → prove a denied read still blocks + bypass still rejected |
-| Security deny / sandbox floor | OS sandbox + Claude Code sandbox semantics | permanent | `<YYYY-MM-DD>` | **Claude Code upgrade** → re-prove the deny/sandbox controls; otherwise never |
+| Security deny / sandbox floor | OS sandbox + Claude Code sandbox semantics | permanent | `<YYYY-MM-DD>` | **Claude Code upgrade** → re-prove deny/sandbox controls **bite** (canary denied in main loop + subagent + excluded context) **and** sanctioned paths **flow** (agent push succeeds); otherwise never |
 | `CLAUDE.md` directives | current model's default behavior | depreciating | `<YYYY-MM-DD>` | **Model upgrade** → per-line test (would a fresh session get this wrong without the line?) |
 | Behavioral evals (`evals/`) | current model generation | appreciating | `<YYYY-MM-DD>` | **Model upgrade** → re-run `scripts/eval.sh` |
 | `scripts/audit.sh` invariants | this project's code shape (paths, symbols) | depreciating | `<YYYY-MM-DD>` | **Refactor** → your audit's safeguard-rot self-check flags dead anchors |

@@ -1,7 +1,8 @@
 # Claude Code hardening — verified mechanics cheat-sheet
 
 Verified against Claude Code **2.1.x** docs, with live **spot-checks** against **2.1.201** (the
-settings-load + permission mechanics) — **last verified 2026-07-06**. **These are version-pinned facts, not permanent ones.** A Claude Code upgrade can silently
+settings-load + permission mechanics) — **last verified 2026-07-06**; incident-derived mechanics
+(subagent enforcement gap, exclusion×deny, hook fail-open, flows-vs-bites) **added 2026-07-08**. **These are version-pinned facts, not permanent ones.** A Claude Code upgrade can silently
 change or drop a mechanic here (2.1.201, for one, discards a *whole* `settings.json` on a lone `//`
 comment — no error), so **re-verify this sheet after any major Claude Code upgrade**: a tool upgrade is a
 scheduled maintenance event, not a version bump (kit items **J**/**W** — the harness manifest carries the
@@ -9,6 +10,14 @@ scheduled maintenance event, not a version bump (kit items **J**/**W** — the h
 
 > **The OS sandbox is the boundary. `deny`/`ask` rules are *deterministic* backstops. The auto
 > classifier is a *probabilistic* backstop. `CLAUDE.md` / `autoMode` prose is *not* a control.**
+
+**2026-07-08 amendment (incident-verified):** "deterministic backstop" holds only where enforcement
+*provably runs*. On one hardened machine, a credential-print command covered by BOTH a managed deny and a
+PreToolUse-hook regex **executed inside an Agent-tool subagent** (current docs say rules and hooks apply
+there — observed behavior contradicted them), while the same machine's deny rules fired reliably in the
+main loop. Treat deny enforcement as **unverified per machine and per context until live-fired** — the
+templates ship `kit-canary-denied`/`kit-canary-excluded` rules for exactly this (templates/README steps
+6-7): probe main loop, subagent, and excluded-command contexts at install and after every CC upgrade.
 
 *New here? Read the narrative field guide [`securing-claude-sessions.md`](securing-claude-sessions.md) first to
 build the mental model — this sheet is the terse reference behind it.*
@@ -60,3 +69,10 @@ A `Read`/`Edit` deny binds native file tools AND recognized Bash readers (`cat`/
 
 ## `excludedCommands` = your residual surface
 Listed commands run **unsandboxed** (full filesystem + network) and auto-run — classifier-only. Keep the list minimal and `ask`-gate the mutating subcommands (`terraform apply`/`destroy`, `gcloud … delete`).
+- Exclusion matching is evaluated against the **top-level command string only**; a child process spawned by a *sandboxed* command **inherits the sandbox** (Seatbelt inheritance is mandatory, docs-confirmed). Corollary that bit for real (2026-07-08): `gh` excluded + `~/.config/gh` sandbox-denied ⇒ top-level `gh` works, but the `gh` credential helper that a sandboxed `git push` spawns **cannot read its own token store** — every agent-driven HTTPS push fails by construction. **Verify sanctioned paths FLOW, not just that walls bite** (kickoff Part 0).
+- Whether exclusion also bypasses **deny-rule evaluation** is undocumented; if it does, every excluded command's deny rules are decoration. The `kit-canary-excluded` canary (deny-listed *and* excluded) answers it empirically per machine — run it before trusting any deny on an excluded command family.
+
+## Hooks & denials — mechanics that bit (2026-07-08)
+- **A PreToolUse guard hook fails OPEN on infrastructure error.** Only **exit 2 blocks**; exit 1 (uncaught exception), exit 127 (`python3` not found), or a matcher miss all mean **the call proceeds**. "Fail-closed" logic inside the script does not cover the script itself failing to run. Canary the hook like the rules: give it a test pattern you can safely trigger and confirm it blocks — in the main loop *and* from a subagent.
+- **The auto-mode denial boilerplate suggests route-arounds** ("You *may* attempt to accomplish this action using other tools… e.g. using head instead of cat") — observed verbatim on a credential-command denial; it is a template for exactly the workaround behavior the deny exists to stop. Counter it in the brief/CLAUDE.md: *a denied credential-adjacent action is a stop-and-report, never a rephrase* (kickoff Part 3 #15). Flagged upstream to Anthropic.
+- **Classifier verdicts are context-conditioned** — same action class, different conversation history, different verdict (benign-looking mid-task context sailed through pre-incident; identical probes post-incident were blocked). Never model the classifier as a consistent gate; it's a net whose mesh moves.

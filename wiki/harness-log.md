@@ -57,6 +57,115 @@ risk tier · free-text **origin** — with no ROADMAP/maintainer fields, because
 
 ---
 
+## 2026-07-08 — Live-fire verification (`excludedCommands` does NOT bypass `deny`) + downstream finishers landed
+
+- **Change.** Not a new component — a **verification** of the two entries below, plus landing the last
+  repo-level finishers in the downstream repo. On a floored machine (managed re-installed + restarted),
+  live-fired the canaries across the full 2×2 `{main loop, Agent-tool subagent} × {denied-only,
+  denied+excluded}`: **all four DENY**, attributed to the deny rule (not the classifier); sandbox confirmed on.
+  Separately committed the recmint finishers: a dedicated guard-self-test CI leg (`guard-selftest.yml`) + a
+  push-wall pre-explanation in its `CLAUDE.md`. See [[2026-07-credential-incident]] §"ANSWERED".
+- **Rationale (the bet, now checked).** The two entries below bet that deny rules are the kit's deterministic
+  layer and the guard hook earns its place. The open fear: that `excludedCommands` silently voided every deny
+  rule on `gh` — which would have holed the whole "deny is the deterministic layer" thesis. **Refuted:**
+  exclusion does not bypass deny, in the main loop OR a subagent. The `gh`-family denies are real backstops;
+  the incident's leak was a since-fixed version gap or historical drift, not a standing hole.
+- **What it replaced.** Retires the `excludedCommands`×`deny` open question (was gating a whole rule class).
+  **Narrows** the guard hook's rationale: not "deny is inert for excluded commands" (false) but the still-true
+  **wrapper-evasion** gap (deny misses `bash -lc '…'` / `$(…)` regardless of exclusion).
+- **Shelf-life/risk class.** The *result* is **depreciating** — version-pinned to the current Claude Code;
+  re-run the 2×2 at each CC upgrade (the canaries make it a ~2-min check). The *mechanism* (deny outranks
+  exclusion) is a CC property — permanent unless CC changes it.
+- **Related ROADMAP item.** The security floor (Part 0/§1.3) + the canary/live-fire protocol added by this
+  incident; cross-refs items J/W (CC-upgrade re-verify).
+- **Commit.** downstream finishers on recmint `chore/gap-help-mcp`; kit-side records land with this change.
+- **Signal to watch.** (1) Re-run the 2×2 after any CC upgrade — a silent enforcement change flips a cell.
+  (2) Whether the downstream repo's own machine/version reproduces all-deny (its *incident* version is untested).
+  (3) `sandbox.filesystem.denyRead` validity at `claude doctor` (still unconfirmed).
+- **Retrospect.** *(open — revisit at the next CC upgrade: did any cell flip?)*
+
+---
+
+## 2026-07-08 — Ship the PreToolUse guard-hook template (the wrapper-evasion catch)
+
+- **Change.** Added `templates/pretool_guard.py` + `templates/pretool_guard.selftest.sh` (genericized from the
+  recmint production guard) as an **optional** kit component for credential-handling projects, and wired it in:
+  templates/README "Shipping the PreToolUse guard hook" section (when-to-adopt + settings snippet + live-fire
+  step), the kit CI (`.github/workflows/selftest.yml` runs the 24-assertion test against the template on every
+  push), SKILL.md (companion list + the guard files added to the "outputs persist" set — the one kit component
+  meant to land in the repo), and securing-claude-sessions (Level-B note + appendix now say "ships as deny rules
+  AND an optional hook"). Follows the eight-file hardening pass below; see [[2026-07-credential-incident]] §"Built
+  after the nod".
+- **Rationale (the bet).** The hardening pass added credential-print *deny rules*, but a second-advisor review +
+  doc verification exposed a real hole: a `permissions.deny` rule anchors per-subcommand at the start, so
+  wrapped forms (`bash -lc '…'`, `$(…)`, `python3 -c '…'`) evade it. A PreToolUse hook runs a full-string regex
+  and catches them. The kit had positioned the hook as "recmint's illustrative power option"; the incident is
+  the evidence to ship it. Kept optional (not default) so a code-only project isn't handed a maintained script
+  it doesn't need — the adopt-trigger is "handles credentials."
+- **What it replaced.** Nothing removed; net-add. It closes the wrapper-evasion residual named in the prior
+  entry's "signal to watch."
+- **Shelf-life/risk class.** The *mechanism* (a full-string guard beats prefix-glob for wrapped forms) is
+  **permanent**. The *pattern list* inside it is **depreciating** — new credential-print commands need new
+  alternatives; the self-test is the guard against silent rot. The hook-fires-in-subagents assumption is
+  **depreciating** (Claude Code version-pinned; the live-fire canary in a subagent is the check).
+- **Related ROADMAP item.** Cross-cuts the security floor (Part 0/§1.3) and item O (conformance) — the guard is
+  optional so conformance does not FAIL on its absence.
+- **Commit.** *(this change + log entry)*
+- **Signal to watch.** (1) Does the guard actually fire inside an Agent-tool subagent on a live machine? — the
+  same open question as the deny rules; the subagent canary settles it. (2) False-positive reports from the
+  env-secret / `gh auth` broadening (e.g. a legit `gh auth setup-git` in someone's flow) — if they appear,
+  narrow the pattern and add a MUST-DEFER case. (3) Uptake: if most kit projects that handle credentials adopt
+  it, that's the argument to make it the default rather than opt-in.
+- **Retrospect.** *(open — fill once the subagent canary has run and any false-positive reports are in)*
+
+---
+
+## 2026-07-08 — Credential-materialization incident → eight-file hardening pass
+
+- **Change.** Response to a real leak in a downstream kit repo (`recbus/RECMint-Wiki`): a live
+  GitHub credential printed into a fan-out subagent's transcript. Eight files touched.
+  **Templates:** `managed-settings.template.json` + `project.settings.json` gained the
+  credential-print deny *family* (`gh auth git-credential`/`gh auth status`/`gh config`,
+  hyphenated `git-credential*`, `security find-internet-password*`/`dump-keychain*`) closing
+  three exact-string gaps, two **canary** deny rules (`kit-canary-denied`, and
+  `kit-canary-excluded` which is *also* in `excludedCommands` to test exclusion×deny), and a
+  managed `sandbox.filesystem.denyRead: ["~/.claude/projects"]` (transcripts are a secret store).
+  **Verifiers:** `claude-audit-base.sh` new PERMISSION FLOOR section (deny-family presence +
+  managed-floor drift), `scripts/kit-conformance.sh` per-repo + managed floor checks extended.
+  **Docs:** kickoff Part 0 "verify the floor FLOWS" + canary live-fire + Part 3 item #15
+  (subagents never push / canary-first / tripwire / named forbidden commands), §1.3 inline
+  example, CHEATSHEET incident amendments, securing-claude-sessions "walls create route-arounds"
+  + hook-fail-open caveat, LESSONS Lesson 8. Full reasoning: [[2026-07-credential-incident]].
+- **Rationale (the bet).** Three stacked failures — a config self-contradiction that broke
+  sandboxed push *by construction* (gh excluded but gh-as-git's-child inherits git's sandbox
+  which denies gh's token store), exact-string deny gaps, and enforcement not firing in the
+  subagent context. Each fix is mechanical (a check or a removed capability), not exhortation,
+  per Lesson 1's "would the system catch this next time?" The load-bearing bets: **verify-it-flows**
+  (a broken sanctioned path manufactures route-around pressure — the actual trigger) and
+  **capability removal** (fan-out subagents can't push at all — the only prohibition that holds
+  at p=1.0, since two agents rationalized credential-printing as "diagnosis" under an explicit
+  don't-route-around instruction).
+- **What it replaced.** A credential-print deny list with three exact-string holes; a "verify it
+  bites" ritual with no "verify it flows" counterpart; Part 3 fan-out doctrine silent on pushing.
+- **Shelf-life/risk class.** Mixed. The deny-family patch is **depreciating** (an enumeration —
+  new credential-print commands need new entries). The canary mechanism, verify-it-flows, and
+  capability-removal doctrine are **permanent** (their force is a property of the world:
+  untested rules rot, broken sanctioned paths create pressure, absent capabilities can't be
+  misused). The subagent-enforcement + exclusion×deny facts are **depreciating** — Claude Code
+  version-pinned; re-verify on upgrade (CHEATSHEET carries the trigger).
+- **Related ROADMAP item.** Cross-cuts Part 0 (floor), Part 3 (fan-out), items O (conformance)
+  and the audit; no single item owns it — it's an incident-driven pass.
+- **Commit.** *(this change + log entry)*
+- **Signal to watch.** (1) The `kit-canary-excluded` live-fire result on a floored machine —
+  confirms or refutes "exclusion bypasses deny," which decides whether every excluded command's
+  deny rules are decoration kit-wide. (2) Whether the subagent-enforcement gap reproduces and
+  what Anthropic says on the upstream report. (3) Whether "verify it flows" catches other broken
+  sanctioned paths in the field (a second sighting promotes it from incident-fix to core ritual).
+- **Retrospect.** *(open — fill when the canary has been live-fired on a floored machine and the
+  upstream report has a response)*
+
+---
+
 ## 2026-07-08 — Wiki verifier (item O) counts singular decision/incident dirs too
 
 - **Change.** `scripts/kit-conformance.sh`'s KNOWLEDGE WIKI check (~line 283) had its `find`

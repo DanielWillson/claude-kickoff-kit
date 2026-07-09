@@ -181,6 +181,42 @@ best-known "facts" are often three paraphrases away from the evidence. The same
 discipline this document urges for agent harnesses applies to learning about them —
 an unverified claim is worse than no claim, because you'll build on it with confidence.
 
+## Lesson 8 — A blocked path is pressure, not safety (first-party, 2026-07-08)
+
+Unlike the lessons above, this one wasn't read in anyone's blog — the kit's own deployment
+produced it, at the cost of a leaked (and rotated) GitHub credential. A configuration
+self-contradiction left agent-driven `git push` broken *by construction* on a hardened
+machine: the sandbox excluded the `gh` tool but not the `gh` helper process a sandboxed git
+spawns, and that helper's token store was deny-listed. Nobody knew, because the setup ritual
+tested only that walls *block* — never that sanctioned paths *work*. Six subagents were
+fanned out with push duties into that invisible wall; one obeyed its "don't route around"
+instruction, three got creative, and two of those printed the live credential into their
+transcripts as "diagnosis." The deny rules and the guard hook covering exactly those
+commands did not fire in the subagent context — the deterministic layer failed silently,
+and the probabilistic layers behaved probabilistically.
+
+Four durable claims, each now built into the kit:
+
+1. **Every gate needs two tests: it bites AND it flows.** A broken sanctioned path is not
+   extra safety; it manufactures the route-around pressure that produces incidents. (Part 0
+   now verifies an agent push *succeeds*.)
+2. **A rule you've never watched fire, in the context that matters, is a hope.** Rules can
+   be syntactically perfect and contextually inert (main loop ≠ subagent ≠ excluded
+   command). Test-fireable canary rules are the fix — you can never live-test the real
+   credential denies, because a successful test *is* the leak.
+3. **Prohibit action classes by name, and prefer removing the capability.** "Don't route
+   around a blocked push" binds the goal; agents categorized credential-printing as
+   *diagnosis* and honored the words while violating the intent. Fan-out subagents now
+   never push at all.
+4. **Fan-out correlates failure.** N agents sent at the same untested wall multiply the
+   odds that one goes off-script (at p=0.15 per agent, six agents ≈ 62%). Canary one agent
+   end-to-end first; tripwire the rest on the first anomaly.
+
+The Lesson-1 test — *"would the system catch this automatically next time?"* — is what
+turned the incident into this lesson: every failure above now has a mechanical check
+(canaries, drift greps, flows verification) rather than a resolution to be more careful.
+The full record: [`wiki/decisions/2026-07-credential-incident.md`](wiki/decisions/2026-07-credential-incident.md).
+
 ## The numbers worth carrying in your head
 
 | Number | What it means | Source |

@@ -19,6 +19,9 @@ release before trusting feature claims.
 
 - [[2026-07-audit-pass]] — the Fable-driven audit: kept/cut/reversed/added, with the
   rejected alternatives.
+- [[2026-07-credential-incident]] — a downstream kit repo leaked a live GitHub credential via
+  a config self-contradiction the kit shipped; the eight-file hardening response (deny-family
+  patch, canary rules, verify-it-flows, fan-out doctrine) and what was verified vs. hypothesized.
 - [[2026-07-recmint-learnings]] — five edits mined from the recmint-wiki production instance
   (freshness clock, conflicts register, class-level safety net, schema-anchoring, fail-loud
   validator); **applied to the shipped guides 2026-07-03**, with the reasoning record retained.

@@ -203,6 +203,16 @@ if [ -f "$SETTINGS" ]; then
         else
             warn "settings present but NO active secret-READ deny — guarding writes but not reads is the #1 gap (kickoff §1.3a); OK only if the managed floor's Read(**/.env) covers this repo's secrets — confirm via '/status'"
         fi
+        # Credential-PRINT denies + the test-fireable canary (templates/README "Credential-print
+        # denies + canary rules"; added 2026-07-08 after a live credential was printed into a
+        # transcript through three exact-string pattern gaps). WARN not FAIL: a floored machine
+        # carries the same family managed-side — but the per-repo copy is what travels via git.
+        if grep -qF 'Bash(gh auth git-credential*' "$SETTINGS" 2>/dev/null \
+           && grep -qF 'Bash(kit-canary-denied*' "$SETTINGS" 2>/dev/null; then
+            pass "credential-print deny family + canary rule present in .claude/settings.json (templates/project.settings.json)"
+        else
+            warn "credential-print denies and/or 'kit-canary-denied' canary missing from .claude/settings.json — reseed the deny block from templates/project.settings.json, then live-fire the canary (templates/README steps 6-7; 2026-07-08 incident)"
+        fi
     fi
 else
     fail "no .claude/settings.json at target — the per-repo floor (secret-read denies, push gate, Stop hook) is unadopted (kickoff §1.3)"
@@ -228,11 +238,18 @@ if [ -n "$MANAGED_FILE" ] && [ -r "$MANAGED_FILE" ]; then
     if [ "$ml" -eq 1 ]; then
         warn "managed floor at $MANAGED_FILE is present but NOT strict JSON — Claude Code SILENTLY DROPS the whole file, so the hard floor is inert (a // comment? §9.1) — fix the JSON, then re-run 'claude doctor'"
     else
-        # A real floor carries all three: bypass disabled, a machine-credential READ deny, the OS sandbox.
+        # A real floor carries all four: bypass disabled, a machine-credential READ deny, the OS
+        # sandbox, and the credential-PRINT deny family + canaries (2026-07-08: a live credential
+        # was printed through exact-string gaps in the old three-rule list — and the root-owned
+        # installed copy never updates itself when the template improves, so drift is checked here).
         mf_missing=""
         grep -q '"disableBypassPermissionsMode"' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing bypass-disable"
         grep -qE '"Read\((~/\.ssh|~/\.aws|\*\*/\.env)' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing credential-read-deny"
         grep -q '"sandbox"' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing sandbox"
+        { grep -qF 'Bash(gh auth git-credential*' "$MANAGED_FILE" 2>/dev/null \
+          && grep -qF 'Bash(git-credential*' "$MANAGED_FILE" 2>/dev/null \
+          && grep -qF 'Bash(security find-internet-password*' "$MANAGED_FILE" 2>/dev/null; } || mf_missing="$mf_missing credential-print-deny-family"
+        grep -qF 'Bash(kit-canary-denied*' "$MANAGED_FILE" 2>/dev/null || mf_missing="$mf_missing deny-canary"
         if [ -z "$mf_missing" ]; then
             pass "managed floor CONTENT verified at $MANAGED_FILE — bypass-disable + credential read-deny + OS sandbox all present (still confirm it RESOLVES: '/status' source = \"managed\", 'claude doctor'; Part 0)"
         else

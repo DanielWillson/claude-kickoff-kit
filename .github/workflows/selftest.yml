@@ -69,3 +69,7 @@ jobs:
       - name: Wiki-engine regression self-test (claude-wiki-base.py FAIL paths)
         shell: bash
         run: bash claude-wiki-base.selftest.sh
+
+      - name: PreToolUse guard self-test (credential-print + wrapper coverage)
+        shell: bash
+        run: bash templates/pretool_guard.selftest.sh templates/pretool_guard.py
